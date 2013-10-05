@@ -12,14 +12,14 @@ lexical syntax
 templates
 	TypeExpr.TypeVariable = [[TYPEVARIABLE]]
 	TypeExpr              = [([TypeExpr])] {bracket}
-	TypeExpr.TypeFunction = [[TypeExpr] -> [TypeExpr]] {right}
-	// TypeExpr.TypeTuple    = [[TypeExpr+; separator="*"]]
-	// TypeExpr.TypeTuple    = [[TypeExpr]] {reject}
-	TypeExpr.TypeTuple    = [[TypeExpr] * [TypeExpr]] {right}
-	TypeExpr.TypeConstr   = [[TypeExpr] [GLOBALNAME]]
-	TypeExpr.TypeConstr   = [([TypeExpr+; separator=","]) [GLOBALNAME]]
+	TypeExpr.FunctionType = [[TypeExpr] -> [TypeExpr]] {right}
+	TypeExpr.TupleType    = [[TypeExpr] * [TypeExpr]] {right}
+	TypeExpr.ConstrType   = [[GLOBALNAME]] 
+	TypeExpr.ConstrType   = [[TypeExpr] [GLOBALNAME]] {prefer}
+	// prefer the above rule the one below when parens are used but only one TypeExpr is inside
+	TypeExpr.ConstrType   = [([TypeExpr+; separator=","]) [GLOBALNAME]]
 
 context-free priorities
-	TypeExpr.TypeConstr >
-	TypeExpr.TypeTuple >
-	TypeExpr.TypeFunction
+	TypeExpr.ConstrType   >
+	TypeExpr.TupleType    >
+	TypeExpr.FunctionType

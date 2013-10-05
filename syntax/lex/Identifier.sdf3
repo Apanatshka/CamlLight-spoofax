@@ -4,16 +4,13 @@ context-free start-symbols
 	IDENT
 	GLOBALNAME
 
-syntax
-	[A-Za-z](Underscore? [A-Za-z0-9])* Underscore? -> IDENT {"IDENT"}
-	"_" -> Underscore {"Underscore"}
+lexical syntax
+	IDENT = [A-Za-z]("_"? [A-Za-z0-9])* "_"?
 
-	IDENT ("__" IDENT)? -> GLOBALNAME {"GLOBALNAME"}
+	GLOBALNAME = IDENT ("__" IDENT)?
 
 lexical restrictions
-	// Underscore -/- [\_]
 	IDENT      -/- [A-Za-z0-9]
-	IDENT      -/- [\_] . [A-Za-z0-9]
 
 //keywords
 lexical syntax

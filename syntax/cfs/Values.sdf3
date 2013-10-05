@@ -23,7 +23,7 @@ templates
 	
 	CConstr.CConstr   = [[GLOBALNAME]]
 	CConstr.EmptyList = <[]>
-	CConstr.UnitValue = <()>
+	CConstr.UnitValue = [()]
 
 	NCConstr.NCConstr   = [[GLOBALNAME]]
 	NCConstr.PrefixCons = [prefix ::]

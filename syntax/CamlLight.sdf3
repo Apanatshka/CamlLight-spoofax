@@ -2,17 +2,17 @@ module CamlLight
 
 imports
 	lex/Identifier
-	// lex/LayoutRules
-	// lex/Number
-	// lex/Text
-	// cfs/Names
-	// cfs/Values
-	// cfs/Types
-	// cfs/Patterns
-	// cfs/Expressions
+	lex/LayoutRules
+	lex/Number
+	lex/Text
+	cfs/Names
+	cfs/Values
+	cfs/Types
+	cfs/Patterns
+	cfs/Expressions
 
 context-free start-symbols
 	Start
 
 context-free syntax
-	Start.Start = IDENT
+	Start.Start = Expr

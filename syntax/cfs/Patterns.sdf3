@@ -15,13 +15,14 @@ template options
 templates
 	RecordBinding.Binding = [[GLOBALNAME] = [Pattern]]
 	
-	Pattern.VariablePattern = [[IDENT]]
-	Pattern.DontCarePattern = [_]
-	Pattern.PatternAlias    = [[Pattern] as [IDENT]]
+	Pattern.PatternVariable = [[IDENT]]
+	Pattern.Wildcard        = [_]
+	Pattern.Alias           = [[Pattern] as [IDENT]]
 	Pattern                 = [([Pattern])] {bracket}
 	Pattern.TypeConstraintPattern  = [([Pattern] : [TypeExpr])]
 	Pattern.PatternChoice   = [[Pattern] | [Pattern]] {left}
-	Pattern.PatternConstant = [[Constant]]  // TODO: find out if you can allow the sort Constant to be a subsort of Pattern
+	// TODO: find out if you can allow the sort Constant to be a subsort of Pattern
+	Pattern.PatternConstant = [[Constant]]
 	Pattern.TuplePattern    = [[Pattern], [Pattern+; separator=","]]
 	Pattern.RecordPattern   = [{[RecordBinding+; separator=";"]}]
 	Pattern.ConstructorPattern = [[NCConstr] [Pattern]]
