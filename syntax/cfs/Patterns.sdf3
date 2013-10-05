@@ -1,0 +1,37 @@
+module cfs/Patterns
+
+imports
+	lex/Identifier
+	cfs/Types
+	cfs/Values
+
+context-free start-symbols
+	Pattern
+
+template options
+	tokenize: "[("
+	keyword -/- [A-Za-z]
+
+templates
+	RecordBinding.Binding = [[GLOBALNAME] = [Pattern]]
+	
+	Pattern.VariablePattern = [[IDENT]]
+	Pattern.DontCarePattern = [_]
+	Pattern.PatternAlias    = [[Pattern] as [IDENT]]
+	Pattern                 = [([Pattern])] {bracket}
+	Pattern.TypeConstraintPattern  = [([Pattern] : [TypeExpr])]
+	Pattern.PatternChoice   = [[Pattern] | [Pattern]] {left}
+	Pattern.PatternConstant = [[Constant]]  // TODO: find out if you can allow the sort Constant to be a subsort of Pattern
+	Pattern.TuplePattern    = [[Pattern], [Pattern+; separator=","]]
+	Pattern.RecordPattern   = [{[RecordBinding+; separator=";"]}]
+	Pattern.ConstructorPattern = [[NCConstr] [Pattern]]
+	Pattern.EmptyListPattern = <[]>
+	Pattern.StaticListPattern = <[<Pattern+; separator=";">]>
+	Pattern.ConsListPattern = [[Pattern] :: [Pattern]] {right}
+
+context-free priorities
+	Pattern.ConstructorPattern >
+	Pattern.ConsListPattern >
+	Pattern.TuplePattern >
+	Pattern.PatternChoice >
+	Pattern.PatternAlias

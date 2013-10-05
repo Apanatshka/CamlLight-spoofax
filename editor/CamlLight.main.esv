@@ -1,0 +1,16 @@
+module CamlLight.main
+
+imports CamlLight-Builders CamlLight-Refactorings CamlLight-Colorer CamlLight-Completions CamlLight-Folding CamlLight-Outliner CamlLight-References CamlLight-Syntax
+
+language General properties
+                  
+  name          : CamlLight
+  id            : CamlLight
+  extends       : Root
+                  
+  description   : "Spoofax/IMP-generated editor for the CamlLight language"
+  url           : http://strategoxt.org
+                  
+  extensions    : ml
+  table         : include/CamlLight.tbl
+  start symbols : Start

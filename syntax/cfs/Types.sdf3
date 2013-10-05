@@ -1,0 +1,25 @@
+module cfs/Types
+
+imports
+	lex/Identifier
+
+context-free start-symbols
+	TypeExpr
+
+lexical syntax
+	TYPEVARIABLE = "'" IDENT
+
+templates
+	TypeExpr.TypeVariable = [[TYPEVARIABLE]]
+	TypeExpr              = [([TypeExpr])] {bracket}
+	TypeExpr.TypeFunction = [[TypeExpr] -> [TypeExpr]] {right}
+	// TypeExpr.TypeTuple    = [[TypeExpr+; separator="*"]]
+	// TypeExpr.TypeTuple    = [[TypeExpr]] {reject}
+	TypeExpr.TypeTuple    = [[TypeExpr] * [TypeExpr]] {right}
+	TypeExpr.TypeConstr   = [[TypeExpr] [GLOBALNAME]]
+	TypeExpr.TypeConstr   = [([TypeExpr+; separator=","]) [GLOBALNAME]]
+
+context-free priorities
+	TypeExpr.TypeConstr >
+	TypeExpr.TypeTuple >
+	TypeExpr.TypeFunction

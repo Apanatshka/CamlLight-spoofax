@@ -1,0 +1,29 @@
+module lex/Number
+
+context-free start-symbols
+	INTEGER
+	FLOAT
+
+//Integers
+lexical syntax
+	INTEGER = "-"? (Decimal | Hexadec | Octal | Binary)
+	Decimal = [0-9]+
+	Hexadec = "0"[Xx] [0-9A-Fa-f]+
+	Octal   = "0"[Oo] [0-7]+
+	Binary  = "0"[Bb] [01]+
+
+lexical restrictions
+	Decimal -/- [0-9]
+	Hexadec -/- [0-9A-Fa-f]
+	Octal   -/- [0-7]
+	Binary  -/- [01]
+
+//Floating-point
+lexical syntax
+	FLOAT = "-"? [0-9]+ (DecimalPart | ExponentPart | (DecimalPart ExponentPart))
+	DecimalPart  = "." [0-9]*
+	ExponentPart = [Ee] [\+\-]? [0-9]+
+
+lexical restrictions
+	DecimalPart  -/- [0-9]
+	ExponentPart -/- [0-9]

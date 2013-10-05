@@ -1,0 +1,38 @@
+module runtime/nbl/lookup
+
+imports
+  
+  runtime/nbl/collect
+  runtime/nbl/query
+  runtime/nbl/tasks
+  runtime/nbl/uri
+  runtime/nbl/entries
+  runtime/task/core
+
+rules // Lookup
+	
+	nabl-lookup(|ns, name):
+		uri -> def*
+		with
+  		uri' := <nabl-extend-uri(|ns, name, ())> uri;
+  		def* := <nabl-get-all-definitions> uri'
+
+	nabl-lookup-all(|ns):
+		uri -> def*
+		with
+  		def*  := <nabl-get-child-definitions(|ns)> uri
+
+	nabl-lookup-named-import(|ns, name):
+		uri -> import*
+		with
+			language := <nabl-uri-language> uri;
+      import*  := <nabl-get-import-uris-named(|language, ns, name)> uri
+
+rules // Imports
+
+  nabl-get-import-uris-named(|language, namespace, name):
+    uri -> importURI*
+    with
+      importResult* := <nabl-get-all-properties(|Import(language, namespace, name))> uri; // TODO: this now uses aliasses?
+      importURI*    := <map(task-get-solved <+ task-create-dependencies; ![<id>]); concat> importResult*
+

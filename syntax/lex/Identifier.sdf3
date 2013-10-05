@@ -1,0 +1,51 @@
+module lex/Identifier
+
+context-free start-symbols
+	IDENT
+	GLOBALNAME
+
+syntax
+	[A-Za-z](Underscore? [A-Za-z0-9])* Underscore? -> IDENT {"IDENT"}
+	"_" -> Underscore {"Underscore"}
+
+	IDENT ("__" IDENT)? -> GLOBALNAME {"GLOBALNAME"}
+
+lexical restrictions
+	// Underscore -/- [\_]
+	IDENT      -/- [A-Za-z0-9]
+	IDENT      -/- [\_] . [A-Za-z0-9]
+
+//keywords
+lexical syntax
+	IDENT = "and"       {reject}
+	IDENT = "as"        {reject}
+	IDENT = "begin"     {reject}
+	IDENT = "do"        {reject}
+	IDENT = "done"      {reject}
+	IDENT = "downto"    {reject}
+	IDENT = "else"      {reject}
+	IDENT = "end"       {reject}
+	IDENT = "exception" {reject}
+	IDENT = "false"     {reject} //literal
+	IDENT = "for"       {reject}
+	IDENT = "fun"       {reject}
+	IDENT = "function"  {reject}
+	IDENT = "if"        {reject}
+	IDENT = "in"        {reject}
+	IDENT = "let"       {reject}
+	IDENT = "match"     {reject}
+	IDENT = "mutable"   {reject}
+	IDENT = "not"       {reject}
+	IDENT = "of"        {reject}
+	IDENT = "or"        {reject}
+	IDENT = "prefix"    {reject}
+	IDENT = "rec"       {reject}
+	IDENT = "then"      {reject}
+	IDENT = "to"        {reject}
+	IDENT = "true"      {reject} //literal
+	IDENT = "try"       {reject}
+	IDENT = "type"      {reject}
+	IDENT = "value"     {reject}
+	IDENT = "where"     {reject}
+	IDENT = "while"     {reject}
+	IDENT = "with"      {reject}

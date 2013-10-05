@@ -1,0 +1,44 @@
+module cfs/Names
+
+imports
+	lex/Identifier
+
+context-free start-symbols
+	Variable
+
+template options
+	tokenize: "[("
+	keyword -/- [A-Za-z]
+
+templates
+	Variable.Variable = [[GLOBALNAME]]
+	Variable.PrefixOperator = [prefix [OPERATOR]]
+
+lexical syntax
+	OPERATOR = "+" 
+	         | "-" 
+	         | "*" 
+	         | "/" 
+	         | "mod" 
+	         | "+." 
+	         | "-." 
+	         | "*." 
+	         | "/." 
+	         | "@" 
+	         | "^" 
+	         | "!" 
+	         | ":=" 
+	         | "=" 
+	         | "<>" 
+	         | "==" 
+	         | "!=" 
+	         | "!" 
+	         | "<" 
+	         | "<=" 
+	         | ">" 
+	         | "<=" 
+	         | "<." 
+	         | "<=." 
+	         | ">." 
+	         | "<=."
+	

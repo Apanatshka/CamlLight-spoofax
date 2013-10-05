@@ -1,0 +1,66 @@
+module cfs/Expressions
+
+imports
+	lex/Identifier
+	lex/Number
+	lex/Text
+	cfs/Names
+	cfs/Values
+	cfs/Types
+	cfs/Patterns
+
+context-free start-symbols
+	Expr
+	SimpleMatching
+	MultipleMatching
+	LetBinding
+
+template options
+	tokenize: ""
+	keyword -/- [A-Za-z]
+	
+
+templates
+	Expr.Ident               = [[IDENT]]
+	Expr.Variable            = [[Variable]]
+	Expr.Constant            = [[Constant]]
+	Expr                     = [([Expr])] {bracket}
+	Expr                     = [begin [Expr] end] {bracket}
+	Expr.TypeConstraintExpr  = [([Expr] : [TypeExpr])]
+	Expr.TupleExpr           = [[Expr], [Expr+; separator=","]]
+	Expr.ConstructorExpr     = [[NCConstr] [Expr]]
+	Expr.ConsExpr            = [[Expr] :: [Expr]]
+	Expr.ListLiteral         = <[<Expr+; separator=";">]>
+	Expr.ArrayLiteral        = <[|<Expr+; separator=";">|]>
+	Expr.RecordExpr          = [{[RecordBinding+; separator=";"]}]
+	Expr.FunctionApplication = [[Expr] [Expr]]
+	// Expr.UnaryOperation      = [[PREFIXOPERATOR] [Expr]]
+	// Expr.BinaryOperation     = [[Expr] [INFIXOPERATOR] [Expr]]
+	Expr.RecordAccess        = [[Expr].[GLOBALNAME]]
+	Expr.RecordAssign        = [[Expr].[GLOBALNAME] <- [Expr]]
+	Expr.ArrayAccess         = [[Expr].([Expr])] 
+	Expr.ArrayAssign         = [[Expr].([Expr]) <- [Expr]]
+	Expr.LogicalAnd          = [[Expr] & [Expr]]
+	Expr.LogicalOr           = [[Expr] or [Expr]]
+	Expr.IfExpr              = [if [Expr] then [Expr]] {prefer}
+	Expr.IfExpr              = [if [Expr] then [Expr] else [Expr]]
+	Expr.WhileExpr           = [while [Expr] do [Expr] done]
+	Expr.ForExpr             = [for [IDENT] = [Expr] to [Expr] do [Expr] done]
+	Expr.ForExpr             = [for [IDENT] = [Expr] downto [Expr] do [Expr] done]
+	Expr.ExprSequence        = [[Expr] ; [Expr]]
+	Expr.MatchExpr           = [match [Expr] with [SimpleMatching]]
+	Expr.FunctionDefinition  = [fun [MultipleMatching]]
+	Expr.FunctionDefinition  = [function [SimpleMatching]]
+	Expr.TryExpr             = [try [Expr] with [SimpleMatching]]
+	Expr.LetExpr             = [let [LetBinding+; separator="and"] in [Expr]]
+	Expr.LetRecExpr          = [let rec [LetBinding+; separator="and"] in [Expr]]
+	
+	Matching1.Matching1 = [[Pattern] -> [Expr]]
+	MatchingMore.MatchingMore = [[Pattern+] -> [Expr]]
+	SimpleMatching.SimpleMatching = [[Matching1+; separator="|"]]
+	MultipleMatching.MultipleMatching = [[MatchingMore+; separator="|"]]
+	LetBinding.LetBinding = [[Pattern] = [Expr]]
+	LetBinding.LetBinding = [[Variable] [Pattern+] = [Expr]]
+
+lexical syntax
+	
