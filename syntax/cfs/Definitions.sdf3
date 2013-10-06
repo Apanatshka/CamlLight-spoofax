@@ -1,0 +1,45 @@
+module cfs/Definitions
+
+imports
+	lex/Identifier
+	cfs/Types
+	cfs/Expressions
+
+context-free start-symbols
+	TypeDef
+	TypeDefPart
+	TypeParams
+	ConstrDecl
+	LabelDecl
+	ExceptionDef
+	ValueDef
+	ValueDecl
+
+template options
+	keyword -/- [A-Za-z0-9]
+
+templates
+	TypeDef.TypeDef = [type [TypeDefPart+; separator="and"]]
+	
+	TypeDefPart.AlgebraicDataType   = [[TypeParams?] [IDENT] = [ConstrDecl+; separator="|"]]
+	TypeDefPart.LabelDef            = [[TypeParams?] [IDENT] = {[LabelDecl+; separator=";"]}]
+	TypeDefPart.TypeAlias           = [[TypeParams?] [IDENT] == [TypeExpr]]
+	TypeDefPart.AbstractType        = [[TypeParams?] [IDENT]]
+	TypeDefPart.MutableAbstractType = [[TypeParams?] [IDENT] mutable]
+	
+	TypeParams.TypeVariable = [[TYPEVARIABLE]]
+	TypeParams.TypeVariable = [([TYPEVARIABLE+; separator=","])]
+	
+	ConstrDecl.CConstrDecl  = [[IDENT]]
+	ConstrDecl.NCConstrDecl = [[IDENT] of [TypeExpr]]
+	
+	LabelDecl.LabelDecl        = [[IDENT] : [TypeExpr]]
+	LabelDecl.MutableLabelDecl = [mutable [IDENT] : [TypeExpr]]
+	
+	ExceptionDef.ExceptionDef = [exception [ConstrDecl+; separator="and"]]
+	
+	ValueDef.ValueDef    = [let [LetBinding+; separator="and"]]
+	ValueDef.RecValueDef = [let rec [LetBinding+; separator="and"]]
+	
+	ValueDecl.ValueDecl       = [value [ValueDeclPart+; separator="and"]]
+	ValueDeclPart.TypeBinding = [[IDENT] : [TypeExpr]]

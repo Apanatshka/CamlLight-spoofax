@@ -10,9 +10,11 @@ imports
 	cfs/Types
 	cfs/Patterns
 	cfs/Expressions
+	cfs/Definitions
+	cfs/Modules
 
 context-free start-symbols
 	Start
 
 context-free syntax
-	Start.Start = Expr
+	Start.Start = ModuleImpl

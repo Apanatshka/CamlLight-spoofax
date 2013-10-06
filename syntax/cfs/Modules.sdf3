@@ -1,0 +1,38 @@
+module cfs/Modules
+
+imports
+	lex/Identifier
+	lex/Text
+	cfs/Expressions
+	cfs/Definitions
+
+context-free start-symbols
+	ModuleImpl
+	ImplPhrase
+	ModuleIntf
+	IntfPhrase
+	Directive
+
+template options
+	tokenize: "#"
+	keyword -/- [A-Za-z0-9]
+
+templates
+	ModuleImpl.Phrases = [[ImplPhrase+]]
+	
+	ImplPhrase.ExpressionsPhrase  = [[Expr];;]
+	ImplPhrase.ValueDefPhrase     = [[ValueDef];;]
+	ImplPhrase.TypeDefPhrase      = [[TypeDef];;]
+	ImplPhrase.ExceptionDefPhrase = [[ExceptionDef];;]
+	ImplPhrase.DirectivePhrase    = [[Directive];;]
+
+	ModuleIntf.Interface = [[IntfPhrase+]]
+	
+	IntfPhrase.ValueDeclPhrase    = [[ValueDecl];;]
+	IntfPhrase.TypeDefPhrase      = [[TypeDef];;]
+	IntfPhrase.ExceptionDefPhrase = [[ExceptionDef];;]
+	IntfPhrase.DirectivePhrase    = [[Directive];;]
+
+	Directive.OpenDirective   = [#open [STRING]]
+	Directive.CloseDirective  = [#close [STRING]]
+	Directive.CustomDirective = [#[IDENT] [STRING]]
