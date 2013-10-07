@@ -16,12 +16,12 @@ context-free start-symbols
 	LetBinding
 
 template options
-	tokenize: ""
 	keyword -/- [A-Za-z]
 	
 
 templates
-	RecordBinding2.Binding = [[GLOBALNAME] = [Expr]]
+	RecordBinding2.RecordBinding = [[GLOBALNAME] = [Expr]]
+	TupleList2.TupleList = [[Expr], [Expr+; separator=","]]
 	
 	//this is probably a mistake in the manual because it isn't explained and it's ambiguous with Variable
 	// Expr.Ident               = [[IDENT]]
@@ -31,8 +31,7 @@ templates
 	Expr                = [([Expr])] {bracket}
 	Expr                = [begin [Expr] end] {bracket}
 	Expr.TypeConstraint = [([Expr] : [TypeExpr])]
-	//ambiguous with itself :(
-	Expr.TupleExpr           = [[Expr], [Expr+; separator=","]]
+	Expr.TupleExpr      = [[TupleList2]]
 	//ambiguous with function application, and not really different
 	// Expr.ConstructorExpr     = [[NCConstr] [Expr]]
 	Expr.ConsExpr     = [[Expr] :: [Expr]]{right}
@@ -52,7 +51,7 @@ templates
 	Expr.ForExpr      = [for [IDENT] = [Expr] to [Expr] do [Expr] done]
 	Expr.ForExpr      = [for [IDENT] = [Expr] downto [Expr] do [Expr] done]
 	// ambiguous with expressions in list and array literals
-	Expr.ExprSequence = [[Expr] ; [Expr]] {right}
+	Expr.ExprSequence = [[Expr] ; [Expr]] {avoid}
 	Expr.MatchExpr    = [match [Expr] with [SimpleMatching]]
 	Expr.FunctionDef  = [fun [MultipleMatching]]
 	Expr.FunctionDef  = [function [SimpleMatching]]
@@ -68,8 +67,8 @@ templates
 	LetBinding.LetBinding             = [[Variable] [Pattern+] = [Expr]]
 	
 	// avoid in favour of negative integer literals
-	Expr.Negative      = [-[Expr]] {avoid}
-	Expr.FloatNegative = [-.[Expr]]
+	Expr.Negate        = [-[Expr]] {avoid}
+	Expr.FloatNegate   = [-.[Expr]]
 	Expr.Dereference   = [![Expr]]
 	Expr.Add           = [[Expr] + [Expr]] {left}
 	Expr.Subtract      = [[Expr] - [Expr]] {left}
@@ -84,8 +83,9 @@ templates
 	Expr.ListConcat    = [[Expr] @ [Expr]] {right}
 	Expr.StringConcat  = [[Expr] ^ [Expr]] {right}
 	//this one isn't explained in the manual!
-	Expr.UndefinedOperator      = [[Expr] ! [Expr]]
-	Expr.ReferenceAssign        = [[Expr] := [Expr]] {right}
+	Expr.UndefinedOperator = [[Expr] ! [Expr]]
+	Expr.ReferenceAssign   = [[Expr] := [Expr]] {right}
+	
 	Expr.StructuralEquals       = [[Expr] = [Expr]] {left}
 	Expr.StructuralInequals     = [[Expr] <> [Expr]] {left}
 	Expr.PhysicalEquals         = [[Expr] == [Expr]] {left}  
@@ -105,8 +105,8 @@ context-free priorities
 		Expr.ArrayAccess
 	} >
 	Expr.FunctionApp > {
-		Expr.Negative
-		Expr.FloatNegative
+		Expr.Negate
+		Expr.FloatNegate
 	} >
 	Expr.FloatPowerOf >
 	Expr.Modulo > {
@@ -120,7 +120,7 @@ context-free priorities
 		Expr.Subtract
 		Expr.FloatSubtract
 	} >
-	Expr.ListCons > {
+	Expr.ConsExpr > {
 		Expr.ListConcat
 		Expr.StringConcat
 	} > {

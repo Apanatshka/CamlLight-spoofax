@@ -13,7 +13,8 @@ template options
 	keyword -/- [A-Za-z]
 
 templates
-	RecordBinding.Binding = [[GLOBALNAME] = [Pattern]]
+	RecordBinding.RecordBinding = [[GLOBALNAME] = [Pattern]]
+	TupleList.TupleList = [[Pattern], [Pattern+; separator=","]]
 	
 	Pattern.PatternVariable = [[IDENT]]
 	Pattern.Wildcard        = [_]
@@ -22,8 +23,9 @@ templates
 	Pattern.TypeConstraintPattern  = [([Pattern] : [TypeExpr])]
 	Pattern.PatternChoice   = [[Pattern] | [Pattern]] {left}
 	// TODO: find out if you can allow the sort Constant to be a subsort of Pattern
+	// possible using sort rename, but no support for that in SDF3?
 	Pattern.PatternConstant = [[Constant]]
-	Pattern.TuplePattern    = [[Pattern], [Pattern+; separator=","]]
+	Pattern.TuplePattern    = [[TupleList]]
 	Pattern.RecordPattern   = [{[RecordBinding+; separator=";"]}]
 	Pattern.ConstructorPattern = [[NCConstr] [Pattern]]
 	Pattern.EmptyListPattern = <[]>
@@ -35,4 +37,4 @@ context-free priorities
 	Pattern.ConsListPattern >
 	Pattern.TuplePattern >
 	Pattern.PatternChoice >
-	Pattern.PatternAlias
+	Pattern.Alias
