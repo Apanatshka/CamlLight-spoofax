@@ -23,3 +23,6 @@ lib-refactoring/*.generated.str
 *.aterm
 syntax/*.sdf
 syntax/*/*.sdf
+editor/*.generated.*
+trans/*.generated.*
+syntax/*.pp
