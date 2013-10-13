@@ -19,11 +19,11 @@ templates
 	Constant.FloatLit     = [[FLOAT]]
 	Constant.CharLit      = [[CHAR]]
 	Constant.StringLit    = [[STRING]]
-	Constant.Constant     = [[CConstr]] 
+	Constant              = [[CConstr]]
 	
 	CConstr.CConstr   = [[GLOBALNAME]]
 	CConstr.EmptyList = <[]>
-	CConstr.UnitValue = [()]
+	CConstr.Unit      = [()]
 
 	NCConstr.NCConstr   = [[GLOBALNAME]]
 	NCConstr.PrefixCons = [prefix ::]

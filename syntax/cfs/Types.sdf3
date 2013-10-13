@@ -5,21 +5,26 @@ imports
 
 context-free start-symbols
 	TypeExpr
+	TYPEVARIABLE
 
 lexical syntax
-	TYPEVARIABLE = "'" IDENT
+	TYPEVARIABLE = [\'] IDENT
 
 templates
-	TypeExpr.TypeVariable = [[TYPEVARIABLE]]
-	TypeExpr              = [([TypeExpr])] {bracket}
-	TypeExpr.FunctionType = [[TypeExpr] -> [TypeExpr]] {right}
-	TypeExpr.TupleType    = [[TypeExpr] * [TypeExpr]] {right}
-	TypeExpr.ConstrType   = [[GLOBALNAME]] 
-	TypeExpr.ConstrType   = [[TypeExpr] [GLOBALNAME]] {prefer}
-	// prefer the above rule the one below when parens are used but only one TypeExpr is inside
-	TypeExpr.ConstrType   = [([TypeExpr+; separator=","]) [GLOBALNAME]]
+	TypeExpr        = [[SimpleTypeExpr]]
+	TypeExpr        = [[TupleTypeExpr]]
+		
+	SimpleTypeExpr.TypeVariable = [[TYPEVARIABLE]]
+	SimpleTypeExpr              = [([TypeExpr])] {bracket}
+	SimpleTypeExpr.FuncType     = [[TypeExpr] -> [TypeExpr]] {right}
+	TupleTypeExpr.TupleType     = [[SimpleTypeExpr+; separator=" * "]] {avoid} // both avoid here and the reject below are required
+	TupleTypeExpr.TupleType     = [[SimpleTypeExpr]] {reject}
+	SimpleTypeExpr.ConstrType   = [[GLOBALNAME]]
+	// prefer this rule over the one below when parens are used but only one TypeExpr is inside
+	SimpleTypeExpr.ConstrType   = [[TypeExpr] [GLOBALNAME]]
+	SimpleTypeExpr.ConstrType   = [([TypeExpr+; separator=","]) [GLOBALNAME]] {avoid}
 
 context-free priorities
-	TypeExpr.ConstrType   >
-	TypeExpr.TupleType    >
-	TypeExpr.FunctionType
+	SimpleTypeExpr.ConstrType >
+	TupleTypeExpr.TupleType   >
+	SimpleTypeExpr.FuncType

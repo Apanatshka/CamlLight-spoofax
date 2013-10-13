@@ -21,25 +21,26 @@ template options
 templates
 	TypeDef.TypeDef = [type [TypeDefPart+; separator="and"]]
 	
-	TypeDefPart.AlgebraicDataType   = [[TypeParams?] [IDENT] = [ConstrDecl+; separator="|"]]
-	TypeDefPart.LabelDef            = [[TypeParams?] [IDENT] = {[LabelDecl+; separator=";"]}]
-	TypeDefPart.TypeAlias           = [[TypeParams?] [IDENT] == [TypeExpr]]
-	TypeDefPart.AbstractType        = [[TypeParams?] [IDENT]]
-	TypeDefPart.MutableAbstractType = [[TypeParams?] [IDENT] mutable]
+	TypeDefPart.ADTDef       = [[TypeParams?] [IDENT] = [ConstrDecl+; separator="|"]]
+	TypeDefPart.LabelDef     = [[TypeParams?] [IDENT] = {[LabelDecl+; separator=";"]}]
+	TypeDefPart.TypeAlias    = [[TypeParams?] [IDENT] == [TypeExpr]]
+	TypeDefPart.AbstrType    = [[TypeParams?] [IDENT]]
+	TypeDefPart.MutAbstrType = [[TypeParams?] [IDENT] mutable]
 	
-	TypeParams.TypeVariable = [[TYPEVARIABLE]]
-	TypeParams.TypeVariable = [([TYPEVARIABLE+; separator=","])]
+	TypeParams.TypeVar = [[TYPEVARIABLE]]
+	TypeParams.TypeVar = [([TYPEVARIABLE+; separator=","])]
 	
 	ConstrDecl.CConstrDecl  = [[IDENT]]
 	ConstrDecl.NCConstrDecl = [[IDENT] of [TypeExpr]]
 	
-	LabelDecl.LabelDecl        = [[IDENT] : [TypeExpr]]
-	LabelDecl.MutableLabelDecl = [mutable [IDENT] : [TypeExpr]]
+	LabelDecl.LabelDecl    = [[IDENT] : [TypeExpr]]
+	LabelDecl.MutLabelDecl = [mutable [IDENT] : [TypeExpr]]
 	
-	ExceptionDef.ExceptionDef = [exception [ConstrDecl+; separator="and"]]
+	ExceptionDef.ExcDef = [exception [ConstrDecl+; separator="and"]]
 	
 	ValueDef.ValueDef    = [let [LetBinding+; separator="and"]]
 	ValueDef.RecValueDef = [let rec [LetBinding+; separator="and"]]
 	
-	ValueDecl.ValueDecl       = [value [ValueDeclPart+; separator="and"]]
+	ValueDecl.ValueDecl = [value [ValueDeclPart+; separator="and"]]
+	
 	ValueDeclPart.TypeBinding = [[IDENT] : [TypeExpr]]

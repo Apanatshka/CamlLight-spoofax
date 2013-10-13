@@ -5,12 +5,13 @@ context-free start-symbols
 	GLOBALNAME
 
 lexical syntax
-	IDENT = [A-Za-z]("_"? [A-Za-z0-9])* "_"?
+	IDENT = [A-Za-z]([\_]? [A-Za-z0-9])* [\_]?
 
-	GLOBALNAME = IDENT ("__" IDENT)?
+	GLOBALNAME = IDENT ([\_][\_] IDENT)?
 
 lexical restrictions
-	IDENT      -/- [A-Za-z0-9]
+	IDENT -/- [A-Za-z0-9]
+	// Can't do: IDENT -/- [\_] . [A-Za-z0-9], because it matches the first two characters in GLOBALNAME a__b, then it'll fail to match the first IDENT in GLOBALNAME 
 
 //keywords
 lexical syntax
@@ -30,6 +31,7 @@ lexical syntax
 	IDENT = "if"        {reject}
 	IDENT = "in"        {reject}
 	IDENT = "let"       {reject}
+	IDENT = "mod"       {reject} //operator
 	IDENT = "match"     {reject}
 	IDENT = "mutable"   {reject}
 	IDENT = "not"       {reject}

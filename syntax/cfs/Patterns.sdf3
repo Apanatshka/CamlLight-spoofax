@@ -13,28 +13,30 @@ template options
 	keyword -/- [A-Za-z]
 
 templates
-	RecordBinding.RecordBinding = [[GLOBALNAME] = [Pattern]]
-	TupleList.TupleList = [[Pattern], [Pattern+; separator=","]]
+	PatternRecordBinding.PatternRecordB = [[GLOBALNAME] = [Pattern]]
 	
-	Pattern.PatternVariable = [[IDENT]]
-	Pattern.Wildcard        = [_]
-	Pattern.Alias           = [[Pattern] as [IDENT]]
-	Pattern                 = [([Pattern])] {bracket}
-	Pattern.TypeConstraintPattern  = [([Pattern] : [TypeExpr])]
-	Pattern.PatternChoice   = [[Pattern] | [Pattern]] {left}
-	// TODO: find out if you can allow the sort Constant to be a subsort of Pattern
-	// possible using sort rename, but no support for that in SDF3?
-	Pattern.PatternConstant = [[Constant]]
-	Pattern.TuplePattern    = [[TupleList]]
-	Pattern.RecordPattern   = [{[RecordBinding+; separator=";"]}]
-	Pattern.ConstructorPattern = [[NCConstr] [Pattern]]
-	Pattern.EmptyListPattern = <[]>
-	Pattern.StaticListPattern = <[<Pattern+; separator=";">]>
-	Pattern.ConsListPattern = [[Pattern] :: [Pattern]] {right}
+	Pattern = [[SimplePattern]]
+	Pattern = [[TuplePattern]]
+	
+	SimplePattern.PatternVarOrConst = [[IDENT]] {prefer}
+	SimplePattern.Wildcard          = [_]
+	SimplePattern.Alias             = [[Pattern] as [IDENT]]
+	SimplePattern                   = [([Pattern])] {bracket}
+	SimplePattern.HasTypePattern    = [([Pattern] : [TypeExpr])]
+	SimplePattern.PatternChoice     = [[Pattern] | [Pattern]] {left}
+	SimplePattern                   = [[Constant]]
+	TuplePattern.TuplePattern       = [[SimplePattern+; separator=", "]] {avoid} // both this avoid and the reject below are required
+	TuplePattern.TuplePattern       = [[SimplePattern]] {reject}
+	SimplePattern.RecordPattern     = [{[PatternRecordBinding+; separator="; "]}]
+	SimplePattern.ConstrPattern     = [[NCConstr] [Pattern]]
+	// Already attained through PatternConstant
+	// Pattern.EmptyListPattern     = <[]>
+	SimplePattern.ListLitPattern  = <[<Pattern+; separator="; ">]>
+	SimplePattern.ConsListPattern = [[Pattern] :: [Pattern]] {right}
 
 context-free priorities
-	Pattern.ConstructorPattern >
-	Pattern.ConsListPattern >
-	Pattern.TuplePattern >
-	Pattern.PatternChoice >
-	Pattern.Alias
+	SimplePattern.ConstrPattern >
+	SimplePattern.ConsListPattern >
+	TuplePattern.TuplePattern >
+	SimplePattern.PatternChoice >
+	SimplePattern.Alias

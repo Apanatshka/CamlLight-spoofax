@@ -35,4 +35,5 @@ templates
 
 	Directive.OpenDirective   = [#open [STRING]]
 	Directive.CloseDirective  = [#close [STRING]]
-	Directive.CustomDirective = [#[IDENT] [STRING]]
+	//avoid when open or close can be chosen
+	Directive.CustomDirective = [#[IDENT] [STRING]] {avoid}

@@ -2,11 +2,11 @@ module lex/LayoutRules
 
 //comments
 lexical syntax
-        Comment      = "(*" CommentBody "*)"
+        Comment      = [\(][\*] CommentBody [\*][\)]
         CommentBody  = CommentPart? (Comment CommentPart?)*
         CommentPart  = (~[\*\(] | Asterix | BracketOpen)+
-        Asterix      = "*"
-        BracketOpen  = "("
+        Asterix      = [\*]
+        BracketOpen  = [\(]
 lexical restrictions
         Asterix     -/- [\)]
         BracketOpen -/- [\*]
