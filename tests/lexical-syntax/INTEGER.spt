@@ -1,0 +1,60 @@
+module Test-INTEGER
+
+language CamlLight
+start symbol INTEGER
+
+//decimal
+test empty
+	[[]] parse fails
+test dec normal
+	[[1]] parse succeeds
+test dec zero
+	[[0]] parse succeeds
+test dec negative
+	[[-1]] parse succeeds
+test dec negative zero
+	[[-0]] parse succeeds
+test dec explicit plus
+	[[+1]] parse fails
+test hex without prefix
+	[[1a]] parse fails
+
+//hexadecimal
+test hex normal
+	[[0x1a]] parse succeeds
+test hex zero
+	[[0x0]] parse succeeds
+test hex negative
+	[[-0x1]] parse succeeds
+test hex minus in wrong place
+	[[0x-1]] parse fails
+test hex capital x
+	[[0X1]] parse succeeds
+
+//octal
+test oct normal
+	[[0o7]] parse succeeds
+test oct zero
+	[[0o0]] parse succeeds
+test oct over 7
+	[[0o8]] parse fails
+test oct negative
+	[[-0o1]] parse succeeds
+test oct minus in wrong place
+	[[0o-1]] parse fails
+test oct capital o
+	[[0O1]] parse succeeds
+
+//binary
+test bin normal
+	[[0b1]] parse succeeds
+test bin zero
+	[[0b0]] parse succeeds
+test bin over 1
+	[[0b3]] parse fails
+test bin negative
+	[[-0b1]] parse succeeds
+test bin minus in wrong place
+	[[0b-1]] parse fails
+test bin capital b
+	[[0B1]] parse succeeds

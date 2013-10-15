@@ -1,0 +1,12 @@
+module Test-CConstr
+
+language CamlLight
+start symbol CConstr
+
+test global name
+	[[abc__def]] parse succeeds
+
+test empty list
+	[[ [] ]] parse succeeds
+test unit value
+	[[()]] parse succeeds

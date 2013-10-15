@@ -1,0 +1,42 @@
+module Test-CHAR
+
+language CamlLight
+start symbol CHAR
+
+test simple char
+	[[`a`]] parse succeeds
+test multiple chars
+	[[`aa`]] parse fails
+
+test ` without escape
+	[[```]] parse fails
+test ` with escape
+	[[`\``]] parse succeeds
+test \ without escape
+	[[`\`]] parse fails
+test \ with escape
+	[[`\\`]] parse succeeds
+test " without escape
+	[[`"`]] parse succeeds
+
+test \n
+	[[`\n`]] parse succeeds
+test \r
+	[[`\r`]] parse succeeds
+test \t
+	[[`\t`]] parse succeeds
+test \b
+	[[`\b`]] parse succeeds
+test \a (not allowed)
+	[[`\a`]] parse fails
+
+test ascii code
+	[[`\126`]] parse succeeds
+test ascii code with less than three digits
+	[[`\32`]] parse fails
+test ascii code with more than three digits
+	[[`\1234`]] parse fails
+
+test enters in char
+	[[`
+`]] parse fails

@@ -1,0 +1,47 @@
+Graphical user interface using Caml/Tk
+
+Start
+ A first program that justs creates a button labelled Hello.
+
+Hello
+ Creates a button with an action attached to it.
+
+Hello_quit
+ Same as Hello, but additional quit button (and first example of
+ geometry packing specification).
+
+Addition
+ A simple program that adds 2 numbers typed in two input areas.
+
+Rgb
+ Specification of a color using three scales that give the respective
+ amounts of red green and blue components of the color.
+
+Convert_euro
+ Converts a given amount from francs to euros and converse.
+
+Convert
+ Converts a given amount from given currency to another one. Source
+ and target currencies are chosen using a menu.
+
+Camleyes
+ A Caml/Tk (sort of) clone of Xeyes. Introduce the notion of canvas.
+
+Taquin
+ A simple game that uses images: cut the image into pieces then add an
+ empty place to move other pieces. You must reconstruct a coherent
+ image. Relatively advanced example.
+
+Tetris
+ An interactive game. An advanced example using timers, canvas and images.
+
+You can use the interactive toplevel named camltktop, that has been
+built when installing the Caml/Tk library (camltktop includes tk)
+
+camllight camltktop
+
+then load the file loadall.ml
+
+Then type in:
+
+#include "loadall.ml";;

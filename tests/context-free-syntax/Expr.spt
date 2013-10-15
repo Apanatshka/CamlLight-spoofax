@@ -1,0 +1,162 @@
+module Test-Expr
+
+language CamlLight
+start symbol Expr
+
+test variable
+	[[lol]] parse succeeds
+test variable prefix operator
+	[[prefix +]] parse succeeds
+
+test constant constructor
+	[[Constlol]] parse succeeds
+test constant empty list
+	[[ [] ]] parse succeeds
+test constant number
+	[[-1]] parse succeeds
+
+test parens
+	[[(1)]] parse succeeds
+test begin end
+	[[begin 1 end]] parse succeeds
+
+test type constraint
+	[[([] : 'a List)]] parse succeeds
+
+test tuple
+	[[1, 2, 3]] parse succeeds
+
+// test constructor expression
+// 	[[Abc def]] parse succeeds
+
+test list cons
+	[[1 :: [] ]] parse succeeds
+test list literal with one
+	[[ [1] ]] parse succeeds
+test list literal with multiple
+	[[ [1;2] ]] parse succeeds
+
+test array literal with one
+	[[ [|1|] ]] parse succeeds
+test array literal with multiple
+	[[ [|1;2|] ]] parse succeeds
+
+test record single label
+	[[ {a = 1} ]] parse succeeds
+test record multiple labels
+	[[ {a = 1; b = 2} ]] parse succeeds
+
+test function application
+	[[fib 5]] parse succeeds
+
+test record access
+	[[1.a]] parse succeeds
+test record assign
+	[[1.a <- 2]] parse succeeds
+
+test array access
+	[[1.(2)]] parse succeeds
+test array assign
+	[[1.(2) <- 3]] parse succeeds
+
+test logical and
+	[[1 & 2]] parse succeeds
+test logical or
+	[[1 or 2]] parse succeeds
+
+test if-then
+	[[if a then b]] parse succeeds
+test if-then-else
+	[[if a then b else c]] parse succeeds
+test if-then-if-then-else
+	[[if a then if b then c else d]] parse succeeds
+
+test while
+	[[while 1 do 0 done]] parse succeeds
+test for-to
+	[[for i = 1 to 10 do nop done]] parse succeeds
+test for-downto
+	[[for i = 10 downto 1 do nop done]] parse succeeds
+
+test expression sequence
+	[[a; b]] parse succeeds
+
+test match-with
+	[[match a with 1 -> 1]] parse succeeds
+test match-with multiple matchings
+	[[match a with 1 -> 1 | 2 -> 2]] parse succeeds
+
+test fun function definition
+	[[fun 1 2 -> 3]] parse succeeds
+test function function definition
+	[[function 1 -> 2]] parse succeeds
+
+test try-with
+	[[try expr with 123 -> yes]] parse succeeds
+
+test let
+	[[let 1 = 1 in a]] parse succeeds
+test let multiple
+	[[let 1 = 1 and 2 = a in b]] parse succeeds
+test let-rec
+	[[let rec 2 = f x in x]] parse succeeds
+test let-rec multiple
+	[[let rec 4 = f x1 and 51 = x in x1]] parse succeeds 
+
+test negate
+	[[- 9]] parse succeeds
+test negate float
+	[[-.0]] parse succeeds
+test dereference
+	[[!pointer]] parse succeeds
+test add
+	[[1+2]] parse succeeds
+test subtract
+	[[1-2]] parse succeeds
+test multiply
+	[[1*2]] parse succeeds
+test division
+	[[1/2]] parse succeeds
+test modulo
+	[[1 mod 2]] parse succeeds
+test float add
+	[[1+.2]] parse succeeds
+test float subtract
+	[[1-.2]] parse succeeds
+test float multiply
+	[[1*.2]] parse succeeds
+test float divide
+	[[1/.2]] parse succeeds
+test float exponentiation
+	[[1**2]] parse succeeds
+test list concat
+	[[1@2]] parse succeeds
+test string concat
+	[[""^""]] parse succeeds
+test reference assign
+	[[1 := 2]] parse succeeds
+
+test structural equals
+	[[1 = 2]] parse succeeds
+test structural inequals
+	[[1 <> 2]] parse succeeds
+test physical equals
+	[[pointer == pointer2]] parse succeeds
+test physical inequals
+	[[pointer != pointer2]] parse succeeds
+test integer less than
+	[[1 < 2]] parse succeeds
+test integer less than or equal
+	[[1 <= 2]] parse succeeds
+test integer greater than
+	[[1 > 2]] parse succeeds
+test integer greater than or equal
+	[[1 >= 2]] parse succeeds
+test float less than
+	[[1 <. 2]] parse succeeds
+test float less than or equal
+	[[1 <=. 2]] parse succeeds
+test float greater than
+	[[1 >. 2]] parse succeeds
+test float greater than or equal
+	[[1 >=. 2]] parse succeeds

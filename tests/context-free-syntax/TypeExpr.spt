@@ -1,0 +1,24 @@
+module Test-TypeExpr
+
+language CamlLight
+start symbol TypeExpr
+
+test type variables
+	[['abc]] parse succeeds
+test parentheses
+	[[('a)]] parse succeeds
+test functions
+	[[LALA -> LALA]] parse succeeds
+test tuples
+	[['a * 'a * 'b * 'c]] parse succeeds
+test constant constr
+	[[LALA]] parse succeeds
+test constructor
+	[['a LALA]] parse succeeds
+test constructor with more args
+	[[('a, 'b) LALA]] parse succeeds
+	
+test forgotten comma
+	[[('a 'b) LALA]] parse fails
+test forgotten parentheses
+	[['a 'b LALA]] parse fails

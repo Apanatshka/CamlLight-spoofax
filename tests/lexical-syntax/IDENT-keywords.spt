@@ -1,0 +1,69 @@
+module Test-IDENT-keywords
+
+language CamlLight
+start symbol IDENT
+
+test keyword and
+	[[and]] parse fails
+test keyword as
+	[[as]] parse fails
+test keyword begin
+	[[begin]] parse fails
+test keyword do
+	[[do]] parse fails
+test keyword done
+	[[done]] parse fails
+test keyword downto
+	[[downto]] parse fails
+test keyword else
+	[[else]] parse fails
+test keyword end
+	[[end]] parse fails
+test keyword exception
+	[[exception]] parse fails
+test literal false
+	[[false]] parse fails
+test keyword for
+	[[for]] parse fails
+test keyword fun
+	[[fun]] parse fails
+test keyword function
+	[[function]] parse fails
+test keyword if
+	[[if]] parse fails
+test keyword in
+	[[in]] parse fails
+test keyword let
+	[[let]] parse fails
+test keyword match
+	[[match]] parse fails
+test keyword mutable
+	[[mutable]] parse fails
+test keyword not
+	[[not]] parse fails
+test keyword of
+	[[of]] parse fails
+test keyword or
+	[[or]] parse fails
+test keyword prefix
+	[[prefix]] parse fails
+test keyword rec
+	[[rec]] parse fails
+test keyword then
+	[[then]] parse fails
+test keyword to
+	[[to]] parse fails
+test literal true
+	[[true]] parse fails
+test keyword try
+	[[try]] parse fails
+test keyword type
+	[[type]] parse fails
+test keyword value
+	[[value]] parse fails
+test keyword where
+	[[where]] parse fails
+test keyword while
+	[[while]] parse fails
+test keyword with
+	[[with]] parse fails

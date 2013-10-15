@@ -1,0 +1,22 @@
+module Test-Pattern-disambiguation
+
+language CamlLight
+start symbol Pattern
+
+test choice left assoc
+	[[a | b | c]] parse to [[(a | b) | c]]
+
+test cons right assoc
+	[[a :: b :: c]] parse to [[a :: (b :: c)]]
+
+test constructor binds tighter than cons
+	[[a :: b List]] parse to [[a :: (b List)]]
+
+test cons binds tighter than tuple
+	[[a :: b, c]] parse to [[(a :: b), c]]
+
+test tuple binds tighter than choice
+	[[a, b | c]] parse to [[(a, b) | c]]
+
+test choice binds tighter than alias
+	[[a | c as b]] parse to [[(a | c) as b]]

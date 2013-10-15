@@ -1,0 +1,36 @@
+module Test-Pattern
+
+language CamlLight
+start symbol Pattern
+
+test pattern variable
+	[[abc]] parse succeeds
+test wildcard
+	[[_]] parse succeeds
+test alias
+	[[_ as b]] parse succeeds
+test brackets
+	[[(_)]] parse succeeds
+test type constraint
+	[[(_ : 'a)]] parse succeeds
+test pattern choice
+	[[_ | _]] parse succeeds
+test pattern constant
+	[[1]] parse succeeds
+test tuple
+	[[1, 2, 3, 4]] parse succeeds
+test simple record
+	[[{lol = _}]] parse succeeds
+test extensive record
+	[[{lol = _ ; derp = _}]] parse succeeds
+test constructor
+	[[Hello 1]] parse succeeds
+test empty list
+	[[ [] ]] parse succeeds
+test list literal with one
+	[[ [1] ]] parse succeeds
+test list literal with multiple
+	[[ [1; 2; 3] ]] parse succeeds
+test cons list pattern
+	[[1 :: 2]] parse succeeds
+

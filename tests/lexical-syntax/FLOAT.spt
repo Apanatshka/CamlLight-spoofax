@@ -1,0 +1,28 @@
+module Test-FLOAT
+
+language CamlLight
+start symbol FLOAT
+
+test no dec or exp part
+	[[1]] parse fails
+
+test dec part
+	[[1.0]] parse succeeds
+test dec part without numbers
+	[[1.]] parse succeeds
+
+test exp part lower e
+	[[1e+1]] parse succeeds
+test exp part captical e
+	[[1E+1]] parse succeeds
+test exp part with minus
+	[[2e-1]] parse succeeds
+test exp part without plus or minus
+	[[2e1]] parse succeeds
+test exp part without numbers
+	[[2e+]] parse fails
+
+test both dec and exp part
+	[[2.0e+1]] parse succeeds
+test another one
+	[[1.e0]] parse succeeds

@@ -1,0 +1,7 @@
+module Test-Directive-disambiguation
+
+language CamlLight
+start symbol Directive
+
+test open directive is not custom
+	[[#open ""]] parse succeeds

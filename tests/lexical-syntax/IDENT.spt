@@ -1,0 +1,29 @@
+module Test-IDENT
+
+language CamlLight
+start symbol IDENT
+
+
+//positive tests
+test lower case letter
+	[[a]] parse succeeds
+test upper case letter
+	[[Z]] parse succeeds
+test multiple letters
+	[[abcXYZ]] parse succeeds
+test digits too
+	[[a123]] parse succeeds
+test and underscores
+	[[a_]] parse succeeds
+test combination
+	[[aA2_b1]] parse succeeds
+test complicated one
+	[[edklgRDJHFf_agfGFHF1231_274]] parse succeeds
+
+//negative tests
+test start with number
+	[[0a]] parse fails
+test start with underscore
+	[[_a]] parse fails
+test adjacent underscores
+	[[a__]] parse fails

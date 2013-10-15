@@ -1,0 +1,13 @@
+module Test-NCConstr
+
+language CamlLight
+start symbol NCConstr
+
+test global name
+	[[abc__def]] parse succeeds
+
+test prefix double colon
+	[[prefix ::]] parse succeeds
+
+test some other prefix
+	[[prefix +]] parse fails

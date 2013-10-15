@@ -1,0 +1,14 @@
+module Test-GLOBALNAME
+
+language CamlLight
+start symbol GLOBALNAME
+
+test identifiers allowed
+	[[ab_c123]] parse succeeds
+
+test qualified identifiers
+	[[sH_J123sdl__kld432sjfJ_KGui1]] parse succeeds
+
+//negative tests
+test double qualified identifiers not allowed
+	[[sH_J123sdl__kld432sjfJ__KGui1]] parse fails

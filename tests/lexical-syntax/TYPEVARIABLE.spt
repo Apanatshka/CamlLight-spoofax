@@ -1,0 +1,13 @@
+module Test-TYPEVARIABLE
+
+language CamlLight
+start symbol TYPEVARIABLE
+
+test typevar with single letter
+	[['a]] parse succeeds
+
+test typevar with normal ident
+	[['a1_bC]] parse succeeds
+
+test typevar with global name
+	[['abfa12AJHK__jkdfhalu12]] parse fails

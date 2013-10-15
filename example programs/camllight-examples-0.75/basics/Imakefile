@@ -1,0 +1,3 @@
+CamlProg(fib,fib.zo,)
+CamlProg(wc,wc.zo,)
+CamlProg(sieve,sieve.zo,)

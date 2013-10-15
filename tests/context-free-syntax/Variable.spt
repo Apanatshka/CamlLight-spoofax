@@ -1,0 +1,14 @@
+module Test-Variable
+
+language CamlLight
+start symbol Variable
+
+test local name
+	[[abc]] parse succeeds
+test global name
+	[[abc__def]] parse succeeds
+
+test prefix plus
+	[[prefix +]] parse succeeds
+test prefix modulo
+	[[prefix mod]] parse succeeds

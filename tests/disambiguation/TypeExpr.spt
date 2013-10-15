@@ -1,0 +1,19 @@
+module Test-TypeExpr-disambiguation
+
+language CamlLight
+start symbol TypeExpr
+
+test functions are right associative
+	[['a -> ('b -> 'c)]] parse to [['a -> 'b -> 'c]]
+
+test constructors
+	[[('a List) Set]] parse to [['a List Set]]
+
+test constructor, single arg with round brackets
+	[[('a) LALA]] parse succeeds
+
+test functions bind looser than tuples
+	[['a * 'b -> 'c * 'd]] parse to [[('a * 'b) -> ('c * 'd)]]
+
+test functions bind looser than constructors
+	[['a List -> 'b List]] parse to [[('a List) -> ('b List)]]

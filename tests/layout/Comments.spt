@@ -1,0 +1,5 @@
+module Test-Comments-layout
+
+language CamlLight
+start symbol Exp
+

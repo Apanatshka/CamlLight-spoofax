@@ -1,0 +1,7 @@
+CamlTkProg(hello, hello.zo,)
+CamlTkProg(hello_quit, hello_quit.zo,)
+CamlTkProg(rgb, rgb.zo,)
+CamlTkProg(convert_euro, convert_euro.zo,)
+CamlTkProg(convert, convert.zo,)
+CamlTkProg(taquin, taquin.zo,)
+CamlTkProg(tetris, tetris.zo,)

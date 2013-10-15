@@ -1,0 +1,45 @@
+module Test-STRING
+
+language CamlLight
+start symbol STRING
+
+test simple char
+	[["a"]] parse succeeds
+test multiple chars
+	[["aa"]] parse succeeds
+
+test " without escape
+	[["""]] parse fails
+test " with escape
+	[["\""]] parse succeeds
+test \ without escape
+	[["\"]] parse fails
+test \ with escape
+	[["\\"]] parse succeeds
+test " without escape
+	[["`"]] parse succeeds
+
+test \n
+	[["\n"]] parse succeeds
+test \r
+	[["\r"]] parse succeeds
+test \t
+	[["\t"]] parse succeeds
+test \b
+	[["\b"]] parse succeeds
+test \a (not allowed)
+	[["\a"]] parse fails
+
+test ascii code
+	[["\126"]] parse succeeds
+test ascii code with less than three digits
+	[["\32"]] parse fails
+test ascii code with more than three digits (read as escape sequence and a digit)
+	[["\1234"]] parse succeeds
+
+test mix of escapes and text
+	[["hello world! \r\n what's up!! ~!@#$%^&*() _+{}|:<?>.,/.;'[]-=0987654321` \012345678\246"]] parse succeeds
+
+test enters in strings
+	[["
+"]] parse fails
