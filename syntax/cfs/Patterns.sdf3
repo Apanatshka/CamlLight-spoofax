@@ -13,30 +13,32 @@ template options
 	keyword -/- [A-Za-z]
 
 templates
+	
 	PatternRecordBinding.PatternRecordB = [[GLOBALNAME] = [Pattern]]
 	
 	Pattern = [[SimplePattern]]
 	Pattern = [[TuplePattern]]
 	
 	SimplePattern.PatternVarOrConst = [[IDENT]] {prefer}
+	SimplePattern                   = [[Constant]]
 	SimplePattern.Wildcard          = [_]
 	SimplePattern.Alias             = [[Pattern] as [IDENT]]
 	SimplePattern                   = [([Pattern])] {bracket}
 	SimplePattern.HasTypePattern    = [([Pattern] : [TypeExpr])]
 	SimplePattern.PatternChoice     = [[Pattern] | [Pattern]] {left}
-	SimplePattern                   = [[Constant]]
-	TuplePattern.TuplePattern       = [[SimplePattern+; separator=", "]] {avoid} // both this avoid and the reject below are required
-	TuplePattern.TuplePattern       = [[SimplePattern]] {reject}
 	SimplePattern.RecordPattern     = [{[PatternRecordBinding+; separator="; "]}]
-	SimplePattern.ConstrPattern     = [[NCConstr] [Pattern]]
+	SimplePattern.ConstrPattern     = [[NCConstr] [SimplePattern]]
 	// Already attained through PatternConstant
 	// Pattern.EmptyListPattern     = <[]>
-	SimplePattern.ListLitPattern  = <[<Pattern+; separator="; ">]>
-	SimplePattern.ConsListPattern = [[Pattern] :: [Pattern]] {right}
-
+	SimplePattern.ListLitPattern    = <[<Pattern+; separator="; ">]>
+	SimplePattern.ConsListPattern   = [[SimplePattern] :: [SimplePattern]] {right}
+	TuplePattern.TuplePattern       = [[SimplePattern+; separator=", "]] {avoid} // both this avoid and the reject below are required
+	TuplePattern.TuplePattern       = [[SimplePattern]] {reject}
+	
 context-free priorities
 	SimplePattern.ConstrPattern >
 	SimplePattern.ConsListPattern >
 	TuplePattern.TuplePattern >
 	SimplePattern.PatternChoice >
 	SimplePattern.Alias
+
