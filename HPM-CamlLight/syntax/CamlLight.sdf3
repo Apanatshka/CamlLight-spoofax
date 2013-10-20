@@ -18,3 +18,4 @@ context-free start-symbols
 
 context-free syntax
 	Start = ModuleImpl
+	Start = ModuleIntf

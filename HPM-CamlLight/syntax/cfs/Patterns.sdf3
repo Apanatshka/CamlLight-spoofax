@@ -19,6 +19,7 @@ templates
 	Pattern = [[SimplePattern]]
 	Pattern = [[TuplePattern]]
 	
+	// prefer over Constant
 	SimplePattern.PatternVarOrConst = [[IDENT]] {prefer}
 	SimplePattern                   = [[Constant]]
 	SimplePattern.Wildcard          = [_]
@@ -32,7 +33,7 @@ templates
 	// Pattern.EmptyListPattern     = <[]>
 	SimplePattern.ListLitPattern    = <[<Pattern+; separator="; ">]>
 	SimplePattern.ConsListPattern   = [[SimplePattern] :: [SimplePattern]] {right}
-	TuplePattern.TuplePattern       = [[SimplePattern+; separator=", "]] {avoid} // both this avoid and the reject below are required
+	TuplePattern.TuplePattern       = [[SimplePattern+; separator=", "]] // {avoid} // both this avoid and the reject below are required, or maybe the avoid isn't necessary?
 	TuplePattern.TuplePattern       = [[SimplePattern]] {reject}
 	
 context-free priorities
