@@ -3,6 +3,7 @@
 	<name>HPM-CamlLight-example-programs</name>
 	<comment></comment>
 	<projects>
+		<project>HPM-CamlLight</project>
 	</projects>
 	<buildSpec>
 	</buildSpec>

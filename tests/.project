@@ -3,6 +3,7 @@
 	<name>HPM-CamlLight-tests</name>
 	<comment></comment>
 	<projects>
+		<project>HPM-CamlLight</project>
 	</projects>
 	<buildSpec>
 	</buildSpec>
