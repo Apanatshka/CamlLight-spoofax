@@ -1,0 +1,54 @@
+module TypeDef
+
+language CamlLight
+start symbol TypeDef
+
+test abstract type def [[
+	type abstract
+]] parse succeeds
+
+test multiple type def [[
+	type abstract
+	and abstract2
+]] parse succeeds
+
+test abstract type def with parameter [[
+	type 'a abstract
+]] parse succeeds
+
+test abstract type def with multiple parameters [[
+	type ('a, 'b) abstract
+]] parse succeeds
+
+test abstract type def with multiple parameters without parens and commas [[
+	type 'a 'b abstract
+]] parse fails
+
+test mutable abstract type def [[
+	type abstract mutable
+]] parse succeeds
+
+test type def ADT (1 constant constructor) [[
+	type 'a Maybe = Nothing 
+]] parse succeeds
+
+test type def ADT (1 non-constant constructor) [[
+	type 'a Maybe = Just of 'a
+]] parse succeeds
+
+test type def ADT (multiple constructors) [[
+	type 'a Maybe = Just of 'a
+	              | Nothing 
+]] parse succeeds
+
+test type def record [[
+	type Record = {herro : undefined}
+]] parse succeeds
+
+test type def record, multiple fields [[
+	type Record = {herro : undefined; yes : Bool}
+]] parse succeeds
+
+test type def alias [[
+	type String == Char List
+]] parse succeeds

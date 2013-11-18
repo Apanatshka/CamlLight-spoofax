@@ -1,0 +1,13 @@
+module ValueDecl
+
+language CamlLight
+start symbol ValueDecl
+
+test value decl [[
+	value label : labelType
+]] parse succeeds
+
+test multiple value decls [[
+	value label : labelType
+	and moar : stuff
+]] parse succeeds

@@ -1,0 +1,32 @@
+module ModuleImpl
+
+language CamlLight
+start symbol ModuleImpl
+
+test expression phrase [[
+	1 + 1;;
+]] parse succeeds
+
+test value def phrase [[
+	let a = "b";;
+]] parse succeeds
+
+test type def phrase [[
+	type a == b;;
+]] parse succeeds
+
+test exception phrase [[
+	exception a of 'b;;
+]] parse succeeds
+
+test directive phrase [[
+	#open "sys";;
+]] parse succeeds
+
+test multiple phrases [[
+	type a == b;;
+	1 + 1;;
+	#open "close";;
+	let hello = "world!";;
+	#close "open";;
+]] parse succeeds

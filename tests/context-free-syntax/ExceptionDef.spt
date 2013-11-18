@@ -1,0 +1,17 @@
+module ExceptionDef
+
+language CamlLight
+start symbol ExceptionDef
+
+test exception [[
+	exception Error
+]] parse succeeds
+
+test exception of something [[
+	exception Exception of 'a
+]] parse succeeds
+
+test two exceptions using and [[
+	exception Exception of 'a
+	and Exception of 'b
+]] parse succeeds

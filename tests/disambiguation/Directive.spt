@@ -4,4 +4,7 @@ language CamlLight
 start symbol Directive
 
 test open directive is not custom
-	[[#open ""]] parse succeeds
+	[[#open ""]] parse to OpenDirective(_)
+
+test spaces don't matter
+	[[# hurray ""]] parse succeeds

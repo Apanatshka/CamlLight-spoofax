@@ -1,0 +1,17 @@
+module ValueDef
+
+language CamlLight
+start symbol ValueDef
+
+test let binding [[
+	let hello = 1
+]] parse succeeds
+
+test multiple let bindings [[
+	let hello = 1
+	and world = "!"
+]] parse succeeds
+
+test let rec binding [[
+	let rec fix f = let x = f x in x
+]] parse succeeds

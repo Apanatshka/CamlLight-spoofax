@@ -1,0 +1,27 @@
+module ModuleIntf
+
+language CamlLight
+start symbol ModuleIntf
+
+test value decl phrase [[
+	value a : b;;
+]] parse succeeds
+
+test typedef phrase [[
+	type a == b;;
+]] parse succeeds
+
+test exception def phrase [[
+	exception Error of 'a * b;;
+]] parse succeeds
+
+test exception def phrase [[
+	#open "sesame";;
+]] parse succeeds
+
+test multiple phrases [[
+	value a : b;;
+	#open "sesame";;
+	type a == b;;
+	exception Error of 'a * b;;
+]] parse succeeds
