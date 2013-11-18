@@ -19,161 +19,172 @@ template options
 	keyword -/- [A-Za-z0-9]
 
 templates
-	ExprRecordBinding.ExprRecordB = [[GLOBALNAME] = [RecordBExpr]]
-	
-	Expr = [[SimpleExpr]]
-	Expr = [[TupleExpr]]
-	Expr = [[ExprSequence]]
-	Expr = [[StructEqExpr]]
-	
-	TupleSubExpr = [[SimpleExpr]]
-	TupleSubExpr = [[ExprSequence]]
-	TupleSubExpr = [[StructEqExpr]]
-	
-	NonSemicolonExpr = [[SimpleExpr]]
-	NonSemicolonExpr = [[TupleExpr]]
-	NonSemicolonExpr = [[StructEqExpr]]
-	
-	RecordBExpr = [[SimpleExpr]]
-	RecordBExpr = [[TupleExpr]]
+	ExprRecordBinding.ExprRecordB = [[GLOBALNAME] = [Expr]]
 	
 	//this is probably a mistake in the manual because it isn't explained and it's ambiguous with Variable
-	// SimpleExpr.Ident               = [[IDENT]]
-	//prefer variable over constant because a constant with a name can probably be resolved as a variable? (only if same namespaces)
-	SimpleExpr.VarExpr   = [[Variable]] {prefer}
-	SimpleExpr.ConstExpr = [[Constant]]
-	SimpleExpr           = [([Expr])] {bracket}
-	SimpleExpr           = [begin [Expr] end] {bracket}
-	SimpleExpr.HasType   = [([Expr]: [TypeExpr])]
-	TupleExpr.TupleExpr  = [[SimpleExpr+; separator=", "]] {avoid} // both avoid here and the reject below are required
-	TupleExpr.TupleExpr  = [[SimpleExpr]] {reject}
+	// Expr.Ident               = [[IDENT]]
+	//prefer over Const
+	Expr.VarOrConst = [[Variable]] {prefer}
+	Expr            = [[Constant]]
+	Expr            = [([Expr])] {bracket}
+	Expr            = [begin
+	[Expr]
+end] {bracket}
+	Expr.HasType    = [([Expr]: [TypeExpr])]
+	// avoid removes the case of one Expr already being a TupleExpr, non-assoc should remove the other ambiguities but doesn't right now so I've added the priorities myself
+	Expr.TupleExpr  = [[TupleExpr]] //{avoid}//, non-assoc}
 	//ambiguous with function application, and not really different (? perhaps not if different namespaces)
-	// SimpleExpr.ConstructorExpr     = [[NCConstr] [Expr]]
-	SimpleExpr.ListLit      = <[<NonSemicolonExpr+; separator="; ">]>
-	SimpleExpr.ArrayLit     = <[|<NonSemicolonExpr+; separator="; ">|]>
-	SimpleExpr.RecordExpr   = [{[ExprRecordBinding+; separator="; "]}]
-	SimpleExpr.FuncApp      = [[Expr] [Expr]] {left}
-	SimpleExpr.RecordAccess = [[Expr].[GLOBALNAME]]
+	// Expr.ConstructorExpr     = [[NCConstr] [Expr]]
+	Expr.ListLit      = <[<Expr+; separator="; ">]>
+	Expr.ArrayLit     = <[|<Expr+; separator="; ">|]>
+	Expr.RecordExpr   = [{[ExprRecordBinding+; separator="; "]}]
+	Expr.FuncApp      = [[Expr] [Expr]] {left}
+	Expr.RecordAccess = [[Expr].[GLOBALNAME]]
 	// <- may be read as LessThan(Negate(...)), hence the prefer
-	SimpleExpr.RecordAssign = [[Expr].[GLOBALNAME] <- [Expr]] {right, prefer}
-	SimpleExpr.ArrayAccess  = [[Expr].([Expr])]
+	Expr.RecordAssign = [[Expr].[GLOBALNAME] <- [Expr]] {right, prefer}
+	Expr.ArrayAccess  = [[Expr].([Expr])]
 	// <- may be read as LessThan(Negate(...)), hence the prefer
-	SimpleExpr.ArrayAssign  = [[Expr].([Expr]) <- [Expr]] {right, prefer}
+	Expr.ArrayAssign  = [[Expr].([Expr]) <- [Expr]] {right, prefer}
 	// prefer so the dangling else is associated with the last if
-	SimpleExpr.IfExpr       = [if [Expr] then [Expr]] {prefer}
-	SimpleExpr.IfExpr       = [if [Expr] then [Expr] else [Expr]]
-	SimpleExpr.WhileExpr    = [while [Expr] do [Expr] done]
-	SimpleExpr.ForExpr      = [for [IDENT] = [Expr] to [Expr] do [Expr] done]
-	SimpleExpr.ForExpr      = [for [IDENT] = [Expr] downto [Expr] do [Expr] done]
-	SimpleExpr.MatchExpr    = [match [Expr] with [SimpleMatching]]
-	SimpleExpr.FuncDef      = [fun [MultipleMatching]]
-	SimpleExpr.FuncDef      = [function [SimpleMatching]]
-	SimpleExpr.TryExpr      = [try [Expr] with [SimpleMatching]]
-	SimpleExpr.LetExpr      = [let [LetBinding+; separator="\nand "] in [Expr]]
-	SimpleExpr.LetRecExpr   = [let rec [LetBinding+; separator="\nand "] in [Expr]]
+	Expr.IfExpr       = [if [Expr] then [Expr]] {prefer}
+	Expr.IfExpr       = [if [Expr] then [Expr] else [Expr]]
+	Expr.WhileExpr    = [while [Expr] do [Expr] done]
+	Expr.ForExpr      = [for [IDENT] = [ForRange] do [Expr] done]
+	Expr.MatchExpr    = [match [Expr] with [SimpleMatching]]
+	Expr.FunDef       = [fun [MultipleMatching]]
+	Expr.FunctionDef  = [function [SimpleMatching]]
+	Expr.TryExpr      = [try [Expr] with [SimpleMatching]]
+	Expr.LetExpr      = [let [LetBinding+; separator="\nand "] in [Expr]]
+	Expr.LetRecExpr   = [let rec [LetBinding+; separator="\nand "] in [Expr]]
 	
-	OneMatching.OneMatching           = [[Pattern] -> [Expr]]
-	MultiMatching.MultiMatching       = [[Pattern+] -> [Expr]]
-	SimpleMatching.SimpleMatching     = [[OneMatching+; separator="\n| "]]
-	MultipleMatching.MultipleMatching = [[MultiMatching+; separator="\n| "]]
-	LetBinding.LetB                   = [[Pattern] = [Expr]]
+	OneMatching.OneMatching     = [[Pattern] -> [Expr]]
+	MultiMatching.MultiMatching = [[Pattern+] -> [Expr]]
+	SimpleMatching              = [[OneMatching+; separator="\n| "]]
+	MultipleMatching            = [[MultiMatching+; separator="\n| "]]
+	LetBinding.ValDef           = [[Pattern] = [Expr]]
 	// prefer over the above let binding with a ConstrPattern 
-	LetBinding.LetB                   = [[Variable] [Pattern+] = [Expr]] {prefer}
+	LetBinding.FunDef           = [[Variable] [Pattern+] = [Expr]] {prefer}
+	
+	ForRange.RangeTo     = [[Expr] to [Expr]]
+	ForRange.RangeDownTo = [[Expr] downto [Expr]]
 	
 	// avoid in favour of negative integer literals
-	SimpleExpr.Negate        = [-[Expr]] {avoid}
-	SimpleExpr.FloatNegate   = [-.[Expr]]
-	SimpleExpr.Dereference   = [![Expr]]
+	Expr.Negate        = [-[Expr]]  {avoid}
+	Expr.FloatNegate   = [-.[Expr]]
+	Expr.Dereference   = [![Expr]]
 	
-	SimpleExpr.ConsExpr       = [[Expr] :: [Expr]]{right}
-	SimpleExpr.LogicalAnd     = [[Expr] & [Expr]] {left}
-	SimpleExpr.LogicalOr      = [[Expr] or [Expr]] {left}
-	ExprSequence.ExprSequence = [[Expr]; [Expr]] {right}
+	Expr.ConsExpr      = [[Expr] :: [Expr]] {right}
+	Expr.LogicalAnd    = [[Expr] & [Expr]]  {left}
+	Expr.LogicalOr     = [[Expr] or [Expr]] {left}
+	Expr.ExprSequence  = [[Expr]; [Expr]]   {right}
 
-	SimpleExpr.Add           = [[Expr] + [Expr]] {left}
+	Expr.Add             = [[Expr] + [Expr]]   {left}
 	// prefer over function application of negative number
-	SimpleExpr.Subtract      = [[Expr] - [Expr]] {left, prefer}
-	SimpleExpr.Multiply      = [[Expr] * [Expr]] {left}
-	SimpleExpr.Division      = [[Expr] / [Expr]] {left}
-	SimpleExpr.Modulo        = [[Expr] mod [Expr]] {left}
-	SimpleExpr.FloatAdd      = [[Expr] +. [Expr]] {left}
+	Expr.Subtract        = [[Expr] - [Expr]]   {left, prefer}
+	Expr.Multiply        = [[Expr] * [Expr]]   {left}
+	Expr.Division        = [[Expr] / [Expr]]   {left}
+	Expr.Modulo          = [[Expr] mod [Expr]] {left}
+	Expr.FloatAdd        = [[Expr] +. [Expr]]  {left}
 	// prefer over function application of float negative number
-	SimpleExpr.FloatSubtract = [[Expr] -. [Expr]] {left, prefer}
-	SimpleExpr.FloatMultiply = [[Expr] *. [Expr]] {left}
-	SimpleExpr.FloatDivision = [[Expr] /. [Expr]] {left}
-	SimpleExpr.FloatPowerOf  = [[Expr] ** [Expr]] {right}
-	SimpleExpr.ListConcat    = [[Expr] @ [Expr]] {right}
-	SimpleExpr.StringConcat  = [[Expr] ^ [Expr]] {right}
+	Expr.FloatSubtract   = [[Expr] -. [Expr]]  {left, prefer}
+	Expr.FloatMultiply   = [[Expr] *. [Expr]]  {left}
+	Expr.FloatDivision   = [[Expr] /. [Expr]]  {left}
+	Expr.FloatPowerOf    = [[Expr] ** [Expr]]  {right}
+	Expr.ListConcat      = [[Expr] @ [Expr]]   {right}
+	Expr.StringConcat    = [[Expr] ^ [Expr]]   {right}
 	//this one isn't explained in the manual!
-	//SimpleExpr.UndefinedOperator = [[Expr] ! [Expr]]
-	SimpleExpr.ReferenceAssign   = [[Expr] := [Expr]] {right}
+	//Expr.UndefinedOperator = [[Expr] ! [Expr]]
+	Expr.ReferenceAssign = [[Expr] := [Expr]]  {right}
 	
 	//avoid because = is also used in let and record bindings
-	StructEqExpr.StructuralEquals     = [[Expr] = [Expr]] {left, avoid}
-	SimpleExpr.StructuralInequals     = [[Expr] <> [Expr]] {left}
-	SimpleExpr.PhysicalEquals         = [[Expr] == [Expr]] {left}  
-	SimpleExpr.PhysicalInequals       = [[Expr] != [Expr]] {left}  
-	SimpleExpr.LessThan               = [[Expr] < [Expr]] {left}
-	SimpleExpr.LessThanEquals         = [[Expr] <= [Expr]] {left}
-	SimpleExpr.GreaterThan            = [[Expr] > [Expr]] {left}
-	SimpleExpr.GreaterThanEquals      = [[Expr] >= [Expr]] {left}
-	SimpleExpr.FloatLessThan          = [[Expr] <. [Expr]] {left} 
-	SimpleExpr.FloatLessThanEquals    = [[Expr] <=. [Expr]] {left}
-	SimpleExpr.FloatGreaterThan       = [[Expr] >. [Expr]] {left} 
-	SimpleExpr.FloatGreaterThanEquals = [[Expr] >=. [Expr]] {left}
+	Expr.StructuralEquals       = [[Expr] = [Expr]]   {left, avoid}
+	Expr.StructuralInequals     = [[Expr] <> [Expr]]  {left}
+	Expr.PhysicalEquals         = [[Expr] == [Expr]]  {left}  
+	Expr.PhysicalInequals       = [[Expr] != [Expr]]  {left}  
+	Expr.LessThan               = [[Expr] < [Expr]]   {left}
+	Expr.LessThanEquals         = [[Expr] <= [Expr]]  {left}
+	Expr.GreaterThan            = [[Expr] > [Expr]]   {left}
+	Expr.GreaterThanEquals      = [[Expr] >= [Expr]]  {left}
+	Expr.FloatLessThan          = [[Expr] <. [Expr]]  {left} 
+	Expr.FloatLessThanEquals    = [[Expr] <=. [Expr]] {left}
+	Expr.FloatGreaterThan       = [[Expr] >. [Expr]]  {left} 
+	Expr.FloatGreaterThanEquals = [[Expr] >=. [Expr]] {left}
 
 context-free priorities
-	SimpleExpr.Dereference > {
-		SimpleExpr.RecordAccess
-		SimpleExpr.ArrayAccess
+	Expr.Dereference > {
+		Expr.RecordAccess
+		Expr.ArrayAccess
 	} >
-	SimpleExpr.FuncApp > {
-		SimpleExpr.Negate
-		SimpleExpr.FloatNegate
+	Expr.FuncApp > {
+		Expr.Negate
+		Expr.FloatNegate
 	} >
-	SimpleExpr.FloatPowerOf >
-	SimpleExpr.Modulo > {
-		SimpleExpr.Multiply
-		SimpleExpr.FloatMultiply
-		SimpleExpr.Division
-		SimpleExpr.FloatDivision
+	Expr.FloatPowerOf >
+	Expr.Modulo > {
+		Expr.Multiply
+		Expr.FloatMultiply
+		Expr.Division
+		Expr.FloatDivision
 	} > {
-		SimpleExpr.Add
-		SimpleExpr.FloatAdd
-		SimpleExpr.Subtract
-		SimpleExpr.FloatSubtract
+		Expr.Add
+		Expr.FloatAdd
+		Expr.Subtract
+		Expr.FloatSubtract
 	} >
-	SimpleExpr.ConsExpr > {
-		SimpleExpr.ListConcat
-		SimpleExpr.StringConcat
+	Expr.ConsExpr > {
+		Expr.ListConcat
+		Expr.StringConcat
 	} > {
-		StructEqExpr.StructuralEquals   
-		SimpleExpr.StructuralInequals 
-		SimpleExpr.PhysicalEquals     
-		SimpleExpr.PhysicalInequals   
-		SimpleExpr.LessThan           
-		SimpleExpr.LessThanEquals   
-		SimpleExpr.GreaterThan        
-		SimpleExpr.GreaterThanEquals
-		SimpleExpr.FloatLessThan      
-		SimpleExpr.FloatLessThanEquals   
-		SimpleExpr.FloatGreaterThan        
-		SimpleExpr.FloatGreaterThanEquals
+		Expr.StructuralEquals   
+		Expr.StructuralInequals 
+		Expr.PhysicalEquals     
+		Expr.PhysicalInequals   
+		Expr.LessThan           
+		Expr.LessThanEquals   
+		Expr.GreaterThan        
+		Expr.GreaterThanEquals
+		Expr.FloatLessThan      
+		Expr.FloatLessThanEquals   
+		Expr.FloatGreaterThan        
+		Expr.FloatGreaterThanEquals
 	} >
 	//TODO: find out where the not is that the manual names in the table...
-	// SimpleExpr.Not >
-	SimpleExpr.LogicalAnd >
-	SimpleExpr.LogicalOr >
-	TupleExpr.TupleExpr > {
-		SimpleExpr.RecordAssign
-		SimpleExpr.ArrayAssign
-		SimpleExpr.ReferenceAssign
+	// Expr.Not >
+	Expr.LogicalAnd >
+	Expr.LogicalOr >
+	Expr.TupleExpr > {
+		Expr.RecordAssign
+		Expr.ArrayAssign
+		Expr.ReferenceAssign
 	} >
-	SimpleExpr.IfExpr >
-	ExprSequence.ExprSequence > {
-		SimpleExpr.LetExpr     
-		SimpleExpr.LetRecExpr  
-		SimpleExpr.MatchExpr   
-		SimpleExpr.FuncDef 
-		SimpleExpr.TryExpr     
+	Expr.IfExpr >
+	Expr.ExprSequence > {
+		Expr.LetExpr     
+		Expr.LetRecExpr  
+		Expr.MatchExpr   
+		Expr.FunDef    
+		Expr.FunctionDef 
+		Expr.TryExpr     
 	}
+
+// disambiguation: Keep expression sequence from being considered inside list/array/record literals
+context-free priorities
+    { Expr -> {Expr ";"}+
+      GLOBALNAME "=" Expr -> ExprRecordBinding } >
+    Expr ";" Expr -> Expr
+
+  context-free syntax
+    Expr "," Expr      -> TupleExpr {ast("[<1>,<2>]")}
+    Expr "," TupleExpr -> TupleExpr {ast("<conc([<1>],<2>)>")}
+
+  context-free priorities
+  	Expr "," Expr -> TupleExpr >
+    TupleExpr -> Expr
+  context-free priorities
+  	Expr "," TupleExpr -> TupleExpr >
+    TupleExpr -> Expr
+
+// // These should preferably be generated because of the non-assoc annotation on Expr.TupleExpr, but that isn't the case right now. 
+// context-free priorities
+// 	Expr -> {Expr ","}+ >
+// 	{Expr ","}+ -> Expr

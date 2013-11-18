@@ -16,30 +16,42 @@ templates
 	
 	PatternRecordBinding.PatternRecordB = [[GLOBALNAME] = [Pattern]]
 	
-	Pattern = [[SimplePattern]]
-	Pattern = [[TuplePattern]]
-	
 	// prefer over Constant
-	SimplePattern.PatternVarOrConst = [[IDENT]] {prefer}
-	SimplePattern                   = [[Constant]]
-	SimplePattern.Wildcard          = [_]
-	SimplePattern.Alias             = [[Pattern] as [IDENT]]
-	SimplePattern                   = [([Pattern])] {bracket}
-	SimplePattern.HasTypePattern    = [([Pattern] : [TypeExpr])]
-	SimplePattern.PatternChoice     = [[Pattern] | [Pattern]] {left}
-	SimplePattern.RecordPattern     = [{[PatternRecordBinding+; separator="; "]}]
-	SimplePattern.ConstrPattern     = [[NCConstr] [SimplePattern]]
-	// Already attained through PatternConstant
+	Pattern.PatternVarOrConst = [[IDENT]] {prefer}
+	Pattern                   = [[Constant]]
+	Pattern.Wildcard          = [_]
+	Pattern.Alias             = [[Pattern] as [IDENT]]
+	Pattern                   = [([Pattern])] {bracket}
+	Pattern.HasTypePattern    = [([Pattern] : [TypeExpr])]
+	Pattern.PatternChoice     = [[Pattern] | [Pattern]] {left}
+	Pattern.RecordPattern     = [{[PatternRecordBinding+; separator="; "]}]
+	Pattern.ConstrPattern     = [[NCConstr] [Pattern]]
+	// Already attained through PatternConstant:
 	// Pattern.EmptyListPattern     = <[]>
-	SimplePattern.ListLitPattern    = <[<Pattern+; separator="; ">]>
-	SimplePattern.ConsListPattern   = [[SimplePattern] :: [SimplePattern]] {right}
-	TuplePattern.TuplePattern       = [[SimplePattern+; separator=", "]] // {avoid} // both this avoid and the reject below are required, or maybe the avoid isn't necessary?
-	TuplePattern.TuplePattern       = [[SimplePattern]] {reject}
+	Pattern.ListLitPattern    = <[<Pattern+; separator="; ">]>
+	Pattern.ConsListPattern   = [[Pattern] :: [Pattern]] {right}
+	// avoid removes the case of one Pattern already being a TuplePattern, non-assoc should remove the other ambiguities but doesn't right now so I've added the priorities myself
+	Pattern.TuplePattern      = [[TuplePattern]]// {avoid}//, non-assoc}
 	
 context-free priorities
-	SimplePattern.ConstrPattern >
-	SimplePattern.ConsListPattern >
-	TuplePattern.TuplePattern >
-	SimplePattern.PatternChoice >
-	SimplePattern.Alias
+	Pattern.ConstrPattern   >
+	Pattern.ConsListPattern >
+	Pattern.TuplePattern    >
+	Pattern.PatternChoice   >
+	Pattern.Alias
 
+  context-free syntax
+    Pattern "," Pattern      -> TuplePattern {ast("[<1>,<2>]")}
+    Pattern "," TuplePattern -> TuplePattern {ast("<conc([<1>],<2>)>")}
+
+  context-free priorities
+  	Pattern "," Pattern -> TuplePattern >
+    TuplePattern -> Pattern
+  context-free priorities
+  	Pattern "," TuplePattern -> TuplePattern >
+    TuplePattern -> Pattern
+
+// // These should preferably be generated because of the non-assoc annotation on Pattern.TuplePattern, but that isn't the case right now. 
+// context-free priorities
+// 	Pattern -> {Pattern ","}+ >
+// 	{Pattern ","}+ -> Pattern

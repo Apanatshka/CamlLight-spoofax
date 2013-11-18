@@ -5,26 +5,41 @@ imports
 
 context-free start-symbols
 	TypeExpr
-	TYPEVARIABLE
 
 lexical syntax
 	TYPEVARIABLE = [\'] IDENT
 
 templates
-	TypeExpr        = [[SimpleTypeExpr]]
-	TypeExpr        = [[TupleTypeExpr]]
-		
-	SimpleTypeExpr.TypeVariable = [[TYPEVARIABLE]]
-	SimpleTypeExpr              = [([TypeExpr])] {bracket}
-	SimpleTypeExpr.FuncType     = [[TypeExpr] -> [TypeExpr]] {right}
-	TupleTypeExpr.TupleType     = [[SimpleTypeExpr+; separator=" * "]] {avoid} // both avoid here and the reject below are required
-	TupleTypeExpr.TupleType     = [[SimpleTypeExpr]] {reject}
-	SimpleTypeExpr.ConstrType   = [[GLOBALNAME]]
+	TypeExpr.TypeVariable   = [[TYPEVARIABLE]]
+	TypeExpr                = [([TypeExpr])] {bracket}
+	TypeExpr.FuncType       = [[TypeExpr] -> [TypeExpr]] {right}
+	TypeExpr.TupleType      = [[TupleTypeExpr]] //{avoid}//,non-assoc}
+	TypeExpr.ConstrType     = [[GLOBALNAME]]
 	// prefer this rule over the one below when parens are used but only one TypeExpr is inside
-	SimpleTypeExpr.ConstrType   = [[TypeExpr] [GLOBALNAME]]
-	SimpleTypeExpr.ConstrType   = [([TypeExpr+; separator=","]) [GLOBALNAME]] {avoid}
+	TypeExpr.ConstrType     = [[TypeExpr] [GLOBALNAME]]
+	TypeExpr.ConstrListType = [([TypeExpr+; separator=","]) [GLOBALNAME]] {avoid}
 
 context-free priorities
-	SimpleTypeExpr.ConstrType >
-	TupleTypeExpr.TupleType   >
-	SimpleTypeExpr.FuncType
+	// wrote this in SDF2 because SDF3 style priorities take the last rule resulting in the mentioned constructor...
+	{
+		"(" {TypeExpr ","}+ ")" GLOBALNAME -> TypeExpr
+	  	TypeExpr GLOBALNAME -> TypeExpr
+  	} >
+    TupleTypeExpr -> TypeExpr >
+    TypeExpr "->" TypeExpr -> TypeExpr
+
+  context-free syntax
+    TypeExpr "*" TypeExpr      -> TupleTypeExpr {ast("[<1>,<2>]")}
+    TypeExpr "*" TupleTypeExpr -> TupleTypeExpr {ast("<conc([<1>],<2>)>")}
+
+  context-free priorities
+  	TypeExpr "*" TypeExpr -> TupleTypeExpr >
+    TupleTypeExpr -> TypeExpr
+  context-free priorities
+  	TypeExpr "*" TupleTypeExpr -> TupleTypeExpr >
+    TupleTypeExpr -> TypeExpr
+
+// // These should preferably be generated because of the non-assoc annotation on TypeExpr.TupleType, but that isn't the case right now. 
+// context-free priorities
+// 	TypeExpr -> {TypeExpr "*"}+ >
+// 	{TypeExpr "*"}+ -> TypeExpr
