@@ -1,10 +1,9 @@
-module runtime/nbl/resolve
+module runtime/nabl/resolve
 
 imports
   
-  runtime/nbl/tasks
-	runtime/nbl/entries
-	runtime/nbl/utils
+  runtime/nabl/tasks
+	runtime/nabl/entries
 	runtime/task/core
   runtime/task/utils
   

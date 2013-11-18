@@ -2,7 +2,7 @@ module runtime/analysis/complete
 
 imports
 	
-	runtime/nbl/complete
+	runtime/nabl/complete
 	runtime/task/core
 	runtime/index/core
 	
@@ -16,3 +16,4 @@ rules
 
 	// Legacy
 	analysis-propose-completions(|language, project-path, path) = analysis-propose-completions(|language, project-path)
+

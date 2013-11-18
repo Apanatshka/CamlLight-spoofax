@@ -1,9 +1,9 @@
-module runtime/nbl/complete
+module runtime/nabl/complete
 
 imports
 	
-	runtime/nbl/collect
-  runtime/nbl/uri
+	runtime/nabl/collect
+  runtime/nabl/uri
   runtime/task/core
   
 signature
@@ -22,3 +22,4 @@ rules // Code completion
 				proposal*   := <map(nabl-uri; nabl-uri-name)> def*
 			<+
 				proposal*   := []
+

@@ -2,7 +2,7 @@ module runtime/editor/outline-library
 
 imports
   runtime/editor/origins
-  runtime/nbl/utils
+  runtime/nabl/utils
   
 strategies
   

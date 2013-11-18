@@ -2,7 +2,7 @@ module runtime/analysis/resolve
 
 imports
 	
-	runtime/nbl/resolve
+	runtime/nabl/resolve
 	runtime/task/core
 	runtime/index/core
 	runtime/index/query
@@ -19,3 +19,4 @@ rules
     	
 	// Legacy
 	analysis-resolve(|language, project-path, path) = analysis-resolve(|language, project-path)
+

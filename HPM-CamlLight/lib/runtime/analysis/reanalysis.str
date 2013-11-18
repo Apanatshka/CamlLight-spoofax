@@ -7,8 +7,8 @@ imports
 	runtime/analysis/defaults
 	runtime/task/core
 	runtime/index/core
-	runtime/nbl/collect
-	runtime/nbl/namegen
+	runtime/nabl/collect
+	runtime/nabl/namegen
 
 rules
 	

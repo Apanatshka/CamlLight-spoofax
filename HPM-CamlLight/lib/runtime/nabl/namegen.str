@@ -1,12 +1,12 @@
-module runtime/nbl/namegen
+module nbl/namegen
 
 imports
 	
-	runtime/nbl/collect
-	runtime/nbl/query
-	runtime/nbl/uri
-	runtime/nbl/utils
-	runtime/nbl/interface
+	runtime/nabl/collect
+	runtime/nabl/query
+	runtime/nabl/uri
+	runtime/nabl/utils
+	runtime/nabl/interface
 	runtime/editor/origins
 	runtime/index/core
 	runtime/index/query

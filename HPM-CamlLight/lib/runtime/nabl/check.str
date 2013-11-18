@@ -1,15 +1,15 @@
-module runtime/nbl/check
+module runtime/nabl/check
 
 imports
 	
-	runtime/nbl/resolve
-	runtime/nbl/collect
-	runtime/nbl/query
-	runtime/nbl/tasks
-	runtime/nbl/entries
-	runtime/nbl/interface
-	runtime/nbl/uri
-	runtime/nbl/utils
+	runtime/nabl/resolve
+	runtime/nabl/collect
+	runtime/nabl/query
+	runtime/nabl/tasks
+	runtime/nabl/entries
+	runtime/nabl/interface
+	runtime/nabl/uri
+	runtime/nabl/utils
 	runtime/task/core
 	runtime/task/messages
 	runtime/task/tasks
@@ -32,10 +32,11 @@ rules // Error checking tasks
 		with
 			if Unique() := unique then
 				uri'		:= <nabl-uri-parent> uri;
-				resolve := <new-task(|partition)> ResolveDefs(uri', ns, name);
+				resolve := <new-task(|partition)> ResolveDefs(uri', ns, name, []);
 				<task-create-error-on-multiple(|partition, resolve, "Duplicate definition")> name
 			end
 			
+	// TODO: check needs to be converted into a task.
 	nabl-hiding-task(|partition):
 		name -> name
 		where
@@ -48,11 +49,11 @@ rules // Error checking tasks
 			else
 				uri* := <nabl-uri-parent; nabl-uri-parent; ![<id>]> uri
 			end;
-			task* := <mapconcat(nabl-use-subtasks(id, fail|partition, ns, <nabl-fix-name> name, [], All()))> uri*;
-			task	:= <new-task(|partition)> Choice(task*);
+			task* := <map(nabl-use-subtask(|partition, ns, <nabl-fix-name> name, [], All()))> uri*;
+			task  := <new-task(|partition)> Choice(task*);
 			<task-create-error-on-success(|partition, task, "Declaration hides previous definition")> name
 
-	message-task(|partition) = 
+	nabl-constraint(|partition) = 
 		nabl-hiding-task(|partition)
 
 rules // Legacy

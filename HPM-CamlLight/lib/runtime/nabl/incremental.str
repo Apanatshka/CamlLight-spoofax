@@ -1,9 +1,9 @@
-module runtime/nbl/incremental
+module nbl/incremental
 
 imports
 	
-	runtime/nbl/uri
-	runtime/nbl/entries
+	runtime/nabl/uri
+	runtime/nabl/interface
 	runtime/task/core
 	
 rules // Read generation
@@ -37,13 +37,4 @@ rules // Read processing
 		where
 			ns   := <nabl-uri-namespace> uri;
 			uri' := <nabl-uri-parent> uri
-
-  nabl-diff-entry =
-    ?Def(_)
- 
-  nabl-diff-entry =
-    ?Alias(_, _)
-    
-  nabl-diff-entry =
-    ?Prop(_, _, _)
 

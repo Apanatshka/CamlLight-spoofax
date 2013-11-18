@@ -1,6 +1,6 @@
 module CamlLight.main
 
-imports CamlLight-Builders CamlLight-Refactorings CamlLight-Colorer CamlLight-Completions CamlLight-Folding CamlLight-Outliner CamlLight-References CamlLight-Syntax
+imports CamlLight-Refactorings CamlLight-Colorer CamlLight-Completions CamlLight-Folding CamlLight-Menus CamlLight-Outliner CamlLight-Refactorings CamlLight-References CamlLight-Syntax
 
 language General properties
                   
@@ -14,3 +14,7 @@ language General properties
   extensions    : ml
   table         : include/CamlLight.tbl
   start symbols : Start
+  
+  provider      : include/camllight.ctree
+  provider      : include/camllight-java.jar
+  observer      : editor-analyze (multifile)

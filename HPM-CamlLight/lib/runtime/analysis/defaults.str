@@ -5,7 +5,7 @@ imports
 	runtime/analysis/core
 	runtime/analysis/single
 	runtime/analysis/multiple
-	runtime/nbl/utils
+	runtime/nabl/utils
 	runtime/index/core
 	runtime/task/core
 	runtime/editor/editor

@@ -2,12 +2,13 @@ module runtime/analysis/core
 
 imports
 	
-  runtime/nbl/collect
-  runtime/nbl/incremental
-  runtime/nbl/entries
-  runtime/nbl/uri
-  runtime/nbl/utils
+  runtime/analysis/interface
   runtime/index/core
+  runtime/nabl/collect
+  runtime/nabl/incremental
+  runtime/nabl/entries
+  runtime/nabl/uri
+  runtime/nabl/utils
   runtime/task/core
   runtime/task/messages
   runtime/editor/origins
@@ -70,7 +71,6 @@ rules // Analysis
 	  	  )
   	, id | "analyze-task-total")
   	  
-    
   analyze-messages:
   	(Result(partition, initial-ast, analyzed-ast, changed-read*, _, _, _), debug-result) -> 
   	(Result(partition, initial-ast, analyzed-ast, changed-read*, error*, warning*, note*), debug-result)
@@ -114,3 +114,4 @@ rules // Debugging
 	analysis-core-debug-time-interface(msg) = fail
 	analysis-core-debug-time-interface = fail
 	
+
