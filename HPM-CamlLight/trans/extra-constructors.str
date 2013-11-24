@@ -1,3 +1,5 @@
 module extra-constructors
 
-
+signature
+  constructors
+  	FuncOrConstrApp        : NCConstr * Expr -> Expr

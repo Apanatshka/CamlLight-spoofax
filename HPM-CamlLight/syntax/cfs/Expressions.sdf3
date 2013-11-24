@@ -34,8 +34,8 @@ end] {bracket}
 	Expr.HasType    = [([Expr]: [TypeExpr])]
 	// avoid removes the case of one Expr already being a TupleExpr, non-assoc should remove the other ambiguities but doesn't right now so I've added the priorities myself
 	Expr.TupleExpr  = [[TupleExpr]] //{avoid}//, non-assoc}
-	// avoid, prefer FuncOrConstrApp
-	Expr.ConstrApp       = [[NCConstr] [Expr]] {avoid}
+	// NCConstr pattern is ambiguous with function application. Only the following special case is specified: 
+	Expr.PrefixConsApp   = [prefix :: [Expr]]
 	Expr.ListLit         = <[<Expr+; separator="; ">]>
 	Expr.ArrayLit        = <[|<Expr+; separator="; ">|]>
 	Expr.RecordExpr      = [{[ExprRecordBinding+; separator="; "]}]
@@ -122,7 +122,8 @@ context-free priorities
 		Expr.RecordAccess
 		Expr.ArrayAccess
 	} >
-	Expr.FuncOrConstrApp > {
+	Expr.FuncOrConstrApp >
+	Expr.PrefixConsApp > {
 		Expr.Negate
 		Expr.FloatNegate
 	} >
