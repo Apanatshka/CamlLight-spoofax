@@ -1,0 +1,42 @@
+module Test-Directive-disambiguation
+
+language CamlLight
+start symbol Expr
+
+test unit value is not empty brackets [[
+	()
+]] parse to Unit()
+
+test expressions sequences are right associative [[
+	1;
+	2;
+	3
+]] parse to ExprSequence(_,ExprSequence(_,_))
+
+test expression sequence in literal record [[
+	{ a = (1;2) }
+]] parse succeeds
+
+test expression sequence in literal record without required parentheses [[
+	{ a = 1;2 }
+]] parse fails
+
+test literal array doesn't see items as an expression sequence [[
+	[| 1;2 |]
+]] parse to ArrayLit([IntegerLit(_),IntegerLit(_)])
+
+test expressions sequence in literal array with parentheses [[
+	[| (1;2) |]
+]] parse to ArrayLit([ExprSequence(_,_)])
+
+test if-then-else and plus [[
+	1 + if x then 2 else 3
+]] parse to [[
+	1 + (if x then 2 else 3)
+]]
+
+test if-then-else and expression sequence [[
+	1 ; if x then 2 else 3 ; 2
+]] parse to [[
+	1 ; (if x then 2 else 3) ; 2
+]]
