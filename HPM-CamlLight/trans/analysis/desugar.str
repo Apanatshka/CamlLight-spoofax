@@ -1,0 +1,107 @@
+module analysis/desugar
+
+imports
+	include/CamlLight
+	extra-constructors
+
+rules
+	desugar-infix(|name, e1, e2) = !FuncOrConstrApp(FuncOrConstrApp(PrefixOperator(name), e1), e2)
+	
+	desugar:
+		Negate(e)      -> FuncOrConstrApp("minus", e)
+	
+	desugar:
+		FloatNegate(e) -> FuncOrConstrApp("minus_float", e)
+	
+	desugar:
+		Dereference(e) -> FuncOrConstrApp(PrefixOperator("!"), e)
+	
+	desugar:
+		LogicalNot(e)  -> FuncOrConstrApp(PrefixOperator("not"), e)
+	
+	desugar:
+		ConsExpr(e1,e2) -> FuncOrConstrApp(ConstrApp(PrefixCons(), e1), e2)
+	
+	desugar:
+		LogicalAnd(e1,e2) -> <desugar-infix(|"&", e1, e2)>
+	
+	desugar:
+		LogicalOr(e1,e2) -> <desugar-infix(|"or", e1, e2)>
+	
+	desugar:
+		Add(e1,e2) -> <desugar-infix(|"+", e1, e2)>
+	
+	desugar:
+		Subtract(e1,e2) -> <desugar-infix(|"-", e1, e2)>
+	
+	desugar:
+		Multiply(e1,e2) -> <desugar-infix(|"*", e1, e2)>
+	
+	desugar:
+		Division(e1,e2) -> <desugar-infix(|"/", e1, e2)>
+	
+	desugar:
+		Modulo(e1,e2) -> <desugar-infix(|"mod", e1, e2)>
+	
+	desugar:
+		FloatAdd(e1,e2) -> <desugar-infix(|"+.", e1, e2)>
+	
+	desugar:
+		FloatSubtract(e1,e2) -> <desugar-infix(|"-.", e1, e2)>
+	
+	desugar:
+		FloatMultiply(e1,e2) -> <desugar-infix(|"*.", e1, e2)>
+	
+	desugar:
+		FloatDivision(e1,e2) -> <desugar-infix(|"/.", e1, e2)>
+	
+	desugar:
+		FloatPowerOf(e1,e2) -> <desugar-infix(|"**", e1, e2)>
+	
+	desugar:
+		ListConcat(e1,e2) -> <desugar-infix(|"@", e1, e2)>
+	
+	desugar:
+		StringConcat(e1,e2) -> <desugar-infix(|"^", e1, e2)>
+	
+	desugar:
+		ReferenceAssign(e1,e2) -> <desugar-infix(|":=", e1, e2)>
+	
+	desugar:
+		StructuralEquals(e1,e2) -> <desugar-infix(|"=", e1, e2)>
+	
+	desugar:
+		StructuralInequals(e1,e2) -> <desugar-infix(|"<>", e1, e2)>
+	
+	desugar:
+		PhysicalEquals(e1,e2) -> <desugar-infix(|"==", e1, e2)>
+	
+	desugar:
+		PhysicalInequals(e1,e2) -> <desugar-infix(|"!=", e1, e2)>
+	
+	desugar:
+		LessThan(e1,e2) -> <desugar-infix(|"<", e1, e2)>
+	
+	desugar:
+		LessThanEquals(e1,e2) -> <desugar-infix(|"<=", e1, e2)>
+	
+	desugar:
+		GreaterThan(e1,e2) -> <desugar-infix(|">", e1, e2)>
+	
+	desugar:
+		GreaterThanEquals(e1,e2) -> <desugar-infix(|">=", e1, e2)>
+	
+	desugar:
+		FloatLessThan(e1,e2) -> <desugar-infix(|"<.", e1, e2)>
+	
+	desugar:
+		FloatLessThanEquals(e1,e2) -> <desugar-infix(|"<=.", e1, e2)>
+	
+	desugar:
+		FloatGreaterThan(e1,e2) -> <desugar-infix(|">.", e1, e2)>
+	
+	desugar:
+		FloatGreaterThanEquals(e1,e2) -> <desugar-infix(|">=.", e1, e2)>
+	
+strategies
+	desugar-all = bottomup(try(desugar))
