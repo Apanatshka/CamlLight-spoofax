@@ -4,6 +4,7 @@ imports
 	
 	libstratego-lib
 	runtime/task/core
+	runtime/editor/annotations
 
 rules 
 	
@@ -14,32 +15,6 @@ rules
 
 	is-completion-name = ?"completion123"
   fix-completion-name = is-completion-name; !""
-
-	has-annotation(s) =
-		has-annos;
-		get-annos;
-		collect-one(s)
-
-  add-annotation(|a):
-    t{a*} -> t{a, a*}
-    
-  add-annotations(|a'*):
-    t{a*} -> t{a'*, a*}
-
-  remove-annotations(s):
-    t{a*} -> t{a'*}
-    where
-      a'* := <remove-all(s)> a*
-      
-  replace-annotations(s|a):
-    t{a*} -> t{a, a'*}
-    where
-      a'* := <remove-all(s)> a*
-      
-  replace-annotations(s|a1, a2):
-    t{a*} -> t{a1, a2, a'*}
-    where
-      a'* := <remove-all(s)> a*
   
   measure-time(s, log) =
     where(before := <times>);
@@ -50,12 +25,13 @@ rules
     measure-time(s, record-time(|name); log)
   
   record-time(|name) = id
-    
-  //external record-time-native(|name)
   	
  	try-make-list = is-list <+ ?Dependency(_) <+ ![<id>]
 		
 	try-remove-list = is-list < Hd + id
+	
+	// @deprecated use runtime/editor/annotations get-annotation(s)
+	has-annotation(s) = get-annotation(s)
 	
 rules // multimap simulation
 	

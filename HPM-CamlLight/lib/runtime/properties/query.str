@@ -12,20 +12,25 @@ imports
 rules
 
   get-or-create-property-task(|ctx, kind) = 
-     get-property-task(|kind) 
+     get-property-task(|kind)
+  <+ map(create-property-task(|ctx, kind))
   <+ create-property-task(|ctx, kind)
-    
+  
   get-property-task(|kind) =
-     get-annos
+     map(get-property-task(|kind))
+  <+ get-annos
    ; fetch-elem(?(kind, <id>))
     
 rules
   
   get-property(|kind) =
-     get-property-task(|kind)
-   ; insert-results // TODO: is this the right insertion? probably need recursive insertion.
+  (  get-property-task(|kind)
   <+ try(nabl-get-name)
    ; get-index-property(|kind)
+  ); try( // this is needed for cases where the results are already inserted
+      insert-results // TODO: is this the right insertion? probably need recursive insertion.
+    ; Hd
+    ) 
    
   get-index-property(|kind) =
     nabl-uris // TODO: how to handle multiple values?

@@ -21,12 +21,12 @@ templates
 
 context-free priorities
 	// wrote this in SDF2 because SDF3 style priorities take the last rule resulting in the mentioned constructor...
-	{
+	{ %% Constr types
 		"(" {TypeExpr ","}+ ")" GLOBALNAME -> TypeExpr
 	  	TypeExpr GLOBALNAME -> TypeExpr
   	} >
-    TupleTypeExpr -> TypeExpr >
-    TypeExpr "->" TypeExpr -> TypeExpr
+    TupleTypeExpr -> TypeExpr > %% tuples
+    TypeExpr "->" TypeExpr -> TypeExpr %% functions
 
   context-free syntax
     TypeExpr "*" TypeExpr      -> TupleTypeExpr {ast("[<1>,<2>]")}

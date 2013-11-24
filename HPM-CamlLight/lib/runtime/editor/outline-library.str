@@ -1,8 +1,9 @@
 module runtime/editor/outline-library
 
 imports
+	
   runtime/editor/origins
-  runtime/nabl/utils
+  runtime/editor/annotations
   
 strategies
   

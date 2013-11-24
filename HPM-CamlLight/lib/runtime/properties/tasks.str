@@ -49,5 +49,5 @@ rules
   //   ; try(map(Hd); MkSingleton) // HACK
       
   perform-task(|n): 
-  	PropCheck(kind, rel, actual, expected) -> <nabl-property-eq> (kind, rel, (actual, expected))
+  	PropCheck(kind, rel, actual, expected) -> [<nabl-property-eq> (kind, rel, (actual, expected))]
 

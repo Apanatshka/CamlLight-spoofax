@@ -11,9 +11,10 @@ imports
 
 context-free start-symbols
 	Expr
-	SimpleMatching
-	MultipleMatching
-	LetBinding
+
+context-free syntax
+	Expr "," Expr      -> TupleExpr {ast("[<1>,<2>]")}
+	Expr "," TupleExpr -> TupleExpr {ast("<conc([<1>],<2>)>")}
 
 template options
 	keyword -/- [A-Za-z0-9]
@@ -33,13 +34,13 @@ end] {bracket}
 	Expr.HasType    = [([Expr]: [TypeExpr])]
 	// avoid removes the case of one Expr already being a TupleExpr, non-assoc should remove the other ambiguities but doesn't right now so I've added the priorities myself
 	Expr.TupleExpr  = [[TupleExpr]] //{avoid}//, non-assoc}
-	//ambiguous with function application, and not really different (? perhaps not if different namespaces)
-	// Expr.ConstructorExpr     = [[NCConstr] [Expr]]
-	Expr.ListLit      = <[<Expr+; separator="; ">]>
-	Expr.ArrayLit     = <[|<Expr+; separator="; ">|]>
-	Expr.RecordExpr   = [{[ExprRecordBinding+; separator="; "]}]
-	Expr.FuncApp      = [[Expr] [Expr]] {left}
-	Expr.RecordAccess = [[Expr].[GLOBALNAME]]
+	// avoid, prefer FuncOrConstrApp
+	Expr.ConstrApp       = [[NCConstr] [Expr]] {avoid}
+	Expr.ListLit         = <[<Expr+; separator="; ">]>
+	Expr.ArrayLit        = <[|<Expr+; separator="; ">|]>
+	Expr.RecordExpr      = [{[ExprRecordBinding+; separator="; "]}]
+	Expr.FuncOrConstrApp = [[Expr] [Expr]] {left}
+	Expr.RecordAccess    = [[Expr].[GLOBALNAME]]
 	// <- may be read as LessThan(Negate(...)), hence the prefer
 	Expr.RecordAssign = [[Expr].[GLOBALNAME] <- [Expr]] {right, prefer}
 	Expr.ArrayAccess  = [[Expr].([Expr])]
@@ -47,23 +48,28 @@ end] {bracket}
 	Expr.ArrayAssign  = [[Expr].([Expr]) <- [Expr]] {right, prefer}
 	// prefer so the dangling else is associated with the last if
 	Expr.IfExpr       = [if [Expr] then [Expr]] {prefer}
-	Expr.IfExpr       = [if [Expr] then [Expr] else [Expr]]
+	Expr.IfElseExpr   = [if [Expr] then [Expr] else [Expr]]
 	Expr.WhileExpr    = [while [Expr] do [Expr] done]
 	Expr.ForExpr      = [for [IDENT] = [ForRange] do [Expr] done]
 	Expr.MatchExpr    = [match [Expr] with [SimpleMatching]]
 	Expr.FunDef       = [fun [MultipleMatching]]
 	Expr.FunctionDef  = [function [SimpleMatching]]
 	Expr.TryExpr      = [try [Expr] with [SimpleMatching]]
-	Expr.LetExpr      = [let [LetBinding+; separator="\nand "] in [Expr]]
-	Expr.LetRecExpr   = [let rec [LetBinding+; separator="\nand "] in [Expr]]
+	Expr.LetExpr      = [let [LetBind+; separator="\nand "] in [Expr]]
+	Expr.LetRecExpr   = [let rec [LetRecBind+; separator="\nand "] in [Expr]]
 	
 	OneMatching.OneMatching     = [[Pattern] -> [Expr]]
-	MultiMatching.MultiMatching = [[Pattern+] -> [Expr]]
+	MultiMatching.MultiMatching = [[Pattern+; separator=" "] -> [Expr]]
 	SimpleMatching              = [[OneMatching+; separator="\n| "]]
 	MultipleMatching            = [[MultiMatching+; separator="\n| "]]
 	LetBinding.ValDef           = [[Pattern] = [Expr]]
 	// prefer over the above let binding with a ConstrPattern 
-	LetBinding.FunDef           = [[Variable] [Pattern+] = [Expr]] {prefer}
+	LetBinding.FunDef           = [[Variable] [Pattern+; separator=" "] = [Expr]] {prefer}
+	
+	LetBind.LocalLetBind              = [[LetBinding]] 
+	LetRecBind.LocalRecLetBind        = [[LetBinding]]
+	GlobalLetBind.GlobalLetBind       = [[LetBinding]]
+	GlobalRecLetBind.GlobalRecLetBind = [[LetBinding]]
 	
 	ForRange.RangeTo     = [[Expr] to [Expr]]
 	ForRange.RangeDownTo = [[Expr] downto [Expr]]
@@ -72,6 +78,7 @@ end] {bracket}
 	Expr.Negate        = [-[Expr]]  {avoid}
 	Expr.FloatNegate   = [-.[Expr]]
 	Expr.Dereference   = [![Expr]]
+	Expr.LogicalNot    = [not [Expr]]
 	
 	Expr.ConsExpr      = [[Expr] :: [Expr]] {right}
 	Expr.LogicalAnd    = [[Expr] & [Expr]]  {left}
@@ -115,7 +122,7 @@ context-free priorities
 		Expr.RecordAccess
 		Expr.ArrayAccess
 	} >
-	Expr.FuncApp > {
+	Expr.FuncOrConstrApp > {
 		Expr.Negate
 		Expr.FloatNegate
 	} >
@@ -148,16 +155,17 @@ context-free priorities
 		Expr.FloatGreaterThan        
 		Expr.FloatGreaterThanEquals
 	} >
-	//TODO: find out where the not is that the manual names in the table...
-	// Expr.Not >
+	Expr.LogicalNot >
 	Expr.LogicalAnd >
 	Expr.LogicalOr >
 	Expr.TupleExpr > {
 		Expr.RecordAssign
 		Expr.ArrayAssign
 		Expr.ReferenceAssign
+	} > {
+		Expr.IfExpr
+		Expr.IfElseExpr
 	} >
-	Expr.IfExpr >
 	Expr.ExprSequence > {
 		Expr.LetExpr     
 		Expr.LetRecExpr  
@@ -173,16 +181,12 @@ context-free priorities
       GLOBALNAME "=" Expr -> ExprRecordBinding } >
     Expr ";" Expr -> Expr
 
-  context-free syntax
-    Expr "," Expr      -> TupleExpr {ast("[<1>,<2>]")}
-    Expr "," TupleExpr -> TupleExpr {ast("<conc([<1>],<2>)>")}
-
-  context-free priorities
-  	Expr "," Expr -> TupleExpr >
-    TupleExpr -> Expr
-  context-free priorities
-  	Expr "," TupleExpr -> TupleExpr >
-    TupleExpr -> Expr
+context-free priorities
+	Expr "," Expr -> TupleExpr >
+	TupleExpr -> Expr
+context-free priorities
+	Expr "," TupleExpr -> TupleExpr >
+	TupleExpr -> Expr
 
 // // These should preferably be generated because of the non-assoc annotation on Expr.TupleExpr, but that isn't the case right now. 
 // context-free priorities

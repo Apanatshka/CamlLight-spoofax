@@ -38,8 +38,8 @@ templates
 	
 	ExceptionDef.ExcDef = [exception [ConstrDecl+; separator="and"]]
 	
-	ValueDef.ValueDef    = [let [LetBinding+; separator="and"]]
-	ValueDef.RecValueDef = [let rec [LetBinding+; separator="and"]]
+	ValueDef.ValueDef    = [let [GlobalLetBind+; separator="and"]]
+	ValueDef.RecValueDef = [let rec [GlobalRecLetBind+; separator="and"]]
 	
 	ValueDecl.ValueDecl = [value [ValueDeclPart+; separator="and"]]
 	

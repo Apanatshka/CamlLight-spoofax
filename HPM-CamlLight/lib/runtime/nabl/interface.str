@@ -15,7 +15,7 @@ strategies // Collect
 	
 	nabl-use-site(|lang, partition, unique*, uri*, state*) = fail
 	
-	nabl-import-site(|lang, partition, uri*, state*) = fail
+	nabl-import-site(|lang, partition, unique*, uri*, state*) = fail
 	
 	nabl-prop-site(|lang, partition, uri*, state*, implicit*) = fail
 	
@@ -24,8 +24,6 @@ strategies // Projections
 	nabl-get-name = fail
 	
 	nabl-name-apply(s) = fail
-	
-	nabl-scopes = fail
 	
 strategies // Lookup hooks
 		

@@ -23,6 +23,7 @@ signature
     
     CollectDefs            : Term                                      -> Instruction
     ResolveDefs            : Scope * Namespace * Name * Prop           -> Instruction
+    CheckDefs              : Namespace * URI                           -> Instruction
     DisambiguateDefs       : List(Def) * List(Prop) * Namespace * Name -> Instruction
     ResolveNamedImports    : Scope * Namespace * Name                  -> Instruction
     ImportCalc             : URI                                       -> Instruction
@@ -43,11 +44,12 @@ rules // Resolve
   perform-task(|nr):
   	ResolveDefs(scope, ns, name, prop*) -> result
   	where
-  		uri    := <nabl-uri> scope;
-  		name'  := <try-remove-list; strip-annos> name;
+  		uri        := <nabl-uri> scope;
+  		name'      := <try-remove-list; strip-annos> name;
   		<nabl-add-name-read(|nr, ns, name')> uri;
-  		def*   := <nabl-lookup(|ns, name')> uri;
-  		result := <filter(filter-defs-props(|prop*)); (task-collect-dependencies <+ not(?[]))> def*
+  		def*       := <nabl-lookup(|ns, name'); insert-results-or-create-dependency; try(concat)> uri;
+  		// alias-def* := <nabl-extend-uri(|ns, name, NonUnique()); nabl-get-all-aliases; insert-results-or-create-dependency; try(concat)> uri;
+  		result     := <filter(filter-defs-props(|prop*)); (task-collect-dependencies <+ not(?[]))> def*
   		
 	task-short-circuit = ?ResolveDefs(_, _, _, _)
   		
@@ -66,6 +68,13 @@ rules // Resolve
       	                                      <nabl-property-eq> (kind, Eq(), (expected, <try-remove-list> value')); !definition
       end => result
 
+	perform-task(|nr):
+		PropConstraint(kind, expected, definition) -> <filter-defs-prop(|definition)> Prop(kind, expected, [])
+		
+	perform-task(|nr):
+		CheckDefs(ns, d) -> d
+		where
+			<nabl-uri; nabl-uri-namespace; ?ns> d
 	
 	// TODO: this task is not created any more
 	// Calls a user-defined disambiguation filter on definitions with relevant information.
@@ -121,19 +130,4 @@ rules // Visibility
 		with
 			def-task := <new-task(|partition)> ResolveAllDefs(uri, ns)
 	  ; filtered  := <nabl-use-propconstraint(|partition)> (def-task, prop*)
-
-rules // Property constraint
-	
-	// TODO: this task is not created any more
-	// perform-task(|nr):
-	// 	PropConstraint(kind, expected, definition) -> result
-	// 	where
-	//    	uri    := <nabl-uri> definition;
-	//      value  := <nabl-get-property(|kind)> uri;
-	//      value' := <insert-results-or-create-dependency> value;
-	//      switch id
-	//      	case task-collect-dependencies => d : !d
-	//      	otherwise                           : <nabl-property-eq> (kind, Eq(), (expected, value')); !definition <+
-	//      	                                      <nabl-property-eq> (kind, Eq(), (expected, <try-remove-list> value')); !definition
-	//      end => result
 
