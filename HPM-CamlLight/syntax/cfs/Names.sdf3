@@ -11,8 +11,8 @@ template options
 	keyword -/- [A-Za-z]
 
 templates
-	Variable.Variable = [[GLOBALNAME]]
-	Variable.PrefixOperator = [prefix [OPERATOR]]
+	Variable.Var    = [[GLOBALNAME]]
+	Variable.Prefix = [prefix [OPERATOR]]
 
 lexical syntax
 	OPERATOR = "+" 
@@ -42,4 +42,5 @@ lexical syntax
 	OPERATOR = ">." 
 	OPERATOR = "<=."
 	OPERATOR = "not"
+	OPERATOR = "::"
 	

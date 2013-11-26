@@ -16,16 +16,16 @@ templates
 	
 	PatternRecordBinding.PatternRecordB = [[GLOBALNAME] = [Pattern]]
 	
-	// prefer over Constant
-	Pattern.PatternVarOrConst = [[IDENT]] {prefer}
-	Pattern                   = [[Constant]]
-	Pattern.Wildcard          = [_]
-	Pattern.Alias             = [[Pattern] as [IDENT]]
-	Pattern                   = [([Pattern])] {bracket}
-	Pattern.HasTypePattern    = [([Pattern] : [TypeExpr])]
-	Pattern.PatternChoice     = [[Pattern] | [Pattern]] {left}
-	Pattern.RecordPattern     = [{[PatternRecordBinding+; separator="; "]}]
-	Pattern.ConstrPattern     = [[NCConstr] [Pattern]]
+	// ambiguity with Constant is actually *wanted*
+	Pattern.PatternVar     = [[IDENT]]
+	Pattern                = [[Constant]]
+	Pattern.Wildcard       = [_]
+	Pattern.Alias          = [[Pattern] as [IDENT]]
+	Pattern                = [([Pattern])] {bracket}
+	Pattern.HasTypePattern = [([Pattern] : [TypeExpr])]
+	Pattern.PatternChoice  = [[Pattern] | [Pattern]] {left}
+	Pattern.RecordPattern  = [{[PatternRecordBinding+; separator="; "]}]
+	Pattern.ConstrPattern  = [[NCConstr] [Pattern]]
 	// Already attained through PatternConstant:
 	// Pattern.EmptyListPattern     = <[]>
 	Pattern.ListLitPattern    = <[<Pattern+; separator="; ">]>

@@ -5,15 +5,14 @@ imports
 	extra-constructors
 
 rules
-	desugar-infix(|name, e1, e2) = !FuncOrConstrApp(FuncOrConstrApp(VarOrConst(PrefixOperator(name)), e1), e2)
+	desugar-infix(|name, e1, e2) = !FuncApp(Prefix(name), TupleExpr([e1, e2]))
 	
-	desugar: Negate(e)        -> FuncOrConstrApp(VarOrConst(Variable("minus")), e)
-	desugar: FloatNegate(e)   -> FuncOrConstrApp(VarOrConst(Variable("minus_float")), e)
-	desugar: Dereference(e)   -> FuncOrConstrApp(VarOrConst(PrefixOperator("!")), e)
-	desugar: LogicalNot(e)    -> FuncOrConstrApp(VarOrConst(PrefixOperator("not")), e)
-	desugar: PrefixConsApp(e) -> FuncOrConstrApp(PrefixCons(), e)
+	desugar: Negate(e)        -> FuncApp(Var("minus"), e)
+	desugar: FloatNegate(e)   -> FuncApp(Var("minus_float"), e)
+	desugar: Dereference(e)   -> FuncApp(Prefix("!"), e)
+	desugar: LogicalNot(e)    -> FuncApp(Prefix("not"), e)
 	
-	desugar: ConsExpr(e1,e2)               -> FuncOrConstrApp(FuncOrConstrApp(PrefixCons(), e1), e2)
+	desugar: ConsExpr(e1,e2)               -> ConstrApp(PrefixCons(), TupleExpr([e1, e2]))
 	desugar: LogicalAnd(e1,e2)             -> <desugar-infix(|"&",   e1, e2)>
 	desugar: LogicalOr(e1,e2)              -> <desugar-infix(|"or",  e1, e2)>
 	desugar: Add(e1,e2)                    -> <desugar-infix(|"+",   e1, e2)>

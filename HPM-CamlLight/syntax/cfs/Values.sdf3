@@ -15,11 +15,11 @@ template options
 	keyword -/- [A-Za-z]
 
 templates
-	Constant.IntegerLit   = [[INTEGER]]
-	Constant.FloatLit     = [[FLOAT]]
-	Constant.CharLit      = [[CHAR]]
-	Constant.StringLit    = [[STRING]]
-	Constant              = [[CConstr]]
+	Constant.Int    = [[INTEGER]]
+	Constant.Float  = [[FLOAT]]
+	Constant.Char   = [[CHAR]]
+	Constant.String = [[STRING]]
+	Constant        = [[CConstr]]
 	
 	CConstr.CConstr   = [[GLOBALNAME]]
 	CConstr.EmptyList = <[]>
