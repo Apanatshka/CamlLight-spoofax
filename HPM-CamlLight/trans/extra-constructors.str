@@ -3,3 +3,6 @@ module extra-constructors
 signature
   constructors
   	FuncOrConstrApp        : NCConstr * Expr -> Expr
+  	TupleExpr              : List(Expr)      -> Expr
+  	TuplePattern           : List(Pattern)   -> Pattern
+  	TupleType              : List(TypeExpr)  -> TypeExpr
