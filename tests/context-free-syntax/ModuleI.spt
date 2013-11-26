@@ -1,7 +1,7 @@
-module ModuleIntf
+module ModuleI
 
 language CamlLight
-start symbol ModuleIntf
+start symbol ModuleI
 
 test value decl phrase [[
 	value a : b;;

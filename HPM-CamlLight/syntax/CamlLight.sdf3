@@ -17,5 +17,5 @@ context-free start-symbols
 	Start
 
 context-free syntax
-	Start = ModuleImpl
-	Start = ModuleIntf
+	Start = Module
+	Start = ModuleI

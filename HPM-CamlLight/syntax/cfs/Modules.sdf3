@@ -7,33 +7,31 @@ imports
 	cfs/Definitions
 
 context-free start-symbols
-	ModuleImpl
-	ImplPhrase
-	ModuleIntf
-	IntfPhrase
-	Directive
+	Module
+	ModuleI
+	Dir
 
 template options
 	tokenize: "#"
 	keyword -/- [A-Za-z0-9]
 
 templates
-	ModuleImpl.Phrases = [[ImplPhrase+]]
+	Module.Module = [[ModulePhrase+]]
 	
-	ImplPhrase.ExpressionsPhrase  = [[Expr];;]
-	ImplPhrase.ValueDefPhrase     = [[ValueDef];;]
-	ImplPhrase.TypeDefPhrase      = [[TypeDef];;]
-	ImplPhrase.ExceptionDefPhrase = [[ExceptionDef];;]
-	ImplPhrase.DirectivePhrase    = [[Directive];;]
+	ModulePhrase = [[Expr];;]
+	ModulePhrase = [[ValDef];;]
+	ModulePhrase = [[TypeDef];;]
+	ModulePhrase = [[ExcDef];;]
+	ModulePhrase = [[Dir];;]
 
-	ModuleIntf.Interface = [[IntfPhrase+]]
+	ModuleI.Interface = [[IntfPhrase+]]
 	
-	IntfPhrase.ValueDeclPhrase    = [[ValueDecl];;]
-	IntfPhrase.TypeDefPhrase      = [[TypeDef];;]
-	IntfPhrase.ExceptionDefPhrase = [[ExceptionDef];;]
-	IntfPhrase.DirectivePhrase    = [[Directive];;]
+	IntfPhrase = [[ValDecl];;]
+	IntfPhrase = [[TypeDef];;]
+	IntfPhrase = [[ExcDef];;]
+	IntfPhrase = [[Dir];;]
 
-	Directive.OpenDirective   = [#open [STRING]]
-	Directive.CloseDirective  = [#close [STRING]]
+	Dir.OpenDir   = [#open [STRING]]
+	Dir.CloseDir  = [#close [STRING]]
 	//avoid when open or close can be chosen
-	Directive.CustomDirective = [#[IDENT] [STRING]] {avoid}
+	Dir.CustomDir = [#[IDENT] [STRING]] {avoid}

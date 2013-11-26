@@ -1,10 +1,10 @@
-module Test-Directive-disambiguation
+module Test-Dir-disambiguation
 
 language CamlLight
-start symbol Directive
+start symbol Dir
 
 test open directive is not custom
-	[[#open ""]] parse to OpenDirective(_)
+	[[#open ""]] parse to OpenDir(_)
 
 test spaces don't matter
 	[[# hurray ""]] parse succeeds

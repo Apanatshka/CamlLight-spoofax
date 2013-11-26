@@ -11,15 +11,15 @@ context-free start-symbols
 	TypeParams
 	ConstrDecl
 	LabelDecl
-	ExceptionDef
-	ValueDef
-	ValueDecl
+	ExcDef
+	ValDef
+	ValDecl
 
 template options
 	keyword -/- [A-Za-z0-9]
 
 templates
-	TypeDef.TypeDef = [type [TypeDefPart+; separator="and"]]
+	TypeDef.TypeDef          = [type [TypeDefPart+; separator="and"]]
 	
 	TypeDefPart.ADTDef       = [[TypeParams?] [IDENT] = [ConstrDecl+; separator="|"]]
 	TypeDefPart.LabelDef     = [[TypeParams?] [IDENT] = {[LabelDecl+; separator=";"]}]
@@ -27,20 +27,20 @@ templates
 	TypeDefPart.AbstrType    = [[TypeParams?] [IDENT]]
 	TypeDefPart.MutAbstrType = [[TypeParams?] [IDENT] mutable]
 	
-	TypeParams.TypeVar = [[TYPEVARIABLE]]
-	TypeParams.TypeVar = [([TYPEVARIABLE+; separator=","])]
+	TypeParams.TypeParam     = [[TYPEVARIABLE]]
+	TypeParams.TypeParams    = [([TYPEVARIABLE+; separator=","])]
 	
-	ConstrDecl.CConstrDecl  = [[IDENT]]
-	ConstrDecl.NCConstrDecl = [[IDENT] of [TypeExpr]]
+	ConstrDecl.CConstrDecl   = [[IDENT]]
+	ConstrDecl.NCConstrDecl  = [[IDENT] of [TypeExpr]]
 	
-	LabelDecl.LabelDecl    = [[IDENT] : [TypeExpr]]
-	LabelDecl.MutLabelDecl = [mutable [IDENT] : [TypeExpr]]
+	LabelDecl.LabelDecl      = [[IDENT] : [TypeExpr]]
+	LabelDecl.MutLabelDecl   = [mutable [IDENT] : [TypeExpr]]
 	
-	ExceptionDef.ExcDef = [exception [ConstrDecl+; separator="and"]]
+	ExcDef.ExcDef            = [exception [ConstrDecl+; separator="and"]]
 	
-	ValueDef.ValueDef    = [let [GlobalLetBind+; separator="and"]]
-	ValueDef.RecValueDef = [let rec [GlobalRecLetBind+; separator="and"]]
+	ValDef.ValDef            = [let [GlobalLetBind+; separator="and"]]
+	ValDef.RecValueDef       = [let rec [GlobalRecLetBind+; separator="and"]]
 	
-	ValueDecl.ValueDecl = [value [ValueDeclPart+; separator="and"]]
+	ValDecl.ValDecl          = [value [ValDeclPart+; separator="and"]]
 	
-	ValueDeclPart.TypeBinding = [[IDENT] : [TypeExpr]]
+	ValDeclPart.TypeBinding  = [[IDENT] : [TypeExpr]]

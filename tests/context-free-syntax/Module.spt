@@ -1,7 +1,7 @@
-module ModuleImpl
+module Module
 
 language CamlLight
-start symbol ModuleImpl
+start symbol Module
 
 test expression phrase [[
 	1 + 1;;
