@@ -1,0 +1,36 @@
+module analysis/names
+
+imports
+	include/CamlLight
+	extra-constructors
+
+namespaces
+	Var
+	CConstr
+	NCConstr
+	Type
+	Label
+
+binding rules //module interface
+	Interface(_):          scopes Var, CConstr, NCConstr, Type, Label
+	ValDeclBind(v, t):     defines Var v of type t
+	ADTDef(tp, a, _):      defines Type a of type tp
+	CConstrDecl(cc):       defines CConstr cc // of type tp from the above thingy.. How to get that one over here?
+	NCConstrDecl(ncc, te): defines NCConstr ncc of type te // nicer would be: te -> ADTtype
+	RecordDef(tp, r, _):   defines Type r of type tp
+	LabelDecl(l, te):      defines Label l of type te
+	TypeAlias(tp, t, te):  defines Type t of type tp // this is equal to the type expression te.. Should it be included somewhere?
+	AbstrType(tp, t):      defines Type t of type tp
+	MutAbstrType(tp, t):   defines Type t of type tp
+	//ExcDef(_) adds to open adt `exn` from library "builtin"
+	ExcCConstrDecl(cc):       defines CConstr cc // of adttype "exn"
+	ExcNCConstrDecl(ncc, te): defines NCConstr ncc of type te // of adttype "exn"
+
+binding rules //module implementation
+	Phrases(_):          scopes Var, CConstr, NCConstr, Type, Label
+	PatternVar(v):       defines Var v
+	PatternAlias(_, v):  defines Var v
+	CConstr(cc):         refers to CConstr cc
+	NCConstr(ncc):       refers to NCConstr ncc
+	Var(v):              refers to Var v
+	ExprRecordBind(l,_): refers to Label l
