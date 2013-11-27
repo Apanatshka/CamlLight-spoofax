@@ -4,6 +4,8 @@ imports
 	lex/Identifier
 	cfs/Types
 	cfs/Expressions
+	cfs/Patterns
+	cfs/Names
 
 context-free start-symbols
 	TypeDef
@@ -21,13 +23,13 @@ template options
 templates
 	TypeDef.TypeDef          = [type [TypeDefPart+; separator="and"]]
 	
-	TypeDefPart.ADTDef       = [[TypeParams?] [IDENT] = [ConstrDecl+; separator="|"]]
-	TypeDefPart.LabelDef     = [[TypeParams?] [IDENT] = {[LabelDecl+; separator=";"]}]
-	TypeDefPart.TypeAlias    = [[TypeParams?] [IDENT] == [TypeExpr]]
-	TypeDefPart.AbstrType    = [[TypeParams?] [IDENT]]
-	TypeDefPart.MutAbstrType = [[TypeParams?] [IDENT] mutable]
+	TypeDefPart.ADTDef       = [[TypeParams] [IDENT] = [ConstrDecl+; separator="|"]]
+	TypeDefPart.RecordDef    = [[TypeParams] [IDENT] = {[LabelDecl+; separator=";"]}]
+	TypeDefPart.TypeAlias    = [[TypeParams] [IDENT] == [TypeExpr]]
+	TypeDefPart.AbstrType    = [[TypeParams] [IDENT]]
+	TypeDefPart.MutAbstrType = [[TypeParams] [IDENT] mutable]
 	
-	TypeParams.TypeParam     = [[TYPEVARIABLE]]
+	TypeParams.TypeParams    = [[TYPEVARIABLE?]]
 	TypeParams.TypeParams    = [([TYPEVARIABLE+; separator=","])]
 	
 	ConstrDecl.CConstrDecl   = [[IDENT]]
@@ -36,11 +38,20 @@ templates
 	LabelDecl.LabelDecl      = [[IDENT] : [TypeExpr]]
 	LabelDecl.MutLabelDecl   = [mutable [IDENT] : [TypeExpr]]
 	
-	ExcDef.ExcDef            = [exception [ConstrDecl+; separator="and"]]
+	ExcDef.ExcDef            = [exception [ExcDecl+; separator="and"]]
+	
+	// ExcDecl.Exc*             = [[ConstrDecl]]
+	ExcDecl.ExcCConstrDecl   = [[IDENT]]
+	ExcDecl.ExcNCConstrDecl  = [[IDENT] of [TypeExpr]]
 	
 	ValDef.ValDef            = [let [GlobalLetBind+; separator="and"]]
-	ValDef.RecValueDef       = [let rec [GlobalRecLetBind+; separator="and"]]
+	ValDef.RecValueDef       = [let rec [GlobalLetRecBind+; separator="and"]]
+	
+	GlobalLetBind.GlobalValDef        = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
+	GlobalLetBind.GlobalFunDef        = [[Variable] [Pattern+; separator=" "] = [Expr]] {prefer}
+	GlobalLetRecBind.GlobalRecValDef  = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
+	GlobalLetRecBind.GlobalRecFunDef  = [[Variable] [Pattern+; separator=" "] = [Expr]] {prefer}
 	
 	ValDecl.ValDecl          = [value [ValDeclPart+; separator="and"]]
 	
-	ValDeclPart.TypeBinding  = [[IDENT] : [TypeExpr]]
+	ValDeclPart.ValDeclBind  = [[IDENT] : [TypeExpr]]

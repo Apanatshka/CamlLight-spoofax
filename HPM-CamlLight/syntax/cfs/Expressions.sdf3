@@ -20,7 +20,7 @@ template options
 	keyword -/- [A-Za-z0-9]
 
 templates
-	ExprRecordBinding.ExprRecordB = [[GLOBALNAME] = [Expr]]
+	ExprRecordBind.ExprRecordBind = [[GLOBALNAME] = [Expr]]
 	
 	//this is probably a mistake in the manual because it isn't explained and it's ambiguous with Variable
 	// Expr.Ident               = [[IDENT]]
@@ -37,7 +37,7 @@ end] {bracket}
 	Expr.ConstrApp    = [[NCConstr] [Expr]]
 	Expr.ListLit      = <[<Expr+; separator="; ">]>
 	Expr.ArrayLit     = <[|<Expr+; separator="; ">|]>
-	Expr.RecordExpr   = [{[ExprRecordBinding+; separator="; "]}]
+	Expr.RecordExpr   = [{[ExprRecordBind+; separator="; "]}]
 	Expr.FuncApp      = [[Expr] [Expr]] {left}
 	Expr.RecordAccess = [[Expr].[GLOBALNAME]]
 	// <- may be read as LessThan(Negate(...)), hence the prefer
@@ -50,25 +50,27 @@ end] {bracket}
 	Expr.IfElseExpr   = [if [Expr] then [Expr] else [Expr]]
 	Expr.WhileExpr    = [while [Expr] do [Expr] done]
 	Expr.ForExpr      = [for [IDENT] = [ForRange] do [Expr] done]
-	Expr.MatchExpr    = [match [Expr] with [SimpleMatching]]
-	Expr.FunDef       = [fun [MultipleMatching]]
-	Expr.FunctionDef  = [function [SimpleMatching]]
-	Expr.TryExpr      = [try [Expr] with [SimpleMatching]]
+	Expr.MatchExpr    = [match [Expr] with [SimpleMatch+; separator="\n| "]]
+	Expr.MatchExpr    = [match [Expr] with | [SimpleMatch+; separator="\n| "]] // undocumented form found in example programs
+	Expr.FunDef       = [fun [MultiMatch+; separator="\n| "]]
+	Expr.FunDef       = [fun
+	| [MultiMatch+; separator="\n| "]] // undocumented form found in example programs
+	Expr.FunctionDef  = [function [SimpleMatch+; separator="\n| "]]
+	Expr.FunctionDef  = [function
+	| [SimpleMatch+; separator="\n| "]] // undocumented form found in example programs
+	Expr.TryExpr      = [try [Expr] with [SimpleMatch+; separator="\n| "]]
+	Expr.TryExpr      = [try [Expr] with
+	| [SimpleMatch+; separator="\n| "]] // undocumented form found in example programs
 	Expr.LetExpr      = [let [LetBind+; separator="\nand "] in [Expr]]
 	Expr.LetRecExpr   = [let rec [LetRecBind+; separator="\nand "] in [Expr]]
 	
-	OneMatching.OneMatching     = [[Pattern] -> [Expr]]
-	MultiMatching.MultiMatching = [[Pattern+; separator=" "] -> [Expr]]
-	SimpleMatching              = [[OneMatching+; separator="\n| "]]
-	MultipleMatching            = [[MultiMatching+; separator="\n| "]]
-	LetBinding.ValDef           = [[Pattern] = [Expr]]
-	// prefer over the above let binding with a ConstrPattern 
-	LetBinding.FunDef           = [[Variable] [Pattern+; separator=" "] = [Expr]] {prefer}
+	SimpleMatch.SimpleMatch = [[Pattern] -> [Expr]]
+	MultiMatch.MultiMatch   = [[Pattern+; separator=" "] -> [Expr]]
 	
-	LetBind.LocalLetBind              = [[LetBinding]] 
-	LetRecBind.LocalRecLetBind        = [[LetBinding]]
-	GlobalLetBind.GlobalLetBind       = [[LetBinding]]
-	GlobalRecLetBind.GlobalRecLetBind = [[LetBinding]]
+	LetBind.LocalValDef               = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
+	LetBind.LocalFunDef               = [[Variable] [Pattern+; separator=" "] = [Expr]] {prefer}
+	LetRecBind.LocalRecValDef         = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
+	LetRecBind.LocalRecFunDef         = [[Variable] [Pattern+; separator=" "] = [Expr]] {prefer}
 	
 	ForRange.RangeTo     = [[Expr] to [Expr]]
 	ForRange.RangeDownTo = [[Expr] downto [Expr]]
@@ -166,7 +168,7 @@ context-free priorities
 		Expr.IfExpr
 		Expr.IfElseExpr
 	} >
-	Expr.ExprSequence > {
+	Expr.ExprSequence > { // when looking at examples, this seems to be in the wrong order somehow
 		Expr.LetExpr     
 		Expr.LetRecExpr  
 		Expr.MatchExpr   

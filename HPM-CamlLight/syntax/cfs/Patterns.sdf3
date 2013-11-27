@@ -8,19 +8,23 @@ imports
 context-free start-symbols
 	Pattern
 
+context-free syntax
+    Pattern "," Pattern      -> TuplePattern {ast("[<1>,<2>]")}
+    Pattern "," TuplePattern -> TuplePattern {ast("<conc([<1>],<2>)>")}
+
 template options
 	tokenize: "[("
 	keyword -/- [A-Za-z]
 
 templates
 	
-	PatternRecordBinding.PatternRecordB = [[GLOBALNAME] = [Pattern]]
+	PatternRecordBinding.PatternRecordBind = [[GLOBALNAME] = [Pattern]]
 	
 	// ambiguity with Constant is actually *wanted*
 	Pattern.PatternVar     = [[IDENT]]
 	Pattern                = [[Constant]]
-	Pattern.Wildcard       = [_]
-	Pattern.Alias          = [[Pattern] as [IDENT]]
+	Pattern.PatternWC      = [_]
+	Pattern.PatternAlias   = [[Pattern] as [IDENT]]
 	Pattern                = [([Pattern])] {bracket}
 	Pattern.HasTypePattern = [([Pattern] : [TypeExpr])]
 	Pattern.PatternChoice  = [[Pattern] | [Pattern]] {left}
@@ -30,8 +34,7 @@ templates
 	// Pattern.EmptyListPattern     = <[]>
 	Pattern.ListLitPattern    = <[<Pattern+; separator="; ">]>
 	Pattern.ConsListPattern   = [[Pattern] :: [Pattern]] {right}
-	// avoid removes the case of one Pattern already being a TuplePattern, non-assoc should remove the other ambiguities but doesn't right now so I've added the priorities myself
-	Pattern.TuplePattern      = [[TuplePattern]]// {avoid}//, non-assoc}
+	Pattern.TuplePattern      = [[TuplePattern]]
 	
 context-free priorities
 	Pattern.ConstrPattern   >
@@ -40,14 +43,10 @@ context-free priorities
 	Pattern.PatternChoice   >
 	Pattern.Alias
 
-  context-free syntax
-    Pattern "," Pattern      -> TuplePattern {ast("[<1>,<2>]")}
-    Pattern "," TuplePattern -> TuplePattern {ast("<conc([<1>],<2>)>")}
-
-  context-free priorities
+context-free priorities
   	Pattern "," Pattern -> TuplePattern >
     TuplePattern -> Pattern
-  context-free priorities
+context-free priorities
   	Pattern "," TuplePattern -> TuplePattern >
     TuplePattern -> Pattern
 

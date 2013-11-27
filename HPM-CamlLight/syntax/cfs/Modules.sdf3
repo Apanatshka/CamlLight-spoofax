@@ -18,18 +18,18 @@ template options
 templates
 	Module.Module = [[ModulePhrase+]]
 	
-	ModulePhrase = [[Expr];;]
-	ModulePhrase = [[ValDef];;]
-	ModulePhrase = [[TypeDef];;]
-	ModulePhrase = [[ExcDef];;]
-	ModulePhrase = [[Dir];;]
+	ModulePhrase.MP = [[Expr];;]
+	ModulePhrase.MP = [[ValDef];;]
+	ModulePhrase.MP = [[TypeDef];;]
+	ModulePhrase.MP = [[ExcDef];;]
+	ModulePhrase.MP = [[Dir];;]
 
 	ModuleI.Interface = [[IntfPhrase+]]
 	
-	IntfPhrase = [[ValDecl];;]
-	IntfPhrase = [[TypeDef];;]
-	IntfPhrase = [[ExcDef];;]
-	IntfPhrase = [[Dir];;]
+	IntfPhrase.IP = [[ValDecl];;]
+	IntfPhrase.IP = [[TypeDef];;]
+	IntfPhrase.IP = [[ExcDef];;]
+	IntfPhrase.IP = [[Dir];;]
 
 	Dir.OpenDir   = [#open [STRING]]
 	Dir.CloseDir  = [#close [STRING]]
