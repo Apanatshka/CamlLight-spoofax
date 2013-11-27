@@ -1,8 +1,11 @@
 module extra-constructors
 
+imports
+	include/CamlLight
+
 signature
   constructors
-  	FuncOrConstrApp        : NCConstr * Expr -> Expr
-  	TupleExpr              : List(Expr)      -> Expr
-  	TuplePattern           : List(Pattern)   -> Pattern
-  	TupleType              : List(TypeExpr)  -> TypeExpr
+  	// Not generated from SDF3 because ast()-annotated rules aren't supported very well
+  	TupleExpr       : List(Expr)      -> Expr
+  	TuplePattern    : List(Pattern)   -> Pattern
+  	TupleType       : List(TypeExpr)  -> TypeExpr

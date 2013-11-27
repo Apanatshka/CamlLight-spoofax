@@ -5,6 +5,7 @@ imports
 	extra-constructors
 
 rules
+	// prefix and infix operators are desugared here to function or constructor application like suggested in the CamlLight Manual: http://caml.inria.fr/pub/docs/manual-caml-light/node3.8.html 
 	desugar-infix(|name, e1, e2) = !FuncApp(Prefix(name), TupleExpr([e1, e2]))
 	
 	desugar: Negate(e)        -> FuncApp(Var("minus"), e)
@@ -40,6 +41,10 @@ rules
 	desugar: FloatLessThanEquals(e1,e2)    -> <desugar-infix(|"<=.", e1, e2)>
 	desugar: FloatGreaterThan(e1,e2)       -> <desugar-infix(|">.",  e1, e2)>
 	desugar: FloatGreaterThanEquals(e1,e2) -> <desugar-infix(|">=.", e1, e2)>
+	
+	// normalisation of the TypeParams? part of type definitions
+	desugar: TypeParams(None())   -> TypeParams([])
+	desugar: TypeParams(Some(tv)) -> TypeParams([tv])
 
 strategies
 	desugar-all = bottomup(try(desugar))
