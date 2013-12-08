@@ -10,27 +10,37 @@ namespaces
 	NCConstr
 	Type
 	Label
+	TypeVar
 
 binding rules //module interface
 	Interface(_):          scopes Var, CConstr, NCConstr, Type, Label
 	ValDeclBind(v, t):     defines Var v of type t
 	ADTDef(tp, a, _):      defines Type a of type tp
+	                       scopes TypeVar
 	CConstrDecl(cc):       defines CConstr cc // of type tp from the above thingy.. How to get that one over here?
 	NCConstrDecl(ncc, te): defines NCConstr ncc of type te // nicer would be: te -> ADTtype
 	RecordDef(tp, r, _):   defines Type r of type tp
+	                       scopes TypeVar
 	LabelDecl(l, te):      defines Label l of type te
 	TypeAlias(tp, t, te):  defines Type t of type tp // this is equal to the type expression te.. Should it be included somewhere?
+	                       scopes TypeVar
 	AbstrType(tp, t):      defines Type t of type tp
+	                       scopes TypeVar
 	MutAbstrType(tp, t):   defines Type t of type tp
+	                       scopes TypeVar
+	TypeVar(tv):           defines TypeVar tv
 	//ExcDef(_) adds to open adt `exn` from library "builtin"
+	ExcDef(_):                scopes TypeVar
 	ExcCConstrDecl(cc):       defines CConstr cc // of adttype "exn"
 	ExcNCConstrDecl(ncc, te): defines NCConstr ncc of type te // of adttype "exn"
 
 binding rules //module implementation
-	Module(_):           scopes Var, CConstr, NCConstr, Type, Label
-	PatternVar(v):       defines Var v
-	PatternAlias(_, v):  defines Var v
-	CConstr(cc):         refers to CConstr cc
-	NCConstr(ncc):       refers to NCConstr ncc
-	Var(v):              refers to Var v
-	ExprRecordBind(l,_): refers to Label l
+	Module(_):             scopes Var, CConstr, NCConstr, Type, Label
+	PatternVar(v):         defines Var v
+	PatternAlias(_, v):    defines Var v
+	CConstr(cc):           refers to CConstr cc
+	NCConstr(ncc):         refers to NCConstr ncc
+	Var(v):                refers to Var v
+	ExprRecordBind(l,_):   refers to Label l
+	LetRecExpr(_,_):       scopes Var
+	LocalRecFunDef(v,p,e): defines Var v
