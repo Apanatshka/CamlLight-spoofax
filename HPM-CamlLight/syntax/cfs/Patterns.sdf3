@@ -41,7 +41,7 @@ context-free priorities
 	Pattern.ConsListPattern >
 	Pattern.TuplePattern    >
 	Pattern.PatternChoice   >
-	Pattern.Alias
+	Pattern.PatternAlias
 
 context-free priorities
   	Pattern "," Pattern -> TuplePattern >

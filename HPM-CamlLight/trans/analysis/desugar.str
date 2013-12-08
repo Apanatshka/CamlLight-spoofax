@@ -4,47 +4,54 @@ imports
 	include/CamlLight
 	extra-constructors
 
+overlays
+	
+	FApp(name, e1, e2) = FuncApp(Prefix(name), TupleExpr([e1, e2]))
+		
 rules
-	// prefix and infix operators are desugared here to function or constructor application like suggested in the CamlLight Manual: http://caml.inria.fr/pub/docs/manual-caml-light/node3.8.html 
-	desugar-infix(|name, e1, e2) = !FuncApp(Prefix(name), TupleExpr([e1, e2]))
+	// prefix and infix operators are desugared here to function or constructor application 
+	// as suggested in the CamlLight Manual: http://caml.inria.fr/pub/docs/manual-caml-light/node3.8.html
 	
-	desugar: Negate(e)        -> FuncApp(Var("minus"), e)
-	desugar: FloatNegate(e)   -> FuncApp(Var("minus_float"), e)
-	desugar: Dereference(e)   -> FuncApp(Prefix("!"), e)
-	desugar: LogicalNot(e)    -> FuncApp(Prefix("not"), e)
+	desugar: Negate(e)  -> FuncApp(Var("minus"), e)
+	desugar: NegateF(e) -> FuncApp(Var("minus_float"), e)
+	desugar: Deref(e)   -> FuncApp(Prefix("!"), e)
+	desugar: Not(e)     -> FuncApp(Prefix("not"), e)
 	
-	desugar: ConsExpr(e1,e2)               -> ConstrApp(PrefixCons(), TupleExpr([e1, e2]))
-	desugar: LogicalAnd(e1,e2)             -> <desugar-infix(|"&",   e1, e2)>
-	desugar: LogicalOr(e1,e2)              -> <desugar-infix(|"or",  e1, e2)>
-	desugar: Add(e1,e2)                    -> <desugar-infix(|"+",   e1, e2)>
-	desugar: Subtract(e1,e2)               -> <desugar-infix(|"-",   e1, e2)>
-	desugar: Multiply(e1,e2)               -> <desugar-infix(|"*",   e1, e2)>
-	desugar: Division(e1,e2)               -> <desugar-infix(|"/",   e1, e2)>
-	desugar: Modulo(e1,e2)                 -> <desugar-infix(|"mod", e1, e2)>
-	desugar: FloatAdd(e1,e2)               -> <desugar-infix(|"+.",  e1, e2)>
-	desugar: FloatSubtract(e1,e2)          -> <desugar-infix(|"-.",  e1, e2)>
-	desugar: FloatMultiply(e1,e2)          -> <desugar-infix(|"*.",  e1, e2)>
-	desugar: FloatDivision(e1,e2)          -> <desugar-infix(|"/.",  e1, e2)>
-	desugar: FloatPowerOf(e1,e2)           -> <desugar-infix(|"**",  e1, e2)>
-	desugar: ListConcat(e1,e2)             -> <desugar-infix(|"@",   e1, e2)>
-	desugar: StringConcat(e1,e2)           -> <desugar-infix(|"^",   e1, e2)>
-	desugar: ReferenceAssign(e1,e2)        -> <desugar-infix(|":=",  e1, e2)>
-	desugar: StructuralEquals(e1,e2)       -> <desugar-infix(|"=",   e1, e2)>
-	desugar: StructuralInequals(e1,e2)     -> <desugar-infix(|"<>",  e1, e2)>
-	desugar: PhysicalEquals(e1,e2)         -> <desugar-infix(|"==",  e1, e2)>
-	desugar: PhysicalInequals(e1,e2)       -> <desugar-infix(|"!=",  e1, e2)>
-	desugar: LessThan(e1,e2)               -> <desugar-infix(|"<",   e1, e2)>
-	desugar: LessThanEquals(e1,e2)         -> <desugar-infix(|"<=",  e1, e2)>
-	desugar: GreaterThan(e1,e2)            -> <desugar-infix(|">",   e1, e2)>
-	desugar: GreaterThanEquals(e1,e2)      -> <desugar-infix(|">=",  e1, e2)>
-	desugar: FloatLessThan(e1,e2)          -> <desugar-infix(|"<.",  e1, e2)>
-	desugar: FloatLessThanEquals(e1,e2)    -> <desugar-infix(|"<=.", e1, e2)>
-	desugar: FloatGreaterThan(e1,e2)       -> <desugar-infix(|">.",  e1, e2)>
-	desugar: FloatGreaterThanEquals(e1,e2) -> <desugar-infix(|">=.", e1, e2)>
+	desugar: ConsExpr(e1,e2)   -> ConstrApp(PrefixCons(), TupleExpr([e1, e2]))
+	desugar: And(e1,e2)        -> FApp("&",   e1, e2)
+	desugar: Or(e1,e2)         -> FApp("or",  e1, e2)
+	desugar: Add(e1,e2)        -> FApp("+",   e1, e2)
+	desugar: Sub(e1,e2)        -> FApp("-",   e1, e2)
+	desugar: Mul(e1,e2)        -> FApp("*",   e1, e2)
+	desugar: Div(e1,e2)        -> FApp("/",   e1, e2)
+	desugar: Mod(e1,e2)        -> FApp("mod", e1, e2)
+	desugar: AddF(e1,e2)       -> FApp("+.",  e1, e2)
+	desugar: SubF(e1,e2)       -> FApp("-.",  e1, e2)
+	desugar: MulF(e1,e2)       -> FApp("*.",  e1, e2)
+	desugar: DivF(e1,e2)       -> FApp("/.",  e1, e2)
+	desugar: PowF(e1,e2)       -> FApp("**",  e1, e2)
+	desugar: ListConc(e1,e2)   -> FApp("@",   e1, e2)
+	desugar: StringConc(e1,e2) -> FApp("^",   e1, e2)
+	desugar: RefAssign(e1,e2)  -> FApp(":=",  e1, e2)
+	desugar: StructEq(e1,e2)   -> FApp("=",   e1, e2)
+	desugar: StructNeq(e1,e2)  -> FApp("<>",  e1, e2)
+	desugar: PhyEq(e1,e2)      -> FApp("==",  e1, e2)
+	desugar: PhyNeq(e1,e2)     -> FApp("!=",  e1, e2)
+	desugar: Lt(e1,e2)         -> FApp("<",   e1, e2)
+	desugar: Leq(e1,e2)        -> FApp("<=",  e1, e2)
+	desugar: Gt(e1,e2)         -> FApp(">",   e1, e2)
+	desugar: Geq(e1,e2)        -> FApp(">=",  e1, e2)
+	desugar: LtF(e1,e2)        -> FApp("<.",  e1, e2)
+	desugar: LeqF(e1,e2)       -> FApp("<=.", e1, e2)
+	desugar: GtF(e1,e2)        -> FApp(">.",  e1, e2)
+	desugar: GeqF(e1,e2)       -> FApp(">=.", e1, e2)
 	
 	// normalisation of the TypeParams? part of type definitions
 	desugar: TypeParams(None())   -> TypeParams([])
 	desugar: TypeParams(Some(tv)) -> TypeParams([tv])
+	// normalisation of the TypeExprParams? part of type expressions
+	desugar: TypeExprParams(None())   -> TypeExprParams([])
+	desugar: TypeExprParams(Some(te)) -> TypeExprParams([te])
 
 strategies
 	desugar-all = bottomup(try(desugar))

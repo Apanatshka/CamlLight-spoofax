@@ -27,7 +27,7 @@ binding rules //module interface
 	ExcNCConstrDecl(ncc, te): defines NCConstr ncc of type te // of adttype "exn"
 
 binding rules //module implementation
-	Phrases(_):          scopes Var, CConstr, NCConstr, Type, Label
+	Module(_):           scopes Var, CConstr, NCConstr, Type, Label
 	PatternVar(v):       defines Var v
 	PatternAlias(_, v):  defines Var v
 	CConstr(cc):         refers to CConstr cc

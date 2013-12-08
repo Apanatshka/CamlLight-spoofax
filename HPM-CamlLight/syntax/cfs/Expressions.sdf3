@@ -40,10 +40,10 @@ end] {bracket}
 	Expr.RecordExpr   = [{[ExprRecordBind+; separator="; "]}]
 	Expr.FuncApp      = [[Expr] [Expr]] {left}
 	Expr.RecordAccess = [[Expr].[GLOBALNAME]]
-	// <- may be read as LessThan(Negate(...)), hence the prefer
+	// <- may be read as Lt(Negate(...)), hence the prefer
 	Expr.RecordAssign = [[Expr].[GLOBALNAME] <- [Expr]] {right, prefer}
 	Expr.ArrayAccess  = [[Expr].([Expr])]
-	// <- may be read as LessThan(Negate(...)), hence the prefer
+	// <- may be read as Lt(Negate(...)), hence the prefer
 	Expr.ArrayAssign  = [[Expr].([Expr]) <- [Expr]] {right, prefer}
 	// prefer so the dangling else is associated with the last if
 	Expr.IfExpr       = [if [Expr] then [Expr]] {prefer}
@@ -76,99 +76,99 @@ end] {bracket}
 	ForRange.RangeDownTo = [[Expr] downto [Expr]]
 	
 	// avoid in favour of negative integer literals
-	Expr.Negate        = [-[Expr]]  {avoid}
-	Expr.FloatNegate   = [-.[Expr]]
-	Expr.Dereference   = [![Expr]]
-	Expr.LogicalNot    = [not [Expr]]
+	Expr.Negate  = [-[Expr]]  {avoid}
+	Expr.NegateF = [-.[Expr]]
+	Expr.Deref   = [![Expr]]
+	Expr.Not     = [not [Expr]]
 	
-	Expr.ConsExpr      = [[Expr] :: [Expr]] {right}
-	Expr.LogicalAnd    = [[Expr] & [Expr]]  {left}
-	Expr.LogicalOr     = [[Expr] or [Expr]] {left}
-	Expr.ExprSequence  = [[Expr]; [Expr]]   {right}
+	Expr.ConsExpr = [[Expr] :: [Expr]] {right}
+	Expr.And      = [[Expr] & [Expr]]  {left}
+	Expr.Or       = [[Expr] or [Expr]] {left}
+	Expr.ExprSeq  = [[Expr]; [Expr]]   {right}
 
 	Expr.Add             = [[Expr] + [Expr]]   {left}
 	// prefer over function application of negative number
-	Expr.Subtract        = [[Expr] - [Expr]]   {left, prefer}
-	Expr.Multiply        = [[Expr] * [Expr]]   {left}
-	Expr.Division        = [[Expr] / [Expr]]   {left}
-	Expr.Modulo          = [[Expr] mod [Expr]] {left}
-	Expr.FloatAdd        = [[Expr] +. [Expr]]  {left}
+	Expr.Sub        = [[Expr] - [Expr]]   {left, prefer}
+	Expr.Mul        = [[Expr] * [Expr]]   {left}
+	Expr.Div        = [[Expr] / [Expr]]   {left}
+	Expr.Mod        = [[Expr] mod [Expr]] {left}
+	Expr.AddF       = [[Expr] +. [Expr]]  {left}
 	// prefer over function application of float negative number
-	Expr.FloatSubtract   = [[Expr] -. [Expr]]  {left, prefer}
-	Expr.FloatMultiply   = [[Expr] *. [Expr]]  {left}
-	Expr.FloatDivision   = [[Expr] /. [Expr]]  {left}
-	Expr.FloatPowerOf    = [[Expr] ** [Expr]]  {right}
-	Expr.ListConcat      = [[Expr] @ [Expr]]   {right}
-	Expr.StringConcat    = [[Expr] ^ [Expr]]   {right}
+	Expr.SubF       = [[Expr] -. [Expr]]  {left, prefer}
+	Expr.MulF       = [[Expr] *. [Expr]]  {left}
+	Expr.DivF       = [[Expr] /. [Expr]]  {left}
+	Expr.PowF       = [[Expr] ** [Expr]]  {right}
+	Expr.ListConc   = [[Expr] @ [Expr]]   {right}
+	Expr.StringConc = [[Expr] ^ [Expr]]   {right}
 	//this one isn't explained in the manual!
 	//Expr.UndefinedOperator = [[Expr] ! [Expr]]
-	Expr.ReferenceAssign = [[Expr] := [Expr]]  {right}
+	Expr.RefAssign = [[Expr] := [Expr]]  {right}
 	
 	//avoid because = is also used in let and record bindings
-	Expr.StructuralEquals       = [[Expr] = [Expr]]   {left, avoid}
-	Expr.StructuralInequals     = [[Expr] <> [Expr]]  {left}
-	Expr.PhysicalEquals         = [[Expr] == [Expr]]  {left}  
-	Expr.PhysicalInequals       = [[Expr] != [Expr]]  {left}  
-	Expr.LessThan               = [[Expr] < [Expr]]   {left}
-	Expr.LessThanEquals         = [[Expr] <= [Expr]]  {left}
-	Expr.GreaterThan            = [[Expr] > [Expr]]   {left}
-	Expr.GreaterThanEquals      = [[Expr] >= [Expr]]  {left}
-	Expr.FloatLessThan          = [[Expr] <. [Expr]]  {left} 
-	Expr.FloatLessThanEquals    = [[Expr] <=. [Expr]] {left}
-	Expr.FloatGreaterThan       = [[Expr] >. [Expr]]  {left} 
-	Expr.FloatGreaterThanEquals = [[Expr] >=. [Expr]] {left}
+	Expr.StructEq  = [[Expr] = [Expr]]   {left, avoid}
+	Expr.StructNeq = [[Expr] <> [Expr]]  {left}
+	Expr.PhyEq     = [[Expr] == [Expr]]  {left}  
+	Expr.PhyNeq    = [[Expr] != [Expr]]  {left}  
+	Expr.Lt        = [[Expr] < [Expr]]   {left}
+	Expr.Leq       = [[Expr] <= [Expr]]  {left}
+	Expr.Gt        = [[Expr] > [Expr]]   {left}
+	Expr.Geq       = [[Expr] >= [Expr]]  {left}
+	Expr.LtF       = [[Expr] <. [Expr]]  {left} 
+	Expr.LeqF      = [[Expr] <=. [Expr]] {left}
+	Expr.GtF       = [[Expr] >. [Expr]]  {left} 
+	Expr.GeqF      = [[Expr] >=. [Expr]] {left}
 
 context-free priorities
-	Expr.Dereference > {
+	Expr.Deref > {
 		Expr.RecordAccess
 		Expr.ArrayAccess
 	} >
 	Expr.FuncApp >
 	Expr.ConstrApp > {
 		Expr.Negate
-		Expr.FloatNegate
+		Expr.NegateF
 	} >
-	Expr.FloatPowerOf >
-	Expr.Modulo > {
-		Expr.Multiply
-		Expr.FloatMultiply
-		Expr.Division
-		Expr.FloatDivision
+	Expr.PowF >
+	Expr.Mod > {
+		Expr.Mul
+		Expr.MulF
+		Expr.Div
+		Expr.DivF
 	} > {
 		Expr.Add
-		Expr.FloatAdd
-		Expr.Subtract
-		Expr.FloatSubtract
+		Expr.AddF
+		Expr.Sub
+		Expr.SubF
 	} >
 	Expr.ConsExpr > {
-		Expr.ListConcat
-		Expr.StringConcat
+		Expr.ListConc
+		Expr.StringConc
 	} > {
-		Expr.StructuralEquals   
-		Expr.StructuralInequals 
-		Expr.PhysicalEquals     
-		Expr.PhysicalInequals   
-		Expr.LessThan           
-		Expr.LessThanEquals   
-		Expr.GreaterThan        
-		Expr.GreaterThanEquals
-		Expr.FloatLessThan      
-		Expr.FloatLessThanEquals   
-		Expr.FloatGreaterThan        
-		Expr.FloatGreaterThanEquals
+		Expr.StructEq   
+		Expr.StructNeq 
+		Expr.PhyEq     
+		Expr.PhyNeq   
+		Expr.Lt           
+		Expr.Leq   
+		Expr.Gt        
+		Expr.Geq
+		Expr.LtF      
+		Expr.LeqF   
+		Expr.GtF        
+		Expr.GeqF
 	} >
-	Expr.LogicalNot >
-	Expr.LogicalAnd >
-	Expr.LogicalOr >
+	Expr.Not >
+	Expr.And >
+	Expr.Or >
 	Expr.TupleExpr > {
 		Expr.RecordAssign
 		Expr.ArrayAssign
-		Expr.ReferenceAssign
+		Expr.RefAssign
 	} > {
 		Expr.IfExpr
 		Expr.IfElseExpr
 	} >
-	Expr.ExprSequence > { // when looking at examples, this seems to be in the wrong order somehow
+	Expr.ExprSeq > { // when looking at examples, this seems to be in the wrong order somehow
 		Expr.LetExpr     
 		Expr.LetRecExpr  
 		Expr.MatchExpr   

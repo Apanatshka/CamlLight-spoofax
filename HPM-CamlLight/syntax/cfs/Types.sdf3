@@ -6,27 +6,23 @@ imports
 context-free start-symbols
 	TypeExpr
 
-lexical syntax
-	TYPEVARIABLE = [\'] IDENT
+syntax
+	"'" <IDENT-CF> -> <TYPEVARIABLE-CF> {cons("TypeVar")} 
 
 templates
-	TypeExpr.TypeVariable   = [[TYPEVARIABLE]]
+	TypeExpr                = [[TYPEVARIABLE]]
 	TypeExpr                = [([TypeExpr])] {bracket}
 	TypeExpr.FuncType       = [[TypeExpr] -> [TypeExpr]] {right}
-	TypeExpr.TupleType      = [[TupleTypeExpr]] //{avoid}//,non-assoc}
-	TypeExpr.ConstrType     = [[GLOBALNAME]]
-	// prefer this rule over the one below when parens are used but only one TypeExpr is inside
-	TypeExpr.ConstrType     = [[TypeExpr] [GLOBALNAME]]
-	TypeExpr.ConstrListType = [([TypeExpr+; separator=","]) [GLOBALNAME]] {avoid}
+	TypeExpr.TupleType      = [[TupleTypeExpr]]
+	TypeExpr.ConstrType     = [[TypeExprParams] [GLOBALNAME]]
+	
+	TypeExprParams.TypeExprParams = [[TypeExpr?]]
+	TypeExprParams.TypeExprParams = [([TypeExpr+; separator=", "])]
 
 context-free priorities
-	// wrote this in SDF2 because SDF3 style priorities take the last rule resulting in the mentioned constructor...
-	{ %% Constr types
-		"(" {TypeExpr ","}+ ")" GLOBALNAME -> TypeExpr
-	  	TypeExpr GLOBALNAME -> TypeExpr
-  	} >
-    TupleTypeExpr -> TypeExpr > %% tuples
-    TypeExpr "->" TypeExpr -> TypeExpr %% functions
+	TypeExpr.ConstrType >
+    TypeExpr.TupleType  >
+    TypeExpr.FuncType
 
   context-free syntax
     TypeExpr "*" TypeExpr      -> TupleTypeExpr {ast("[<1>,<2>]")}
@@ -38,8 +34,3 @@ context-free priorities
   context-free priorities
   	TypeExpr "*" TupleTypeExpr -> TupleTypeExpr >
     TupleTypeExpr -> TypeExpr
-
-// // These should preferably be generated because of the non-assoc annotation on TypeExpr.TupleType, but that isn't the case right now. 
-// context-free priorities
-// 	TypeExpr -> {TypeExpr "*"}+ >
-// 	{TypeExpr "*"}+ -> TypeExpr
