@@ -22,6 +22,9 @@ template options
 templates
 	ExprRecordBind.ExprRecordBind = [[GLOBALNAME] = [Expr]]
 	
+	FuncOrConstr = [[Expr]]
+	FuncOrConstr = [[NCConstr]]
+	
 	//this is probably a mistake in the manual because it isn't explained and it's ambiguous with Variable
 	// Expr.Ident               = [[IDENT]]
 	// ambiguity with Constant is actually *wanted*
@@ -33,12 +36,12 @@ templates
 end] {bracket}
 	Expr.HasType   = [([Expr]: [TypeExpr])]
 	Expr.TupleExpr = [[TupleExpr]]
-	// NCConstr pattern is ambiguous with function application. Only the following special case is specified: 
-	Expr.ConstrApp    = [[NCConstr] [Expr]]
+	// NCConstr pattern is ambiguous with function application. FuncApp is expanded and will be desugared later 
+	// Expr.ConstrApp    = [[NCConstr] [Expr]]
 	Expr.ListLit      = <[<Expr+; separator="; ">]>
 	Expr.ArrayLit     = <[|<Expr+; separator="; ">|]>
 	Expr.RecordExpr   = [{[ExprRecordBind+; separator="; "]}]
-	Expr.FuncApp      = [[Expr] [Expr]] {left}
+	Expr.FuncOrConstrApp = [[FuncOrConstr] [Expr]] {left}
 	Expr.RecordAccess = [[Expr].[GLOBALNAME]]
 	// <- may be read as Lt(Negate(...)), hence the prefer
 	Expr.RecordAssign = [[Expr].[GLOBALNAME] <- [Expr]] {right, prefer}
@@ -123,8 +126,9 @@ context-free priorities
 		Expr.RecordAccess
 		Expr.ArrayAccess
 	} >
-	Expr.FuncApp >
-	Expr.ConstrApp > {
+	Expr.FuncOrConstrApp >
+	// Expr.ConstrApp > 
+	{
 		Expr.Negate
 		Expr.NegateF
 	} >

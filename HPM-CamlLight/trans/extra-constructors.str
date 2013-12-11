@@ -9,3 +9,6 @@ signature
   	TupleExpr       : List(Expr)      -> Expr
   	TuplePattern    : List(Pattern)   -> Pattern
   	TupleType       : List(TypeExpr)  -> TypeExpr
+
+	FuncApp         : Expr * Expr -> Expr
+	ConstrApp       : NCConstr * Expr -> Expr
