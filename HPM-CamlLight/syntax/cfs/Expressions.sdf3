@@ -25,23 +25,22 @@ templates
 	FuncOrConstr = [[Expr]]
 	FuncOrConstr = [[NCConstr]]
 	
-	//this is probably a mistake in the manual because it isn't explained and it's ambiguous with Variable
-	// Expr.Ident               = [[IDENT]]
 	// ambiguity with Constant is actually *wanted*
+	Expr.AmbRef = [[GLOBALNAME]] {prefer}
 	Expr = [[Variable]]
 	Expr = [[Constant]]
 	Expr = [([Expr])] {bracket}
 	Expr = [begin
 	[Expr]
 end] {bracket}
-	Expr.HasType   = [([Expr]: [TypeExpr])]
-	Expr.TupleExpr = [[TupleExpr]]
-	// NCConstr pattern is ambiguous with function application. FuncApp is expanded and will be desugared later 
-	// Expr.ConstrApp    = [[NCConstr] [Expr]]
+	Expr.HasType      = [([Expr]: [TypeExpr])]
+	Expr.TupleExpr    = [[TupleExpr]]
 	Expr.ListLit      = <[<Expr+; separator="; ">]>
 	Expr.ArrayLit     = <[|<Expr+; separator="; ">|]>
 	Expr.RecordExpr   = [{[ExprRecordBind+; separator="; "]}]
-	Expr.FuncOrConstrApp = [[FuncOrConstr] [Expr]] {left}
+	Expr.AmbApp       = [[FuncOrConstr] [Expr]] {left, prefer}
+	// Expr.FuncApp      = [[Expr] [Expr]] {left}
+	// Expr.ConstrApp    = [[NCConstr] [Expr]]
 	Expr.RecordAccess = [[Expr].[GLOBALNAME]]
 	// <- may be read as Lt(Negate(...)), hence the prefer
 	Expr.RecordAssign = [[Expr].[GLOBALNAME] <- [Expr]] {right, prefer}
@@ -54,7 +53,8 @@ end] {bracket}
 	Expr.WhileExpr    = [while [Expr] do [Expr] done]
 	Expr.ForExpr      = [for [IDENT] = [ForRange] do [Expr] done]
 	Expr.MatchExpr    = [match [Expr] with [SimpleMatch+; separator="\n| "]]
-	Expr.MatchExpr    = [match [Expr] with | [SimpleMatch+; separator="\n| "]] // undocumented form found in example programs
+	Expr.MatchExpr    = [match [Expr] with
+	| [SimpleMatch+; separator="\n| "]] // undocumented form found in example programs
 	Expr.FunDef       = [fun [MultiMatch+; separator="\n| "]]
 	Expr.FunDef       = [fun
 	| [MultiMatch+; separator="\n| "]] // undocumented form found in example programs
@@ -126,8 +126,7 @@ context-free priorities
 		Expr.RecordAccess
 		Expr.ArrayAccess
 	} >
-	Expr.FuncOrConstrApp >
-	// Expr.ConstrApp > 
+	Expr.AmbApp >
 	{
 		Expr.Negate
 		Expr.NegateF

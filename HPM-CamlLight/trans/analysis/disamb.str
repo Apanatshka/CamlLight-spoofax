@@ -1,0 +1,36 @@
+module trans/analysis/disamb
+
+imports
+  include/CamlLight
+  runtime/nabl/-
+  trans/analysis/names
+  trans/extra-constructors
+
+// Code to disambiguate the purposely ambiguous grammar using information from the NaBL analysis
+
+rules
+  disamb: AmbPattern(voc) -> res
+  with if <nabl-uri;nabl-uri-namespace> voc => NablNsCConstr()
+    then res := CConstr(GlobalName(None(), voc))
+    else res := PatternVar(voc)
+  end
+  
+  disamb: AmbRef(voc) -> res
+  with if <nabl-uri> voc => uri
+    then if <nabl-uri-namespace> uri => NablNsCConstr()
+	         then res := CConstr(voc)
+	         else fail
+         end
+         +
+         if <nabl-uri-namespace> uri => NablNsNCConstr()
+           then res := NCConstr(voc)
+           else fail
+         end
+    else res := Var(voc)
+  end
+  
+  disamb: AmbApp(ncc@NCConstr(_), arg) -> ConstrApp(ncc, arg)
+  disamb: AmbApp(other, arg) -> FuncApp(other, arg)
+  where <not(?NCConstr(_))> other
+  
+  disamb-all = id//bottomup(try(disamb))

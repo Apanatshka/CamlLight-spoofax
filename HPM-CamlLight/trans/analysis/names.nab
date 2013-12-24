@@ -39,8 +39,10 @@ binding rules //module implementation
 	PatternVar(v):         defines Var v
 	PatternAlias(_, v):    defines Var v
 	CConstr(cc):           refers to CConstr cc
+	AmbPattern(v):         refers to CConstr GlobalName(None(), v)
 	NCConstr(ncc):         refers to NCConstr ncc
 	Var(v):                refers to Var v
+	AmbRef(v):             refers to NCConstr v otherwise refers to CConstr v
 	ExprRecordBind(l,_):   refers to Label l
 	LetRecExpr(_,_):       scopes Var
 	LocalRecFunDef(v,p,e): defines Var v

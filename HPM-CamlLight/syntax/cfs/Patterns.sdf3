@@ -21,7 +21,8 @@ templates
 	PatternRecordBinding.PatternRecordBind = [[GLOBALNAME] = [Pattern]]
 	
 	// ambiguity with Constant is actually *wanted*
-	Pattern.PatternVar     = [[IDENT]]
+	Pattern.AmbPattern     = [[IDENT]] {prefer}
+	// Pattern.PatternVar     = [[IDENT]]
 	Pattern                = [[Constant]]
 	Pattern.PatternWC      = [_]
 	Pattern.PatternAlias   = [[Pattern] as [IDENT]]
