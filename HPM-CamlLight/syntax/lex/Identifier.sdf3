@@ -6,9 +6,10 @@ context-free start-symbols
 
 lexical syntax
 	IDENT = [A-Za-z]([\_]? [A-Za-z0-9])* [\_]?
-
+	
 syntax
-	(<IDENT-LEX> "__")? <IDENT-LEX> -> <GLOBALNAME-CF> {cons("GlobalName")}
+	<IDENT-LEX> "__" <IDENT-LEX> -> <GLOBALNAME-CF> {cons("GlobalName")}
+  <IDENT-LEX> -> <GLOBALNAME-CF> {cons("GlobalName")}
 
 lexical restrictions
 	IDENT -/- [A-Za-z0-9]
