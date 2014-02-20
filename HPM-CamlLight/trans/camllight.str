@@ -19,10 +19,10 @@ rules // Analysis
 	
 	editor-analyze = analysis-default-editor
 	
-	analysis-single-default-interface = 
-		analysis-single-default(desugar-all, disamb-all, id|<language>)
-	analysis-multiple-default-interface = 
-		analysis-multiple-default(parse-file <+ !(), desugar-all, disamb-all, id|<language>, <project-path>)
+	analysis-single-default-interface: (ast, path, project-path) -> 
+		<analysis-single-default(desugar-all, disamb-all;reanalyze-ast(|<language>, path, project-path), id|<language>)>
+	analysis-multiple-default-interface: (ast, path, project-path) ->
+		<analysis-multiple-default(parse-file <+ !(), desugar-all, disamb-all;reanalyze-ast(|<language>, path, project-path), id|<language>, <project-path>)>
 	
   // analysis-single-default-interface = 
   //   analysis-single-default(desugar-all, post-desugar-all, id|<language>)

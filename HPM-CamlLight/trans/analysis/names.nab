@@ -35,14 +35,17 @@ binding rules //module interface
 	ExcNCConstrDecl(ncc, te): defines NCConstr ncc of type te // of adttype "exn"
 
 binding rules //module implementation
-	Module(_):             scopes Var, CConstr, NCConstr, Type, Label
-	PatternVar(v):         defines Var v
-	PatternAlias(_, v):    defines Var v
-	CConstr(cc):           refers to CConstr cc
-	AmbPattern(v):         refers to CConstr GlobalName(None(), v)
-	NCConstr(ncc):         refers to NCConstr ncc
-	Var(v):                refers to Var v
-	AmbRef(v):             refers to NCConstr v otherwise refers to CConstr v
-	ExprRecordBind(l,_):   refers to Label l
-	LetRecExpr(_,_):       scopes Var
-	LocalRecFunDef(v,p,e): defines Var v
+	Module(_):              scopes Var, CConstr, NCConstr, Type, Label
+	AmbPattern(v):          refers to CConstr v
+	PatternVar(v):          defines Var v
+	PatternAlias(_, v):     defines Var v
+	CConstr(cc):            refers to CConstr cc
+	NCConstr(ncc):          refers to NCConstr ncc
+	AmbRef(v):              refers to NCConstr v otherwise refers to CConstr v
+	Var(v):                 refers to Var v
+	ExprRecordBind(l,_):    refers to Label l
+	LetRecExpr(_,_):        scopes Var
+	LocalRecFunDef(Var(v),p,e):     defines Var v
+  GlobalRecFunDef(Var(v),p,e):    defines Var v
+  LocalRecFunDef(Prefix(v),p,e):  defines Var v
+  GlobalRecFunDef(Prefix(v),p,e): defines Var v 

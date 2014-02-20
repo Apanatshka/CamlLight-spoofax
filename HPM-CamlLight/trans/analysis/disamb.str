@@ -33,4 +33,4 @@ rules
   disamb: AmbApp(other, arg) -> FuncApp(other, arg)
   where <not(?NCConstr(_))> other
   
-  disamb-all = id//bottomup(try(disamb))
+  disamb-all = bottomup(try(disamb))
