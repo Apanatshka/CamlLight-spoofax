@@ -36,12 +36,10 @@ binding rules //module interface
 
 binding rules //module implementation
 	Module(_):              scopes Var, CConstr, NCConstr, Type, Label
-	AmbPattern(v):          refers to CConstr v
 	PatternVar(v):          defines Var v
 	PatternAlias(_, v):     defines Var v
 	CConstr(cc):            refers to CConstr cc
 	NCConstr(ncc):          refers to NCConstr ncc
-	AmbRef(v):              refers to NCConstr v otherwise refers to CConstr v
 	Var(v):                 refers to Var v
 	ExprRecordBind(l,_):    refers to Label l
 	LetRecExpr(_,_):        scopes Var

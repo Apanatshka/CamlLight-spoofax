@@ -6,31 +6,29 @@ imports
   trans/analysis/names
   trans/extra-constructors
 
-// Code to disambiguate the purposely ambiguous grammar using information from the NaBL analysis
+// Code to disambiguate the purposely ambiguous grammar using information from the name analysis
 
 rules
-  disamb: AmbPattern(voc) -> res
-  with if <nabl-uri;nabl-uri-namespace> voc => NablNsCConstr()
-    then res := CConstr(GlobalName(None(), voc))
-    else res := PatternVar(voc)
-  end
+	
+  disamb: amb(l@[CConstr(_), Var(_)]) -> <disamb> amb(<reverse> l)
+  disamb: amb([v@Var(vn), c@CConstr(cn)]) -> res
+  with if <nabl-uri;nabl-uri-namespace> cn
+         then res := c
+         else res := v
+       end
   
-  disamb: AmbRef(voc) -> res
-  with if <nabl-uri> voc => uri
-    then if <nabl-uri-namespace> uri => NablNsCConstr()
-	         then res := CConstr(voc)
-	         else fail
-         end
-         +
-         if <nabl-uri-namespace> uri => NablNsNCConstr()
-           then res := NCConstr(voc)
-           else fail
-         end
-    else res := Var(voc)
-  end
+  disamb: amb(l@[CConstr(_), PatternVar(_)]) -> <disamb> amb(<reverse> l)
+  disamb: amb([v@PatternVar(vn), c@CConstr(cn)]) -> res
+  with if <nabl-uri;nabl-uri-namespace> cn
+         then res := c
+         else res := v
+       end
   
-  disamb: AmbApp(ncc@NCConstr(_), arg) -> ConstrApp(ncc, arg)
-  disamb: AmbApp(other, arg) -> FuncApp(other, arg)
-  where <not(?NCConstr(_))> other
+  disamb: amb(l@[ConstrApp(_,_), FuncApp(_,_)]) -> <disamb> amb(<reverse> l)
+  disamb: amb([fa@FuncApp(f, farg), ca@ConstrApp(c, carg)]) -> res
+  with if <?NCConstr(cn)> f; <nabl-uri;nabl-uri-namespace> cn
+         then res := ca
+         else res := fa
+       end
   
   disamb-all = bottomup(try(disamb))

@@ -14,3 +14,7 @@ signature
     ConstrApp       : NCConstr * Expr -> Expr
     
     PatternVar      : IDENT -> Pattern
+
+signature
+  constructors
+    amb : List(a) -> a

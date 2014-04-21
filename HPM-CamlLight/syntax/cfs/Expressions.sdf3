@@ -26,7 +26,6 @@ templates
 	FuncOrConstr = [[NCConstr]]
 	
 	// ambiguity with Constant is actually *wanted*
-	Expr.AmbRef = [[GLOBALNAME]] {prefer}
 	Expr = [[Variable]]
 	Expr = [[Constant]]
 	Expr = [([Expr])] {bracket}
@@ -38,9 +37,8 @@ end] {bracket}
 	Expr.ListLit      = <[<Expr+; separator="; ">]>
 	Expr.ArrayLit     = <[|<Expr+; separator="; ">|]>
 	Expr.RecordExpr   = [{[ExprRecordBind+; separator="; "]}]
-	Expr.AmbApp       = [[FuncOrConstr] [Expr]] {left, prefer}
-	// Expr.FuncApp      = [[Expr] [Expr]] {left}
-	// Expr.ConstrApp    = [[NCConstr] [Expr]]
+	Expr.FuncApp      = [[Expr] [Expr]] {left}
+	Expr.ConstrApp    = [[NCConstr] [Expr]]
 	Expr.RecordAccess = [[Expr].[GLOBALNAME]]
 	// <- may be read as Lt(Negate(...)), hence the prefer
 	Expr.RecordAssign = [[Expr].[GLOBALNAME] <- [Expr]] {right, prefer}
@@ -89,7 +87,7 @@ end] {bracket}
 	Expr.Or       = [[Expr] or [Expr]] {left}
 	Expr.ExprSeq  = [[Expr]; [Expr]]   {right}
 
-	Expr.Add             = [[Expr] + [Expr]]   {left}
+	Expr.Add        = [[Expr] + [Expr]]   {left}
 	// prefer over function application of negative number
 	Expr.Sub        = [[Expr] - [Expr]]   {left, prefer}
 	Expr.Mul        = [[Expr] * [Expr]]   {left}
@@ -105,7 +103,7 @@ end] {bracket}
 	Expr.StringConc = [[Expr] ^ [Expr]]   {right}
 	//this one isn't explained in the manual!
 	//Expr.UndefinedOperator = [[Expr] ! [Expr]]
-	Expr.RefAssign = [[Expr] := [Expr]]  {right}
+	Expr.RefAssign  = [[Expr] := [Expr]]  {right}
 	
 	//avoid because = is also used in let and record bindings
 	Expr.StructEq  = [[Expr] = [Expr]]   {left, avoid}
@@ -126,7 +124,10 @@ context-free priorities
 		Expr.RecordAccess
 		Expr.ArrayAccess
 	} >
-	Expr.AmbApp >
+	{
+		Expr.FuncApp
+		Expr.ConstrApp
+	} >
 	{
 		Expr.Negate
 		Expr.NegateF
