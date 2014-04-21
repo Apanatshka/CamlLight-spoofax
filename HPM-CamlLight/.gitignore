@@ -13,6 +13,7 @@ include/camllight.rtree
 include/camllight.ctree
 include/camllight.ctree.dep
 include/camllight.jar
+include/camllight-java.jar
 editor/java/trans
 editor/CamlLight-*.generated.esv
 syntax/CamlLight*.generated.esv
@@ -26,3 +27,4 @@ syntax/*/*.sdf
 editor/*.generated.*
 trans/*.generated.*
 syntax/*.pp
+trans/analysis/names.str
