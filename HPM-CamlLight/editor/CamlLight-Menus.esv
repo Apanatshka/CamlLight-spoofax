@@ -9,9 +9,10 @@ menus
   
   menu: "Actions"
     
-    action: "Generate Java"        = generate-java (openeditor) (realtime)
-    action: "Show Abstract Syntax" = debug-show-aterm (openeditor) (realtime) (meta) (source)
-    action: "Show Analyzed Syntax" = debug-show-analyzed (openeditor) (meta)
+    action: "Generate Java"         = generate-java (openeditor) (realtime)
+    action: "Show Abstract Syntax"  = debug-show-aterm (openeditor) (realtime) (meta) (source)
+    action: "Show Desugared Syntax" = debug-show-desugared (openeditor) (realtime) (meta) (source)
+    action: "Show Analyzed Syntax"  = debug-show-analyzed (openeditor) (meta)
     
     separator
     
