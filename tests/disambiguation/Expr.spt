@@ -27,7 +27,7 @@ test literal array doesn't see items as an expression sequence [[
 
 test expressions sequence in literal array with parentheses [[
 	[| (1;2) |]
-]] parse to ArrayLit([ExprSequence(_,_)])
+]] parse to ArrayLit([ExprSeq(_,_)])
 
 test if-then-else and plus [[
 	if x then 2 else 3 + 1
