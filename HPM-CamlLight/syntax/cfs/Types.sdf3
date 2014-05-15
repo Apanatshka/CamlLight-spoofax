@@ -16,21 +16,22 @@ templates
 	TypeExpr.TupleType      = [[TupleTypeExpr]]
 	TypeExpr.ConstrType     = [[TypeExprParams] [GLOBALNAME]]
 	
-	TypeExprParams.TypeExprParams = [[TypeExpr?]]
+  TypeExprParams.None           = []
+	TypeExprParams.TypeExprParam  = [[TypeExpr]] {prefer} // over TypeExprParams (handy for tests)
 	TypeExprParams.TypeExprParams = [([TypeExpr+; separator=", "])]
 
 context-free priorities
-	TypeExpr.ConstrType >
-    TypeExpr.TupleType  >
-    TypeExpr.FuncType
+  TypeExprParams.TypeExprParam > // i.e. TypeExpr.ConstrType
+  TypeExpr.TupleType  >
+  TypeExpr.FuncType
 
-  context-free syntax
-    TypeExpr "*" TypeExpr      -> TupleTypeExpr {ast("[<1>,<2>]")}
-    TypeExpr "*" TupleTypeExpr -> TupleTypeExpr {ast("<conc([<1>],<2>)>")}
+context-free syntax
+  TypeExpr "*" TypeExpr      -> TupleTypeExpr {ast("[<1>,<2>]")}
+  TypeExpr "*" TupleTypeExpr -> TupleTypeExpr {ast("<conc([<1>],<2>)>")}
 
-  context-free priorities
-  	TypeExpr "*" TypeExpr -> TupleTypeExpr >
-    TupleTypeExpr -> TypeExpr
-  context-free priorities
-  	TypeExpr "*" TupleTypeExpr -> TupleTypeExpr >
-    TupleTypeExpr -> TypeExpr
+context-free priorities
+	TypeExpr "*" TypeExpr -> TupleTypeExpr >
+  TupleTypeExpr -> TypeExpr
+context-free priorities
+	TypeExpr "*" TupleTypeExpr -> TupleTypeExpr >
+  TupleTypeExpr -> TypeExpr

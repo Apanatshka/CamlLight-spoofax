@@ -18,7 +18,7 @@ binding rules //module interface
 	ADTDef(tp, a, _):      defines Type a of type tp
 	                       scopes TypeVar
 	CConstrDecl(cc):       defines CConstr cc // of type tp from the above thingy.. How to get that one over here?
-	NCConstrDecl(ncc, te): defines NCConstr ncc of type te // nicer would be: te -> ADTtype
+	NCConstrDecl(ncc, te): defines NCConstr ncc // of type te // nicer would be: te -> ADTtype
 	RecordDef(tp, r, _):   defines Type r of type tp
 	                       scopes TypeVar
 	LabelDecl(l, te):      defines Label l of type te
@@ -32,7 +32,7 @@ binding rules //module interface
 	//ExcDef(_) adds to open adt `exn` from library "builtin"
 	ExcDef(_):                scopes TypeVar
 	ExcCConstrDecl(cc):       defines CConstr cc // of adttype "exn"
-	ExcNCConstrDecl(ncc, te): defines NCConstr ncc of type te // of adttype "exn"
+	ExcNCConstrDecl(ncc, te): defines NCConstr ncc // of type te // of adttype "exn"
 
 binding rules //module implementation
 	Module(_):              scopes Var, CConstr, NCConstr, Type, Label
@@ -43,7 +43,7 @@ binding rules //module implementation
 	Var(v):                 refers to Var v
 	ExprRecordBind(l,_):    refers to Label l
 	LetRecExpr(_,_):        scopes Var
-	LocalRecFunDef(Var(v),p,e):     defines Var v
-  GlobalRecFunDef(Var(v),p,e):    defines Var v
-  LocalRecFunDef(Prefix(v),p,e):  defines Var v
-  GlobalRecFunDef(Prefix(v),p,e): defines Var v 
+	 LocalRecFunDef(Var(v)   ,_,_): defines Var v scopes Var
+  GlobalRecFunDef(Var(v)   ,_,_): defines Var v scopes Var
+   LocalRecFunDef(Prefix(v),_,_): defines Var v scopes Var
+  GlobalRecFunDef(Prefix(v),_,_): defines Var v scopes Var

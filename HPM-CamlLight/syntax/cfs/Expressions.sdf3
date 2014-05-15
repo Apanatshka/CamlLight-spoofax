@@ -16,14 +16,18 @@ context-free syntax
 	Expr "," Expr      -> TupleExpr {ast("[<1>,<2>]")}
 	Expr "," TupleExpr -> TupleExpr {ast("<conc([<1>],<2>)>")}
 
+context-free priorities
+  Expr "," Expr -> TupleExpr >
+  TupleExpr -> Expr
+context-free priorities
+  Expr "," TupleExpr -> TupleExpr >
+  TupleExpr -> Expr
+
 template options
 	keyword -/- [A-Za-z0-9]
 
 templates
 	ExprRecordBind.ExprRecordBind = [[GLOBALNAME] = [Expr]]
-	
-	FuncOrConstr = [[Expr]]
-	FuncOrConstr = [[NCConstr]]
 	
 	// ambiguity with Constant is actually *wanted*
 	Expr = [[Variable]]
@@ -68,10 +72,10 @@ end] {bracket}
 	SimpleMatch.SimpleMatch = [[Pattern] -> [Expr]]
 	MultiMatch.MultiMatch   = [[Pattern+; separator=" "] -> [Expr]]
 	
-	LetBind.LocalValDef               = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
-	LetBind.LocalFunDef               = [[Variable] [Pattern+; separator=" "] = [Expr]] {prefer}
-	LetRecBind.LocalRecValDef         = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
-	LetRecBind.LocalRecFunDef         = [[Variable] [Pattern+; separator=" "] = [Expr]] {prefer}
+	LetBind.LocalValDef       = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
+	LetBind.LocalFunDef       = [[Variable] [Pattern+; separator=" "] = [Expr]] {prefer}
+	LetRecBind.LocalRecValDef = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
+	LetRecBind.LocalRecFunDef = [[Variable] [Pattern+; separator=" "] = [Expr]] {prefer}
 	
 	ForRange.RangeTo     = [[Expr] to [Expr]]
 	ForRange.RangeDownTo = [[Expr] downto [Expr]]
@@ -85,7 +89,8 @@ end] {bracket}
 	Expr.ConsExpr = [[Expr] :: [Expr]] {right}
 	Expr.And      = [[Expr] & [Expr]]  {left}
 	Expr.Or       = [[Expr] or [Expr]] {left}
-	Expr.ExprSeq  = [[Expr]; [Expr]]   {right}
+	Expr.ExprSeq  = [[Expr];
+  [Expr]]   {right}
 
 	Expr.Add        = [[Expr] + [Expr]]   {left}
 	// prefer over function application of negative number
@@ -101,8 +106,7 @@ end] {bracket}
 	Expr.PowF       = [[Expr] ** [Expr]]  {right}
 	Expr.ListConc   = [[Expr] @ [Expr]]   {right}
 	Expr.StringConc = [[Expr] ^ [Expr]]   {right}
-	//this one isn't explained in the manual!
-	//Expr.UndefinedOperator = [[Expr] ! [Expr]]
+	//[[Expr] ! [Expr]] isn't explained in the manual!
 	Expr.RefAssign  = [[Expr] := [Expr]]  {right}
 	
 	//avoid because = is also used in let and record bindings
@@ -186,15 +190,3 @@ context-free priorities
     { Expr -> {Expr ";"}+
       GLOBALNAME "=" Expr -> ExprRecordBinding } >
     Expr ";" Expr -> Expr
-
-context-free priorities
-	Expr "," Expr -> TupleExpr >
-	TupleExpr -> Expr
-context-free priorities
-	Expr "," TupleExpr -> TupleExpr >
-	TupleExpr -> Expr
-
-// // These should preferably be generated because of the non-assoc annotation on Expr.TupleExpr, but that isn't the case right now. 
-// context-free priorities
-// 	Expr -> {Expr ","}+ >
-// 	{Expr ","}+ -> Expr

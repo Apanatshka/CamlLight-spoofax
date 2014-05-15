@@ -12,6 +12,13 @@ context-free syntax
     Pattern "," Pattern      -> TuplePattern {ast("[<1>,<2>]")}
     Pattern "," TuplePattern -> TuplePattern {ast("<conc([<1>],<2>)>")}
 
+context-free priorities
+    Pattern "," Pattern -> TuplePattern >
+    TuplePattern -> Pattern
+context-free priorities
+    Pattern "," TuplePattern -> TuplePattern >
+    TuplePattern -> Pattern
+
 template options
 	tokenize: "[("
 	keyword -/- [A-Za-z]
@@ -42,15 +49,3 @@ context-free priorities
 	Pattern.TuplePattern    >
 	Pattern.PatternChoice   >
 	Pattern.PatternAlias
-
-context-free priorities
-  	Pattern "," Pattern -> TuplePattern >
-    TuplePattern -> Pattern
-context-free priorities
-  	Pattern "," TuplePattern -> TuplePattern >
-    TuplePattern -> Pattern
-
-// // These should preferably be generated because of the non-assoc annotation on Pattern.TuplePattern, but that isn't the case right now. 
-// context-free priorities
-// 	Pattern -> {Pattern ","}+ >
-// 	{Pattern ","}+ -> Pattern

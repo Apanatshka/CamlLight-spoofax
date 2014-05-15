@@ -46,13 +46,6 @@ rules
 	desugar: GtF(e1,e2)        -> FApp(">.",  e1, e2)
 	desugar: GeqF(e1,e2)       -> FApp(">=.", e1, e2)
 	
-	// normalisation of the `TypeParams?` part of type definitions
-	desugar: TypeParams(None())   -> TypeParams([])
-	desugar: TypeParams(Some(tv)) -> TypeParams([tv])
-	// normalisation of the `TypeExprParams?` part of type expressions
-	desugar: TypeExprParams(None())   -> TypeExprParams([])
-	desugar: TypeExprParams(Some(te)) -> TypeExprParams([te])
-	
 	//IDENT -> GlobalName
 	desugar: CConstrDecl(cc) -> CConstrDecl(GlobalName(cc))
 
