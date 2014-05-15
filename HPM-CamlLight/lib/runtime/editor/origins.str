@@ -2,7 +2,7 @@ module runtime/editor/origins
 
 imports
 	
-	runtime/editor/editor
+	runtime/editor/eclipse
 
 strategies
   

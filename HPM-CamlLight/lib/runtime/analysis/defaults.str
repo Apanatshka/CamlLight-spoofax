@@ -5,19 +5,21 @@ imports
 	runtime/analysis/core
 	runtime/analysis/single
 	runtime/analysis/multiple
+	runtime/analysis/interface
 	runtime/nabl/utils
 	runtime/index/core
 	runtime/task/core
 	runtime/editor/editor
 	runtime/editor/queue
+	runtime/editor/dynrule
 
 rules // Analysis
 	
 	analysis-default-editor = analysis-single-default-interface <+ (where(not(is-tuple)); analysis-multiple-default-queue)
 	analysis-default-cmd = analysis-single-default-interface <+ (where(not(is-tuple)); analysis-multiple-default-interface)
 
-  analysis-changed-partitions:
-  	taskID* -> <task-partitions-of(|taskID*)>
+  analysis-changed-sources:
+  	task-id* -> <task-sources-of(|task-id*)>
   	
   is-test-file = 
     string-ends-with(|".spt")
@@ -27,10 +29,11 @@ rules // Single finle analysis
 	analysis-single-default-interface = fail
 	
   analysis-single-default(desugar-before, desugar-after, pp-message|language):
-    (ast, path, project-path) -> (analyzed-ast, error*, warning*, note*)
+    (ast, path, project-path) -> (analyzed-ast', error*, warning*, note*)
     with
       editor-init;
       <analysis-default-debug(!"Analyzing file: ")> path;
+      partition := <analysis-partition(|path, project-path)>;
       
 	    (
 	    	analyzed-ast
@@ -43,13 +46,13 @@ rules // Single finle analysis
 			, evaluated-task*
 			, skipped-task*
 			, unevaluated-task*
-			) := <desugar-before; analyze-one(|language, path, project-path); desugar-after> ast;
+			) := <(analysis-pre-trans <+ desugar-before); analyze-one(|language, path, project-path)> ast;
+			analyzed-ast' := <analysis-post-trans(|partition) <+ desugar-after> analyzed-ast;
 			
-      (error*, warning*, note*) := <analysis-message-collect(pp-message|analysis-error*, analysis-warning*, analysis-note*)> analyzed-ast;
+      (error*, warning*, note*) := <analysis-message-collect(pp-message|analysis-error*, analysis-warning*, analysis-note*)> analyzed-ast';
       
-      partition* := <analysis-changed-partitions> evaluated-task*;
+      partition* := <analysis-changed-sources; filter(is-string)> evaluated-task*;
       if <not(is-test-file)> path then
-      	partition := <analysis-partition(|path, project-path)>;
       	<remove-all(?partition <+ ?path); analysis-message-update-partitions-queue(|language, project-path)> partition*
     	end;
     	
@@ -73,7 +76,7 @@ rules // Multi-file analysis
       measure-time(
 	      measure-time(
 	      	path'* := <map(\p -> $[[project-path]/[p]]\)> path*;
-	        (result*, evaluated-task*, skipped-task*, unevaluated-task*) := <analyze-multiple(parse; desugar-before, complete-work-unit|language, project-path)> path'*;
+	        (result*, evaluated-task*, skipped-task*, unevaluated-task*) := <analyze-multiple(parse; (analysis-pre-trans <+ desugar-before), complete-work-unit|language, project-path)> path'*;
 	        (analysis-result*, debug-result*) := <unzip> result*
 	      , analysis-default-debug-time(!"Time - analysis: ") | "analysis-multiple-full-analysis"
 	      );
@@ -82,14 +85,19 @@ rules // Multi-file analysis
 	      	// TODO: Update markers for partitions that have had a task executed but were not analyzed.
 	      , analysis-default-debug-time(!"Time - messages: ") | "analysis-multiple-update-editors"
 	      );
-	    	measure-time(
-		      index-persist
-	      , analysis-default-debug-time(!"Time - index persistance: ") | "analysis-multiple-index-persist"
-	      );
-	    	measure-time(
-		      task-persist
-	      , analysis-default-debug-time(!"Time - task engine persistance: ") | "analysis-multiple-task-persist"
-	      )	      
+	    	(
+	    		analysis-disable-persist <+
+	    		(
+			    	measure-time(
+				      index-persist
+			      , analysis-default-debug-time(!"Time - index persistance: ") | "analysis-multiple-index-persist"
+			      );
+			    	measure-time(
+				      task-persist
+			      , analysis-default-debug-time(!"Time - task engine persistance: ") | "analysis-multiple-task-persist"
+			      )
+		      )
+	      )  
 	    , analysis-default-debug-time(!"Time - total: ") | "analysis-multiple-total"
       );
     	measure-time(
@@ -122,7 +130,7 @@ rules // Multi-file analysis
     where
       not(() := initial-ast)
     with
-    	analyzed-desugared-ast := <desugar-after> analyzed-ast;
+    	analyzed-desugared-ast := <analysis-post-trans(|partition) <+ desugar-after> analyzed-ast;
       (error'*, warning'*, note'*) := <analysis-message-collect(pp-message|error*, warning*, note*)> analyzed-desugared-ast;
       <set-markers(|partition)> (analyzed-ast, error'*, warning'*, note'*)
 

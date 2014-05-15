@@ -2,18 +2,26 @@ module runtime/nabl/interface
 
 strategies // Collect
   
+  nabl-collect-rewrite(|lang, partition, old-uri*, new-uri*) = fail
+  
 	nabl-scoping-site = fail
-	
+  
+  nabl-new-scoping-site = fail
+  
 	nabl-def-site(
 	  child-uris, sibiling-uris, implicits
 	| lang, partition, unique*, uri*, state*
 	) = fail
 	
-	nabl-external-def-site(|partition) = fail
+	nabl-external-def-site(|lang, partition, unique*, uri*, state*, implicit*) = fail
 
 	nabl-state-site = fail
 	
 	nabl-use-site(|lang, partition, unique*, uri*, state*) = fail
+	
+	nabl-filtering-site(|lang, partition, unique*, uri*, state*) = fail
+	
+	nabl-disambiguation-site(|lang, partition, unique*, uri*, state*) = fail
 	
 	nabl-import-site(|lang, partition, unique*, uri*, state*) = fail
 	
@@ -27,7 +35,9 @@ strategies // Projections
 	
 strategies // Lookup hooks
 		
-	nabl-disambiguate(|prop*, namespace, name) = fail
+	nabl-filter-def(|ctx, uri*, ctx-terms, ctx-string) = fail
+	
+	nabl-disambiguate-def(|ctx, uri*, ctx-terms, ctx-string) = fail
 
 strategies // Name generation
 	
