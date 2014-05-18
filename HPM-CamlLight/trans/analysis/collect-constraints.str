@@ -1,0 +1,38 @@
+module analysis/collect-constraints
+
+imports
+  include/CamlLight
+  extra-constructors
+  analysis/constraints
+  lib/runtime/nabl/-
+  lib/runtime/task/-
+  lib/runtime/types/-
+
+strategies
+  collect-constraint: GlobalFunDef(name, params, body) ->
+      ([(name, name-ty), params-n*, body-n*], [params-c*, body-c*])
+      where params-tv := <map(fresh-var)> params
+          ; body-tv   := <fresh-var>
+          ; name-ty   := <foldr(!body-tv, !FuncType(<Fst>, <Snd>))> params-tv
+          ; (params-n*,params-c*) := <zip(collect-constraint <+ ());debug;filter(not(?()));unzip;(concat,concat)> (params, params-tv)
+          ; (body-n*, body-c*) := <collect-constraint> (body, body-tv)
+  
+  collect-constraint: (PatternVar(name), tv) -> ([(name, tv)],[])
+  collect-constraint: (FuncApp(f, a), tv) -> ([n1*,n2*],[c,c1*,c2*])
+    where f-tv := <fresh-var>
+        ; a-tv := <fresh-var>
+        ; (n1*,c1*) := <collect-constraint> (f,f-tv)
+        ; (n2*,c2*) := <collect-constraint> (a,a-tv)
+        ; c   := CEq(f-tv, FuncType(a-tv, tv))
+  collect-constraint: (p@Prefix(_), tv) -> ([],[CEq(tv, <get-type> p)])
+  collect-constraint: (i@Int(_), tv) -> ([],[CEq(tv, <get-type> i)])
+  collect-constraint: (Var(gn), tv) -> ([(<name-resolve> gn, tv)], [])
+  
+  name-resolve: name -> "TODO: name resolution"
+  
+  collect-constraints: 
+    Module(mp*) -> constraint*
+      where constraint* := <map({?MP(ValDef(l));<map(collect-constraint)> l})
+                           ;concat
+                           ;unzip
+                           ;(concat,concat)> mp*

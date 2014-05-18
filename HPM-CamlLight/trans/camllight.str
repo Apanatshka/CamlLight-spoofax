@@ -13,7 +13,8 @@ imports
   lib/runtime/task/-
   lib/runtime/index/-
   
-  analysis/-
+  trans/analysis/-
+  trans/editor/-
 
 rules // Analysis
 	

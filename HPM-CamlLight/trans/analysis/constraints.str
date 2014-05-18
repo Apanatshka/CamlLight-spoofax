@@ -1,0 +1,13 @@
+module analysis/constraints
+
+imports
+  include/CamlLight
+  extra-constructors
+
+signature
+  constructors
+    CEq     : TypeExpr * TypeExpr -> Constraint
+
+strategies
+  // note that this strategy creates a type variable with *two* apostrophes in front of it to show that it is generated
+	fresh-var = !TypeVar(<conc-strings>("''", <newname> "t"))
