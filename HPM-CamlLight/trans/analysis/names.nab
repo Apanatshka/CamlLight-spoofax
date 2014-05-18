@@ -43,7 +43,8 @@ binding rules //module implementation
 	Var(v):                 refers to Var v
 	ExprRecordBind(l,_):    refers to Label l
 	LetRecExpr(_,_):        scopes Var
-	 LocalRecFunDef(Var(v)   ,_,_): defines Var v scopes Var
-  GlobalRecFunDef(Var(v)   ,_,_): defines Var v scopes Var
+	 LocalRecFunDef(v        ,_,_): defines Var v scopes Var
+  GlobalRecFunDef(v        ,_,_): defines Var v scopes Var
    LocalRecFunDef(Prefix(v),_,_): defines Var v scopes Var
   GlobalRecFunDef(Prefix(v),_,_): defines Var v scopes Var
+  // {Global,Local}FunDef cannot be defined in the current version of NaBL, see issue #75 (http://yellowgrass.org/issue/NaBL/75)

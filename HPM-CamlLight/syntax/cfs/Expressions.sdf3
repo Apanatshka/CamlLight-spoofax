@@ -27,10 +27,10 @@ template options
 	keyword -/- [A-Za-z0-9]
 
 templates
-	ExprRecordBind.ExprRecordBind = [[GLOBALNAME] = [Expr]]
+	ExprRecordBind.ExprRecordBind = [[GlobalName] = [Expr]]
 	
 	// ambiguity with Constant is actually *wanted*
-	Expr = [[Variable]]
+	Expr.Var = [[Name]]
 	Expr = [[Constant]]
 	Expr = [([Expr])] {bracket}
 	Expr = [begin
@@ -43,9 +43,9 @@ end] {bracket}
 	Expr.RecordExpr   = [{[ExprRecordBind+; separator="; "]}]
 	Expr.FuncApp      = [[Expr] [Expr]] {left}
 	Expr.ConstrApp    = [[NCConstr] [Expr]]
-	Expr.RecordAccess = [[Expr].[GLOBALNAME]]
+	Expr.RecordAccess = [[Expr].[GlobalName]]
 	// <- may be read as Lt(Negate(...)), hence the prefer
-	Expr.RecordAssign = [[Expr].[GLOBALNAME] <- [Expr]] {right, prefer}
+	Expr.RecordAssign = [[Expr].[GlobalName] <- [Expr]] {right, prefer}
 	Expr.ArrayAccess  = [[Expr].([Expr])]
 	// <- may be read as Lt(Negate(...)), hence the prefer
 	Expr.ArrayAssign  = [[Expr].([Expr]) <- [Expr]] {right, prefer}
@@ -73,9 +73,9 @@ end] {bracket}
 	MultiMatch.MultiMatch   = [[Pattern+; separator=" "] -> [Expr]]
 	
 	LetBind.LocalValDef       = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
-	LetBind.LocalFunDef       = [[Variable] [Pattern+; separator=" "] = [Expr]] {prefer}
+	LetBind.LocalFunDef       = [[Name] [Pattern+; separator=" "] = [Expr]] {prefer}
 	LetRecBind.LocalRecValDef = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
-	LetRecBind.LocalRecFunDef = [[Variable] [Pattern+; separator=" "] = [Expr]] {prefer}
+	LetRecBind.LocalRecFunDef = [[Name] [Pattern+; separator=" "] = [Expr]] {prefer}
 	
 	ForRange.RangeTo     = [[Expr] to [Expr]]
 	ForRange.RangeDownTo = [[Expr] downto [Expr]]
@@ -188,5 +188,5 @@ context-free priorities
 // disambiguation: Keep expression sequence from being considered inside list/array/record literals
 context-free priorities
     { Expr -> {Expr ";"}+
-      GLOBALNAME "=" Expr -> ExprRecordBinding } >
+      GlobalName "=" Expr -> ExprRecordBinding } >
     Expr ";" Expr -> Expr

@@ -2,45 +2,16 @@ module cfs/Names
 
 imports
 	lex/Identifier
+	lex/Operator
 
 context-free start-symbols
-	Variable
+	Name
 
 template options
 	tokenize: "[("
 	keyword -/- [A-Za-z]
 
 templates
-	Variable.Var    = [[GLOBALNAME]]
-	Variable.Prefix = [prefix [OPERATOR]]
-
-lexical syntax
-	OPERATOR = "+" 
-	OPERATOR = "-" 
-	OPERATOR = "*" 
-	OPERATOR = "/" 
-	OPERATOR = "mod" 
-	OPERATOR = "+." 
-	OPERATOR = "-." 
-	OPERATOR = "*." 
-	OPERATOR = "/." 
-	OPERATOR = "@" 
-	OPERATOR = "^" 
-	OPERATOR = "!" 
-	OPERATOR = ":=" 
-	OPERATOR = "=" 
-	OPERATOR = "<>" 
-	OPERATOR = "==" 
-	OPERATOR = "!=" 
-	OPERATOR = "!" 
-	OPERATOR = "<" 
-	OPERATOR = "<=" 
-	OPERATOR = ">" 
-	OPERATOR = "<=" 
-	OPERATOR = "<." 
-	OPERATOR = "<=." 
-	OPERATOR = ">." 
-	OPERATOR = "<=."
-	OPERATOR = "not"
-	OPERATOR = "::"
+	Name        = [[GlobalName]]
+	Name.Prefix = [prefix [OPERATOR]]
 	

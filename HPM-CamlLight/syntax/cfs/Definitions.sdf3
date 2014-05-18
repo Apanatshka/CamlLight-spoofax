@@ -29,7 +29,8 @@ templates
 	TypeDefPart.AbstrType    = [[TypeParams] [IDENT]]
 	TypeDefPart.MutAbstrType = [[TypeParams] [IDENT] mutable]
 	
-	TypeParams.TypeParams    = [[TYPEVARIABLE?]]
+	TypeParams.None          = []
+  TypeParams               = [[TYPEVARIABLE]]
 	TypeParams.TypeParams    = [([TYPEVARIABLE+; separator=","])]
 	
 	ConstrDecl.CConstrDecl   = [[IDENT]]
@@ -48,9 +49,9 @@ templates
 	ValDef.RecValueDef       = [let rec [GlobalLetRecBind+; separator="and"]]
 	
 	GlobalLetBind.GlobalValDef        = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
-	GlobalLetBind.GlobalFunDef        = [[Variable] [Pattern+; separator=" "] = [Expr]] {prefer}
+	GlobalLetBind.GlobalFunDef        = [[Name] [Pattern+; separator=" "] = [Expr]] {prefer}
 	GlobalLetRecBind.GlobalRecValDef  = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
-	GlobalLetRecBind.GlobalRecFunDef  = [[Variable] [Pattern+; separator=" "] = [Expr]] {prefer}
+	GlobalLetRecBind.GlobalRecFunDef  = [[Name] [Pattern+; separator=" "] = [Expr]] {prefer}
 	
 	ValDecl.ValDecl          = [value [ValDeclPart+; separator="and"]]
 	

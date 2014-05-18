@@ -21,9 +21,9 @@ templates
 	Constant.String = [[STRING]]
 	Constant        = [[CConstr]]
 	
-	CConstr.CConstr   = [[GLOBALNAME]]
+	CConstr.CConstr   = [[GlobalName]]
 	CConstr.EmptyList = <[]>
 	CConstr.Unit      = [()]
 
-	NCConstr.NCConstr   = [[GLOBALNAME]]
+	NCConstr.NCConstr   = [[GlobalName]]
 	NCConstr.PrefixCons = [prefix ::]

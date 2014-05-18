@@ -6,14 +6,14 @@ imports
 
 overlays
 	
-	FApp(name, e1, e2) = FuncApp(Prefix(name), TupleExpr([e1, e2]))
+	FApp(name, e1, e2) = FuncApp(FuncApp(Prefix(name), e1), e2)
 		
 rules
 	// prefix and infix operators are desugared here to function or constructor application 
 	// as suggested in the CamlLight Manual: http://caml.inria.fr/pub/docs/manual-caml-light/node3.8.html
 	
-	desugar: Negate(e)  -> FuncApp(Var("minus"), e)
-	desugar: NegateF(e) -> FuncApp(Var("minus_float"), e)
+	desugar: Negate(e)  -> FuncApp(GlobalName("minus"), e)
+	desugar: NegateF(e) -> FuncApp(GlobalName("minus_float"), e)
 	desugar: Deref(e)   -> FuncApp(Prefix("!"), e)
 	desugar: Not(e)     -> FuncApp(Prefix("not"), e)
 	

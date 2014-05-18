@@ -2,18 +2,18 @@ module lex/Identifier
 
 context-free start-symbols
 	IDENT
-	GLOBALNAME
+	GlobalName
 
 lexical syntax
 	IDENT = [A-Za-z]([\_]? [A-Za-z0-9])* [\_]?
 	
 syntax
-	<IDENT-LEX> "__" <IDENT-LEX> -> <GLOBALNAME-CF> {cons("GlobalName")}
-  <IDENT-LEX> -> <GLOBALNAME-CF> {cons("GlobalName")}
+	<IDENT-LEX> "__" <IDENT-LEX> -> <GlobalName-CF> {cons("GlobalName")}
+  <IDENT-LEX> -> <GlobalName-CF> {cons("GlobalName")}
 
 lexical restrictions
 	IDENT -/- [A-Za-z0-9]
-	// Can't do: IDENT -/- [\_] . [A-Za-z0-9], because it matches the first two characters in GLOBALNAME a__b, then it'll fail to match the first IDENT in GLOBALNAME 
+	// Can't do: IDENT -/- [\_] . [A-Za-z0-9], because it matches the first two characters in GlobalName a__b, then it'll fail to match the first IDENT in GlobalName 
 
 //keywords
 lexical syntax

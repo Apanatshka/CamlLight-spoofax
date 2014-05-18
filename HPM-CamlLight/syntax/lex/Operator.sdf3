@@ -1,0 +1,34 @@
+module lex/Operator
+
+context-free start-symbols
+  OPERATOR
+
+lexical syntax
+  OPERATOR = "+" 
+  OPERATOR = "-" 
+  OPERATOR = "*" 
+  OPERATOR = "/" 
+  OPERATOR = "mod" 
+  OPERATOR = "+." 
+  OPERATOR = "-." 
+  OPERATOR = "*." 
+  OPERATOR = "/." 
+  OPERATOR = "@" 
+  OPERATOR = "^" 
+  OPERATOR = "!" 
+  OPERATOR = ":=" 
+  OPERATOR = "=" 
+  OPERATOR = "<>" 
+  OPERATOR = "==" 
+  OPERATOR = "!=" 
+  OPERATOR = "!" 
+  OPERATOR = "<" 
+  OPERATOR = "<=" 
+  OPERATOR = ">" 
+  OPERATOR = "<=" 
+  OPERATOR = "<." 
+  OPERATOR = "<=." 
+  OPERATOR = ">." 
+  OPERATOR = "<=."
+  OPERATOR = "not"
+  OPERATOR = "::"

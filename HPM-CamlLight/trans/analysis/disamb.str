@@ -24,6 +24,7 @@ rules
          else res := v
        end
   
+  // how is it going to be useful to discriminate function and constructor applications?
   disamb: amb(l@[ConstrApp(_,_), FuncApp(_,_)]) -> <disamb> amb(<reverse> l)
   disamb: amb([fa@FuncApp(f, farg), ca@ConstrApp(c, carg)]) -> res
   with if <?NCConstr(cn)> f; <nabl-uri;nabl-uri-namespace> cn
