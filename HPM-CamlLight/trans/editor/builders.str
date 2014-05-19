@@ -1,0 +1,17 @@
+module editor/builders
+
+imports
+  include/CamlLight
+  
+  analysis/collect-constraints
+  
+  lib/editor-common.generated
+  lib/runtime/task/-
+  lib/runtime/index/-
+
+rules
+  debug-show-type-constraints: (selected, position, ast, path, project-path)
+      -> (file, result)
+    where task-setup(|project-path); index-setup(|<language>, project-path)
+        ; file   := <guarantee-extension(|"generated.tcs")> path
+        ; result := <collect-constraints(|<language>, project-path)> ast

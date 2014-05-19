@@ -2,3 +2,5 @@
 *.aterm
 *.generated.*
 *.index
+*.task
+*.analysis

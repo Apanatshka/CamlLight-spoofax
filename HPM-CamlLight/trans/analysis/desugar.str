@@ -48,6 +48,7 @@ rules
 	
 	//IDENT -> GlobalName
 	desugar: CConstrDecl(cc) -> CConstrDecl(GlobalName(cc))
+  desugar: PatternVar(v) -> PatternVar(GlobalName(v))
 
 strategies
 	desugar-all = bottomup(try(desugar))
