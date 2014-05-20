@@ -34,12 +34,17 @@ strategies
         ; Def(uri) := <task-get-results; Hd> u
   name-resolve: name -> uri
     where <has-annotation(?Def(uri))> name
+
+  constraints-from-names: l -> l''
+    where l' := <keys;map(multi-lookup(|l))> l
+        ; l'' := <filter(min-length(|2));mapconcat(multi-eq-to-eq(mkCEq))> l'
   
   collect-constraints(|l, p-p): 
-    Module(mp*) -> constraint*
-      where constraint* := <map(collect-constraints-helper(|l, p-p))
-                           ;concat
+    Module(mp*) -> (names', constraints')
+      where (names, constraints) := <mapconcat(collect-constraints-helper(|l, p-p))
                            ;unzip
                            ;(concat,concat)> mp*
+          ; constraints' := <conc>(<constraints-from-names> names,constraints)
+          ; names'       := <keys;map(!(<id>,<lookup>(<id>,names)))> names
   collect-constraints-helper(|l, p-p):
   	MP(ValDef(list)) -> <map(collect-constraint(|l, p-p))> list

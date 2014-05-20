@@ -14,6 +14,7 @@ menus
     action: "Show Desugared Syntax" = debug-show-desugared (openeditor) (realtime) (meta) (source)
     action: "Show Analyzed Syntax"  = debug-show-analyzed (openeditor) (meta)
     action: "Show Type Constraints" = debug-show-type-constraints (openeditor) (meta)
+    action: "Show Solved Type Constraints" = debug-show-resolved-constraints (openeditor) (meta)
     
     separator
     

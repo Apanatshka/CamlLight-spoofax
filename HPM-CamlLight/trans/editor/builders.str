@@ -4,6 +4,7 @@ imports
   include/CamlLight
   
   analysis/collect-constraints
+  analysis/solve-constraints
   
   lib/editor-common.generated
   lib/runtime/task/-
@@ -13,5 +14,11 @@ rules
   debug-show-type-constraints: (selected, position, ast, path, project-path)
       -> (file, result)
     where task-setup(|project-path); index-setup(|<language>, project-path)
-        ; file   := <guarantee-extension(|"generated.tcs")> path
+        ; file   := <guarantee-extension(|"generated.tc")> path
         ; result := <collect-constraints(|<language>, project-path)> ast
+
+  debug-show-resolved-constraints: (selected, position, ast, path, project-path)
+      -> (file, result)
+    where task-setup(|project-path); index-setup(|<language>, project-path)
+        ; file   := <guarantee-extension(|"generated.stc")> path
+        ; result := <collect-constraints(|<language>, project-path);solve-constraints> ast
