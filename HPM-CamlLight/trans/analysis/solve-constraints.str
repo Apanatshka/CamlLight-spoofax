@@ -17,7 +17,7 @@ strategies
   solve-constraints = fixpoint(remove-aliases;fuse-constraints;expand-constraints)
                     ; ?(n,l)
                     ; <map((try(nabl-uri-name),alltd(solve-constraints-helper(|<map({\CEq(a,b) -> (a,b)\})>l))))> n
-  solve-constraints-helper(|l): tv@TypeVar(_) -> <debug;lookup> (tv,l)
+  solve-constraints-helper(|l): tv@TypeVar(_) -> <lookup> (tv,l)
 
   fuse-constraints: (n,c) -> (n,<foldl(fuse-constraints-helper <+ Snd)> (c',c'))
     where c' := <map(typevar-first)> c
@@ -31,10 +31,10 @@ strategies
   
   expand-constraints = (id,mapconcat(expand-constraint))
   
-  expand-constraint: CEq(TypeVar(_),_) -> [<id>]
-  expand-constraint: CEq(FuncType(a1,b1),FuncType(a2,b2)) -> [CEq(a1,a2), CEq(b1,b2)]
-  expand-constraint: CEq(TupleType(l1),TupleType(l2)) -> <zip(mkCEq)> (l1,l2)
-  expand-constraint: CEq(ConstrType(p1, n),ConstrType(p2, n)) -> [<mkCEq> (p1,p2)]
-  expand-constraint: CEq(None(),None()) -> []
+  expand-constraint: CEq(TypeVar(_),_)                          -> [<id>]
+  expand-constraint: CEq(FuncType(a1,b1),FuncType(a2,b2))       -> [CEq(a1,a2), CEq(b1,b2)]
+  expand-constraint: CEq(TupleType(l1),TupleType(l2))           -> <zip(mkCEq)> (l1,l2)
+  expand-constraint: CEq(ConstrType(p1, n),ConstrType(p2, n))   -> [<mkCEq> (p1,p2)]
+  expand-constraint: CEq(None(),None())                         -> []
   expand-constraint: CEq(TypeExprParams(l1),TypeExprParams(l2)) -> <zip(mkCEq)> (l1,l2)
   

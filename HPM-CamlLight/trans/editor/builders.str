@@ -20,5 +20,5 @@ rules
   debug-show-resolved-constraints: (selected, position, ast, path, project-path)
       -> (file, result)
     where task-setup(|project-path); index-setup(|<language>, project-path)
-        ; file   := <guarantee-extension(|"generated.stc")> path
+        ; file   := <guarantee-extension(|"generated.ty")> path
         ; result := <collect-constraints(|<language>, project-path);solve-constraints> ast
