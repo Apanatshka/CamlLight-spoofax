@@ -26,7 +26,11 @@ strategies
         ; (n2*,c2*) := <collect-constraint(|l, p-p)> (a,a-tv)
         ; c   := CEq(f-tv, FuncType(a-tv, tv))
   collect-constraint(|l, p-p): (p@Prefix(_), tv) -> ([],[CEq(tv, <get-type> p)])
-  collect-constraint(|l, p-p): (i@Int(_), tv) -> ([],[CEq(tv, <get-type> i)])
+  collect-constraint(|l, p-p): (i@Int(_), tv)    -> ([],[CEq(tv, <get-type> i)])
+  collect-constraint(|l, p-p): (f@Float(_), tv)  -> ([],[CEq(tv, <get-type> f)])
+  collect-constraint(|l, p-p): (c@Char(_), tv)   -> ([],[CEq(tv, <get-type> c)])
+  collect-constraint(|l, p-p): (s@String(_), tv) -> ([],[CEq(tv, <get-type> s)])
+  collect-constraint(|l, p-p): (u@Unit(), tv)    -> ([],[CEq(tv, <get-type> u)])
   collect-constraint(|l, p-p): (Var(gn), tv) -> ([(<name-resolve> gn, tv)], [])
   
   name-resolve: name -> uri
