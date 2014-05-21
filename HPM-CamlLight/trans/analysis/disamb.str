@@ -32,4 +32,10 @@ rules
          else res := fa
        end
   
+  disamb: amb([cl@[ConstrPattern(NCConstr(cn), _)], l]) -> res
+  with if <nabl-uri;nabl-uri-namespace> cn
+         then res := cl
+         else res := l
+       end
+  
   disamb-all = bottomup(try(disamb))
