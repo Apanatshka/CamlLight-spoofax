@@ -19,18 +19,32 @@ strategies
           ; (body-n*, body-c*) := <collect-constraint(|l, p-p)> (body, body-tv)
   
   collect-constraint(|l, p-p): (PatternVar(name), tv) -> ([(<try(name-resolve)> name, tv)],[])
+  
   collect-constraint(|l, p-p): (FuncApp(f, a), tv) -> ([n1*,n2*],[c,c1*,c2*])
     where f-tv := <fresh-var>
         ; a-tv := <fresh-var>
         ; (n1*,c1*) := <collect-constraint(|l, p-p)> (f,f-tv)
         ; (n2*,c2*) := <collect-constraint(|l, p-p)> (a,a-tv)
         ; c   := CEq(f-tv, FuncType(a-tv, tv))
+  
+  collect-constraint(|l, p-p): (IfElseExpr(c,t,e), tv) -> ([n1*,n2*,n3*], [c-c,te-c*,c1*,c2*,c3*])
+    where c-tv := <fresh-var>
+        ; t-tv := <fresh-var>
+        ; e-tv := <fresh-var>
+        ; c-c  := CEq(c-tv, ConstrType(None(), "bool"))
+        ; te-c*:= <multi-eq-to-eq(mkCEq)>[t-tv, e-tv, tv]
+        ; (n1*,c1*) := <collect-constraint(|l, p-p)> (c,c-tv)
+        ; (n2*,c2*) := <collect-constraint(|l, p-p)> (t,t-tv)
+        ; (n3*,c3*) := <collect-constraint(|l, p-p)> (e,e-tv)
+  
   collect-constraint(|l, p-p): (p@Prefix(_), tv) -> ([],[CEq(tv, <get-type> p)])
+  
   collect-constraint(|l, p-p): (i@Int(_), tv)    -> ([],[CEq(tv, <get-type> i)])
   collect-constraint(|l, p-p): (f@Float(_), tv)  -> ([],[CEq(tv, <get-type> f)])
   collect-constraint(|l, p-p): (c@Char(_), tv)   -> ([],[CEq(tv, <get-type> c)])
   collect-constraint(|l, p-p): (s@String(_), tv) -> ([],[CEq(tv, <get-type> s)])
   collect-constraint(|l, p-p): (u@Unit(), tv)    -> ([],[CEq(tv, <get-type> u)])
+  
   collect-constraint(|l, p-p): (Var(gn), tv) -> ([(<name-resolve> gn, tv)], [])
   
   name-resolve: name -> uri
