@@ -1,0 +1,1 @@
+let plus i1 i2 = i1 + i2;;
