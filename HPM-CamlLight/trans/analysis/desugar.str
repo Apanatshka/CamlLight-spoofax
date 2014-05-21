@@ -46,6 +46,8 @@ rules
 	desugar: GtF(e1,e2)        -> FApp(">.",  e1, e2)
 	desugar: GeqF(e1,e2)       -> FApp(">=.", e1, e2)
 	
+	desugar: IfExpr(c,t)       -> IfElseExpr(c,t,Unit())
+	
 	//IDENT -> GlobalName
 	desugar: CConstrDecl(cc) -> CConstrDecl(GlobalName(cc))
   desugar: PatternVar(v) -> PatternVar(GlobalName(v))
