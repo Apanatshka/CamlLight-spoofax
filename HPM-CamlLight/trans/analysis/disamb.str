@@ -32,10 +32,18 @@ rules
          else res := fa
        end
   
-  disamb: amb([cl@[ConstrPattern(NCConstr(cn), _)], l]) -> res
-  with if <nabl-uri;nabl-uri-namespace> cn
-         then res := cl
-         else res := l
-       end
+  disamb: amb([cl, l]) -> l
+  where cn := <getfirst(?ConstrPattern(NCConstr(<id>),_))> cl
+      ; <not(nabl-uri;nabl-uri-namespace)> cn
+  disamb: amb([l, cl]) -> l
+  where cn := <getfirst(?ConstrPattern(NCConstr(<id>),_))> cl
+      ; <not(nabl-uri;nabl-uri-namespace)> cn
   
-  disamb-all = bottomup(try(disamb))
+  // remove nested lists that may be left behind after clearing the amb()
+  post-disamb = GlobalFunDef(id,flatten-list,id)
+              + LocalFunDef(id,flatten-list,id)
+              + GlobalRecFunDef(id,flatten-list,id)
+              + LocalRecFunDef(id,flatten-list,id)
+  
+  disamb-all = bottomup(try(disamb));topdown(try(post-disamb))
+             ; not(getfirst(?amb(_))) // safety check that all amb() are removed
