@@ -38,3 +38,7 @@ strategies
   expand-constraint: CEq(None(),None())                         -> []
   expand-constraint: CEq(TypeExprParams(l1),TypeExprParams(l2)) -> <zip(mkCEq)> (l1,l2)
   
+  
+  expand-constraint: CEq(ConstrType(_, n),ConstrType(_, n')) ->
+    <print-failure(|$[Failed to match [n] with [n']: ])> where <not(?n)> n'
+  
