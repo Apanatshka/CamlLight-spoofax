@@ -37,3 +37,16 @@ strategies
     
   scanfix(s): a -> b
     where b := <is-effective(s);\c -> [c | <fixpoint(s)> c]\ <+ ![a]> a
+    
+strategies
+	nonmatching(impenetrable): (t1,t2) -> <zip(nonmatching(impenetrable));concat> (tp1*,tp2*)
+	  where <not(impenetrable)> t1
+	      ; <not(impenetrable)> t2
+	      ; tc#(tp1*) := t1
+	      ; tc#(tp2*) := t2
+	
+	nonmatching(impenetrable): (t1,t2) -> [<id>]
+    where <impenetrable> t1
+  
+  nonmatching(impenetrable): (t1,t2) -> [<id>]
+    where <impenetrable> t2

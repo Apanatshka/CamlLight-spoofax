@@ -17,10 +17,10 @@ strategies
   ra-helper: ((tv1,tv2),c*) -> <map(alltd(?tv1;!tv2))> c*
   
   solve-constraints = fixpoint(remove-aliases;(id,fuse-constraints;expand-constraints))
-                    ; sc-helper1
+                    ; (sc-helper1 <+ print-failure(|"Unable to resolve type constraints further: "))
   sc-helper1: (n,l) -> (n',l')
     where l' := <map(CEq(?TypeVar(_),outermost(sc-helper2(|<map(CEqTuple)> l))))> l
-        ; n' := <map((try(nabl-uri-name),debug;alltd(sc-helper2(|<map(CEqTuple)> l'))))> n
+        ; n' := <map((try(nabl-uri-name),alltd(sc-helper2(|<map(CEqTuple)> l'))))> n
   sc-helper2(|dict): TypeVar(_) -> <lookup>(<id>, dict)
 
   fuse-constraints: c -> <foldl(fc-helper <+ Snd)> (c',c')
@@ -37,14 +37,7 @@ strategies
   
   expand-constraints = mapconcat(expand-constraint)
 
-  expand-constraint: CEq(TypeVar(_),_)                          -> [<id>]
-  expand-constraint: CEq(FuncType(a1,b1),FuncType(a2,b2))       -> <mapconcat(expand-constraint)> [CEq(a1,a2), CEq(b1,b2)]
-  expand-constraint: CEq(TupleType(l1),TupleType(l2))           -> <zip(mkCEq);mapconcat(expand-constraint)> (l1,l2)
-  expand-constraint: CEq(ConstrType(p1, n),ConstrType(p2, n))   -> <mkCEq;expand-constraint> (p1,p2)
-  expand-constraint: CEq(None(),None())                         -> []
-  expand-constraint: CEq(TypeExprParams(l1),TypeExprParams(l2)) -> <zip(mkCEq);mapconcat(expand-constraint)> (l1,l2)
-  
-  
+  expand-constraint: CEq(t1,t2) -> <nonmatching(?TypeVar(_));map(mkCEq)> (t1,t2)
   expand-constraint: CEq(ConstrType(_, n),ConstrType(_, n')) ->
     <print-failure(|$[Failed to match [n] with [n']: ])> where <not(?n)> n'
   
