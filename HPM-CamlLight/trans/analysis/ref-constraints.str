@@ -1,0 +1,17 @@
+module analysis/ref-constraints
+
+imports
+  include/CamlLight
+  runtime/nabl/-
+  runtime/task/-
+  runtime/types/-
+  analysis/names
+  trans/extra-constructors
+
+strategies
+  nabl-check-disable-duplicate(|uri, ns) = id
+  nabl-check-disable-hiding(|uri, ns) = id
+  nabl-check-disable-unresolved = id
+
+rules
+  
