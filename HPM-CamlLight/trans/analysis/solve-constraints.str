@@ -10,36 +10,39 @@ imports
 
 strategies
   remove-aliases: (n, l) -> (n', l'')
-    where (alias,l')  := <partition(CEqTuple;(?TypeVar(_),?TypeVar(_)))> l
-        ; l'' := <foldl({\((a,b),l) -> <map(alltd(?a;!b))> l\})> (alias,l')
-        ; n'  := <foldl({\((a,b),l) -> <map(alltd(?a;!b))> l\})> (alias,n)
+    where (alias,l')  := <partition(?CEq(TypeVar(_),TypeVar(_)))> l
+        ; alias' := <fuse-constraints> alias
+        ; l'' := <foldl(ra-helper)> (alias',l')
+        ; n'  := <foldl(ra-helper)> (alias',n)
+  ra-helper: ((tv1,tv2),c*) -> <map(alltd(?tv1;!tv2))> c*
   
-  solve-constraints = fixpoint(remove-aliases;fuse-constraints;expand-constraints)
+  solve-constraints = fixpoint(remove-aliases;(id,fuse-constraints;expand-constraints))
                     ; sc-helper1
   sc-helper1: (n,l) -> (n',l')
     where l' := <map(CEq(?TypeVar(_),outermost(sc-helper2(|<map(CEqTuple)> l))))> l
-        ; n' := <map((try(nabl-uri-name),alltd(sc-helper2(|<map(CEqTuple)> l'))))> n
+        ; n' := <map((try(nabl-uri-name),debug;alltd(sc-helper2(|<map(CEqTuple)> l'))))> n
   sc-helper2(|dict): TypeVar(_) -> <lookup>(<id>, dict)
 
-  fuse-constraints: (n,c) -> (n,<foldl(fc-helper <+ Snd)> (c',c'))
+  fuse-constraints: c -> <foldl(fc-helper <+ Snd)> (c',c')
     where c' := <map(typevar-first)> c
   
   fc-helper: (CEq(tv@TypeVar(_),_),l) -> res
-    where (eqs,rest) := <partition(?CEq(tv,_) + ?CEq(_,tv))> l
+    where (eqs,rest) := <partition(one(?tv))> l
         ; <min-length(|2)> eqs
-        ; res := <concat> [<mapconcat(get-arguments)
-                           ;filter(not(?tv))
-                           ;nub;try(\[_] -> []\)
-                           ;multi-eq-to-eq(mkCEq)> eqs, [<Hd> eqs|rest]]
+        ; res := <conc> ([<Hd> eqs|rest], <mapconcat(get-arguments)
+							                            ;filter(not(?tv))
+							                            ;nub;try(\[_] -> []\)
+							                            ;multi-eq-to-eq(mkCEq)
+							                            ;expand-constraints> eqs)
   
-  expand-constraints = (id,mapconcat(expand-constraint))
-  
+  expand-constraints = mapconcat(expand-constraint)
+
   expand-constraint: CEq(TypeVar(_),_)                          -> [<id>]
-  expand-constraint: CEq(FuncType(a1,b1),FuncType(a2,b2))       -> [CEq(a1,a2), CEq(b1,b2)]
-  expand-constraint: CEq(TupleType(l1),TupleType(l2))           -> <zip(mkCEq)> (l1,l2)
-  expand-constraint: CEq(ConstrType(p1, n),ConstrType(p2, n))   -> [<mkCEq> (p1,p2)]
+  expand-constraint: CEq(FuncType(a1,b1),FuncType(a2,b2))       -> <mapconcat(expand-constraint)> [CEq(a1,a2), CEq(b1,b2)]
+  expand-constraint: CEq(TupleType(l1),TupleType(l2))           -> <zip(mkCEq);mapconcat(expand-constraint)> (l1,l2)
+  expand-constraint: CEq(ConstrType(p1, n),ConstrType(p2, n))   -> <mkCEq;expand-constraint> (p1,p2)
   expand-constraint: CEq(None(),None())                         -> []
-  expand-constraint: CEq(TypeExprParams(l1),TypeExprParams(l2)) -> <zip(mkCEq)> (l1,l2)
+  expand-constraint: CEq(TypeExprParams(l1),TypeExprParams(l2)) -> <zip(mkCEq);mapconcat(expand-constraint)> (l1,l2)
   
   
   expand-constraint: CEq(ConstrType(_, n),ConstrType(_, n')) ->

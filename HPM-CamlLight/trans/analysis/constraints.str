@@ -10,8 +10,7 @@ signature
     CMEq    : List(TypeExpr) -> Constraint
 
 strategies
-  // note that this strategy creates a type variable with *two* apostrophes in front of it to show that it is generated
-	fresh-var = !TypeVar(<conc-strings>("''", <newname> "t"))
+	fresh-var = !TypeVar(<newname> "TV")
 	
 	mkCEq = !CEq(<Fst>, <Snd>)
   mkCMEq = !CMEq(<id>)
@@ -21,9 +20,6 @@ strategies
   typevar-first = try(\CEq(a, b@TypeVar(_)) -> CEq(b, a) where <not(?TypeVar(_))> a\)
   
 strategies
-  tails: [] -> []
-  tails: l@[h|t] -> [l | <tails> t]
-  
   multi-eq-to-eq(eq) = !(<id>,<Tl <+ ![]>);zipr(eq)
   
   multi-lookup(|l): n -> <filter(?(n,_));map(Snd)> l
@@ -32,7 +28,12 @@ strategies
   min-length(|len): list -> list
     where <length;!(<id>,len);geq> list
   
-  //fixpoint(s) = try(s);(?<id> < id + fixpoint(s))
-  fixpoint(s): a -> c
-    where b := <s> a
-        ; (!a => b < c := a + c := <fixpoint(s)> b)
+  is-effective(s): term -> result
+    where result := <s> term
+        ; <not(eq)>(term,result)
+  
+  fixpoint(s): a -> b
+    where b := <is-effective(s);fixpoint(s) <+ !a> a
+    
+  scanfix(s): a -> b
+    where b := <is-effective(s);\c -> [c | <fixpoint(s)> c]\ <+ ![a]> a

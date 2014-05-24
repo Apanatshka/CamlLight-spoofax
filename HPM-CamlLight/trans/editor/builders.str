@@ -15,10 +15,10 @@ rules
       -> (file, result)
     where task-setup(|project-path); index-setup(|<language>, project-path)
         ; file   := <guarantee-extension(|"generated.tc")> path
-        ; result := <collect-constraints(|<language>, project-path)> ast
+        ; result := <collect-constraints> ast
 
   debug-show-resolved-constraints: (selected, position, ast, path, project-path)
       -> (file, result)
     where task-setup(|project-path); index-setup(|<language>, project-path)
         ; file   := <guarantee-extension(|"generated.ty")> path
-        ; result := <collect-constraints(|<language>, project-path);solve-constraints> ast
+        ; result := <collect-constraints;solve-constraints> ast
