@@ -10,24 +10,27 @@ imports
 
 strategies
   remove-aliases: (n, l) -> (n', l'')
-    where (alias,l')  := <partition({\CEq(a@TypeVar(_), b@TypeVar(_))->(a,b)\})> l
+    where (alias,l')  := <partition(CEqTuple;(?TypeVar(_),?TypeVar(_)))> l
         ; l'' := <foldl({\((a,b),l) -> <map(alltd(?a;!b))> l\})> (alias,l')
         ; n'  := <foldl({\((a,b),l) -> <map(alltd(?a;!b))> l\})> (alias,n)
   
   solve-constraints = fixpoint(remove-aliases;fuse-constraints;expand-constraints)
-                    ; ?(n,l)
-                    ; <map((try(nabl-uri-name),alltd(solve-constraints-helper(|<map({\CEq(a,b) -> (a,b)\})>l))))> n
-  solve-constraints-helper(|l): tv@TypeVar(_) -> <lookup> (tv,l)
+                    ; sc-helper1
+  sc-helper1: (n,l) -> (n',l')
+    where l' := <map(CEq(?TypeVar(_),outermost(sc-helper2(|<map(CEqTuple)> l))))> l
+        ; n' := <map((try(nabl-uri-name),alltd(sc-helper2(|<map(CEqTuple)> l'))))> n
+  sc-helper2(|dict): TypeVar(_) -> <lookup>(<id>, dict)
 
-  fuse-constraints: (n,c) -> (n,<foldl(fuse-constraints-helper <+ Snd)> (c',c'))
+  fuse-constraints: (n,c) -> (n,<foldl(fc-helper <+ Snd)> (c',c'))
     where c' := <map(typevar-first)> c
   
-  fuse-constraints-helper: (CEq(tv@TypeVar(_),_),l) -> res
+  fc-helper: (CEq(tv@TypeVar(_),_),l) -> res
     where (eqs,rest) := <partition(?CEq(tv,_) + ?CEq(_,tv))> l
         ; <min-length(|2)> eqs
-        ; res := <conc> (<mapconcat(get-arguments)
-                         ;filter(not(?tv))
-                         ;multi-eq-to-eq(mkCEq)> eqs, rest)
+        ; res := <concat> [<mapconcat(get-arguments)
+                           ;filter(not(?tv))
+                           ;nub;try(\[_] -> []\)
+                           ;multi-eq-to-eq(mkCEq)> eqs, [<Hd> eqs|rest]]
   
   expand-constraints = (id,mapconcat(expand-constraint))
   

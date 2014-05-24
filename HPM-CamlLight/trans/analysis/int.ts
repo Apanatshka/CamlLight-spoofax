@@ -6,3 +6,4 @@ imports
 
 type rules
   Prefix("+") : FuncType(ConstrType(None(), "int"), FuncType(ConstrType(None(), "int"), ConstrType(None(), "int")))
+  Prefix("-") : FuncType(ConstrType(None(), "int"), FuncType(ConstrType(None(), "int"), ConstrType(None(), "int")))

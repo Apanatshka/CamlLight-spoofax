@@ -16,13 +16,15 @@ strategies
 	mkCEq = !CEq(<Fst>, <Snd>)
   mkCMEq = !CMEq(<id>)
   
+  CEqTuple: CEq(a,b) -> (a,b)
+  
   typevar-first = try(\CEq(a, b@TypeVar(_)) -> CEq(b, a) where <not(?TypeVar(_))> a\)
   
 strategies
   tails: [] -> []
   tails: l@[h|t] -> [l | <tails> t]
   
-  multi-eq-to-eq(eq) = tails;mapconcat({\[h|t] -> <map(<eq>(h,<id>))> t\})
+  multi-eq-to-eq(eq) = !(<id>,<Tl <+ ![]>);zipr(eq)
   
   multi-lookup(|l): n -> <filter(?(n,_));map(Snd)> l
   keys = map(Fst);make-set

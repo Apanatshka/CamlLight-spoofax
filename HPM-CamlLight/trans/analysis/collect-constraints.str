@@ -17,6 +17,14 @@ strategies
           ; name-ty   := <foldr(!body-tv, !FuncType(<Fst>, <Snd>))> params-tv
           ; (params-n*,params-c*) := <zip(collect-constraint(|l, p-p) <+ ());filter(not(?()));unzip;(concat,concat)> (params, params-tv)
           ; (body-n*, body-c*) := <collect-constraint(|l, p-p)> (body, body-tv)
+  // trying same strategy as non-recursive function for now
+  collect-constraint(|l, p-p): GlobalRecFunDef(name, params, body) ->
+      ([(<try(name-resolve)> name, name-ty), params-n*, body-n*], [params-c*, body-c*])
+      where params-tv := <map(fresh-var)> params
+          ; body-tv   := <fresh-var>
+          ; name-ty   := <foldr(!body-tv, !FuncType(<Fst>, <Snd>))> params-tv
+          ; (params-n*,params-c*) := <zip(collect-constraint(|l, p-p) <+ ());filter(not(?()));unzip;(concat,concat)> (params, params-tv)
+          ; (body-n*, body-c*) := <collect-constraint(|l, p-p)> (body, body-tv)
   
   collect-constraint(|l, p-p): (PatternVar(name), tv) -> ([(<try(name-resolve)> name, tv)],[])
   
@@ -59,10 +67,12 @@ strategies
   
   collect-constraints(|l, p-p): 
     Module(mp*) -> (names', constraints')
-      where (names, constraints) := <mapconcat(collect-constraints-helper(|l, p-p))
+      where (names, constraints) := <mapconcat(cc-helper(|l, p-p))
                            ;unzip
                            ;(concat,concat)> mp*
           ; constraints' := <conc>(<constraints-from-names> names,constraints)
           ; names'       := <keys;map(!(<id>,<lookup>(<id>,names)))> names
-  collect-constraints-helper(|l, p-p):
+  cc-helper(|l, p-p):
   	MP(ValDef(list)) -> <map(collect-constraint(|l, p-p))> list
+  cc-helper(|l, p-p):
+    MP(RecValueDef(list)) -> <map(collect-constraint(|l, p-p))> list
