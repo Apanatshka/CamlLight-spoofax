@@ -9,35 +9,5 @@ imports
   trans/analysis/constraints
 
 strategies
-  remove-aliases: (n, l) -> (n', l'')
-    where (alias,l')  := <partition(?CEq(TypeVar(_),TypeVar(_)))> l
-        ; alias' := <fuse-constraints> alias
-        ; l'' := <foldl(ra-helper)> (alias',l')
-        ; n'  := <foldl(ra-helper)> (alias',n)
-  ra-helper: ((tv1,tv2),c*) -> <map(alltd(?tv1;!tv2))> c*
-  
-  solve-constraints = fixpoint(remove-aliases;(id,fuse-constraints;expand-constraints))
-                    ; (sc-helper1 <+ print-failure(|"Unable to resolve type constraints further: "))
-  sc-helper1: (n,l) -> (n',l')
-    where l' := <map(CEq(?TypeVar(_),outermost(sc-helper2(|<map(CEqTuple)> l))))> l
-        ; n' := <map((try(nabl-uri-name),alltd(sc-helper2(|<map(CEqTuple)> l'))))> n
-  sc-helper2(|dict): TypeVar(_) -> <lookup>(<id>, dict)
-
-  fuse-constraints: c -> <foldl(fc-helper <+ Snd)> (c',c')
-    where c' := <map(typevar-first)> c
-  
-  fc-helper: (CEq(tv@TypeVar(_),_),l) -> res
-    where (eqs,rest) := <partition(one(?tv))> l
-        ; <min-length(|2)> eqs
-        ; res := <conc> ([<Hd> eqs|rest], <mapconcat(get-arguments)
-							                            ;filter(not(?tv))
-							                            ;nub;try(\[_] -> []\)
-							                            ;multi-eq-to-eq(mkCEq)
-							                            ;expand-constraints> eqs)
-  
-  expand-constraints = mapconcat(expand-constraint)
-
-  expand-constraint: CEq(t1,t2) -> <nonmatching(?TypeVar(_));map(mkCEq)> (t1,t2)
-  expand-constraint: CEq(ConstrType(_, n),ConstrType(_, n')) ->
-    <print-failure(|$[Failed to match [n] with [n']: ])> where <not(?n)> n'
+  solve-constraints = id
   

@@ -3,25 +3,46 @@ module analysis/constraints
 imports
   include/CamlLight
   extra-constructors
+  runtime/nabl/uri
 
 signature
   constructors
-    CEq     : TypeExpr * TypeExpr -> Constraint
-    CMEq    : List(TypeExpr) -> Constraint
+    TypeScheme : List(TYPEVARIABLE) * Constraint * TypeExpr -> TypeScheme
+    
+    CTrue   : Constraint
+    CFalse  : Constraint
+    CPred   : ConstraintPredicate * List(TypeExpr) -> Constraint
+    CAnd    : List(Constraint) -> Constraint
+    CExist  : List(TYPEVARIABLE) * Constraint -> Constraint
+    CDef    : /* NaBL- */ URI * TypeScheme * Constraint -> Constraint
+    CInst   : /* NaBL- */ URI * TypeScheme -> Constraint
+    
+    CEq  : ConstraintPredicate
+    CSub : ConstraintPredicate
 
-strategies
-	fresh-var = !TypeVar(<newname> "TV")
-	
-	mkCEq = !CEq(<Fst>, <Snd>)
-  mkCMEq = !CMEq(<id>)
-  
-  CEqTuple: CEq(a,b) -> (a,b)
-  
-  typevar-first = try(\CEq(a, b@TypeVar(_)) -> CEq(b, a) where <not(?TypeVar(_))> a\)
-  
 strategies
   multi-eq-to-eq(eq) = !(<id>,<Tl <+ ![]>);zipr(eq)
   
+	fresh-var = !TypeVar(<newname> "TV") // : TYPEVARIABLE
+	
+	typescheme: (tv*, c, te) -> TypeScheme(tv*, c,       te)
+	typescheme: (tv*,    te) -> TypeScheme(tv*, <cTrue>, te)
+  typescheme: (        te) -> TypeScheme([],  <cTrue>, te)
+	
+	cTrue  = !CTrue()
+	cFalse = !CFalse()
+	cPred:  (pred, te*)  -> CPred(pred, te*)
+	cAnd:    c*          -> CAnd(c*)
+	cExist: (tv*, c)     -> CExist(tv*, c)
+	cDef:   (uri, ts, c) -> CDef(uri, ts, c)
+	cInst:  (uri, ts)    -> CInst(uri, ts)
+	
+  cEq:       te*                           -> <cPred> (CEq(), te*)
+  cInst':   (TypeScheme(tv*, c, te1), te2) -> <cExist> (tv*, <cAnd> [c, <cEq> (te1, te2)])
+  cHasInst:  TypeScheme(tv*, c, te)        -> <cExist> (tv*, c)
+  cLet:     (uri, ts, c)                   -> <cAnd> [<cHasInst> ts, <cDef>]
+  
+strategies
   multi-lookup(|l): n -> <filter(?(n,_));map(Snd)> l
   keys = map(Fst);make-set
   
@@ -37,16 +58,3 @@ strategies
     
   scanfix(s): a -> b
     where b := <is-effective(s);\c -> [c | <fixpoint(s)> c]\ <+ ![a]> a
-    
-strategies
-	nonmatching(impenetrable): (t1,t2) -> <zip(nonmatching(impenetrable));concat> (tp1*,tp2*)
-	  where <not(impenetrable)> t1
-	      ; <not(impenetrable)> t2
-	      ; tc#(tp1*) := t1
-	      ; tc#(tp2*) := t2
-	
-	nonmatching(impenetrable): (t1,t2) -> [<id>]
-    where <impenetrable> t1
-  
-  nonmatching(impenetrable): (t1,t2) -> [<id>]
-    where <impenetrable> t2
