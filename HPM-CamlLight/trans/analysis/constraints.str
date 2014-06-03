@@ -21,8 +21,6 @@ signature
     CSub : ConstraintPredicate
 
 strategies
-  multi-eq-to-eq(eq) = !(<id>,<Tl <+ ![]>);zipr(eq)
-  
 	fresh-var = !TypeVar(<newname> "TV") // : TYPEVARIABLE
 	
 	typescheme: (tv*, c, te) -> TypeScheme(tv*, c,       te)
@@ -43,6 +41,8 @@ strategies
   cLet:     (uri, ts, c)                   -> <cAnd> [<cHasInst> ts, <cDef>]
   
 strategies
+	consecutive-pairs(s) = Dupl;(id,Tl<+![]);zipr(s)
+	
   multi-lookup(|l): n -> <filter(?(n,_));map(Snd)> l
   keys = map(Fst);make-set
   
@@ -58,3 +58,20 @@ strategies
     
   scanfix(s): a -> b
     where b := <is-effective(s);\c -> [c | <fixpoint(s)> c]\ <+ ![a]> a
+  
+  empty-isect = isect;?[]
+  empty-isect(|one*) = ?other*;!(one*,other*);empty-isect
+  
+  ftv = free-vars(?TypeVar(_), {\CExist(xs, _) -> xs\})
+  
+  getfirst-split(s): ([h|t], l*) -> (<s> h, [<reverse> l*, t])
+  getfirst-split(s): ([h|t], l*) -> <getfirst-split(s)> (t, [<not(s)> h | l*])
+
+  extendUp(s) = Dupl;(id,s)
+
+  ndet-list-binop(s): l -> l'
+    where repl* := <join(extendUp(s));not(?[])> l
+        ; l' := <foldl(ndet-list-binop-helper)> (repl*, l)
+  ndet-list-binop-helper: (((a,b),c),l) -> l''
+    where l'  := <split-fetch(?a);conc> l
+        ; l'' := <split-fetch(?b);(id,![c|<id>]);conc> l'

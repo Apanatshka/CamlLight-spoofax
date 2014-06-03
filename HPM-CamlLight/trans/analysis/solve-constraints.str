@@ -9,5 +9,37 @@ imports
   trans/analysis/constraints
 
 strategies
-  solve-constraints = id
+  // ~ C-And / C-AndAnd
+  simplify-constraint: CAnd([c]) -> c
+  simplify-constraint: CAnd(c*) -> <nub;cAnd> [c1'*, c2*]
+    where (c1*,c2*) := <partition({?CAnd(l);!l})> c*
+        ;  c1'* := <concat;not(?[])> c1*
+  //C-ExEx
+  simplify-constraint: CExist(tv1*, CExist(tv2*, c)) -> <cExist> ([tv1*,tv2*], c)
+  //C-Ex*
+  simplify-constraint: CExist(tv*, c) -> c where <ftv;empty-isect(|tv*)> c
+  //C-ExAnd
+  simplify-constraint: CAnd(l) -> <ndet-list-binop(C-ExAnd)> l
+  C-ExAnd: (CExist(tv*,c1), c2) -> <cExist> (tv*, <cAnd> [c1,c2])
+    where <ftv;empty-isect(|tv*)> c2
   
+  simplify-constraints = innermost(simplify-constraint)
+  
+  //S-True
+  unify-constraint: CAnd(l) -> <fetch(?CTrue());remove-all(?CTrue());cAnd> l
+  //S-Fuse
+  unify-constraint: CAnd(l) -> <ndet-list-binop(S-Fuse)> l
+  S-Fuse: (CPred(CEq(), c1*), CPred(CEq(), c2*)) -> CPred(CEq(), c1*)
+    where <set-eq> (c1*, c2*)
+  S-Fuse: (CPred(CEq(), c1*), CPred(CEq(), c2*)) -> <sym-diff;cEq> (c1*, c2*)
+    where <isect;not(?[]);fetch(?TypeVar(_))> (c1*, c2*)
+  // ~ S-Decompose / S-Clash
+  unify-constraint: CPred(CEq(), l) -> l'
+    where p := <consecutive-pairs(id)> l
+        ; u := <(unify(?TypeVar(_)) <+ print-failure(|"failed to unify some stuff"))> p
+        ; <not(eq)> (p,u)
+        ; l' := <map(get-arguments;cEq);nub;cAnd;try(simplify-constraint)> u
+  
+  unify-constraints = innermost(unify-constraint)
+  
+  solve-constraints = fixpoint((id, simplify-constraints;unify-constraints))
