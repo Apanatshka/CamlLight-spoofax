@@ -72,10 +72,12 @@ end] {bracket}
 	SimpleMatch.SimpleMatch = [[Pattern] -> [Expr]]
 	MultiMatch.MultiMatch   = [[Pattern+; separator=" "] -> [Expr]]
 	
-	LetBind.LocalValDef       = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
-	LetBind.LocalFunDef       = [[Name] [Pattern+; separator=" "] = [Expr]] {prefer}
-	LetRecBind.LocalRecValDef = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
-	LetRecBind.LocalRecFunDef = [[Name] [Pattern+; separator=" "] = [Expr]] {prefer}
+  LetBind.LocalValDef       = [[Name] = [Expr]] 
+	LetBind.LocalValDef       = [[Pattern] = [Expr]] {avoid} // prefer the rule below over a ConstrPattern
+	LetBind.LocalFunDef       = [[Name] [Pattern+; separator=" "] = [Expr]]
+  LetRecBind.LocalRecValDef = [[Name] = [Expr]]
+	LetRecBind.LocalRecValDef = [[Pattern] = [Expr]] {avoid} // prefer the rule below over a ConstrPattern
+	LetRecBind.LocalRecFunDef = [[Name] [Pattern+; separator=" "] = [Expr]]
 	
 	ForRange.RangeTo     = [[Expr] to [Expr]]
 	ForRange.RangeDownTo = [[Expr] downto [Expr]]

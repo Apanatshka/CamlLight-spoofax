@@ -48,10 +48,12 @@ templates
 	ValDef.ValDef            = [let [GlobalLetBind+; separator="and"]]
 	ValDef.RecValueDef       = [let rec [GlobalLetRecBind+; separator="and"]]
 	
-	GlobalLetBind.GlobalValDef        = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
-	GlobalLetBind.GlobalFunDef        = [[Name] [Pattern+; separator=" "] = [Expr]] {prefer}
-	GlobalLetRecBind.GlobalRecValDef  = [[Pattern] = [Expr]] // prefer the rule below over a ConstrPattern
-	GlobalLetRecBind.GlobalRecFunDef  = [[Name] [Pattern+; separator=" "] = [Expr]] {prefer}
+  GlobalLetBind.GlobalValDef        = [[Name] = [Expr]]
+	GlobalLetBind.GlobalValDef        = [[Pattern] = [Expr]] {avoid} // prefer the rule below over a ConstrPattern
+	GlobalLetBind.GlobalFunDef        = [[Name] [Pattern+; separator=" "] = [Expr]]
+  GlobalLetRecBind.GlobalRecValDef  = [[Name] = [Expr]]
+	GlobalLetRecBind.GlobalRecValDef  = [[Pattern] = [Expr]] {avoid} // prefer the rule below over a ConstrPattern
+	GlobalLetRecBind.GlobalRecFunDef  = [[Name] [Pattern+; separator=" "] = [Expr]]
 	
 	ValDecl.ValDecl          = [value [ValDeclPart+; separator="and"]]
 	
