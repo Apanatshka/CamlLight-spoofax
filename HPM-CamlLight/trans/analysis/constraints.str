@@ -23,9 +23,9 @@ signature
 strategies
 	fresh-var = !TypeVar(<newname> "TV") // : TYPEVARIABLE
 	
-	typescheme: (tv*, c, te) -> TypeScheme(tv*, c,       te)
-	typescheme: (tv*,    te) -> TypeScheme(tv*, <cTrue>, te)
-  typescheme: (        te) -> TypeScheme([],  <cTrue>, te)
+	typescheme: ""#([tv*, c, te]) -> TypeScheme(tv*, c,       te)
+	typescheme: ""#([tv*,    te]) -> TypeScheme(tv*, <cTrue>, te)
+  typescheme:              te   -> TypeScheme([],  <cTrue>, te)
 	
 	cTrue  = !CTrue()
 	cFalse = !CFalse()
