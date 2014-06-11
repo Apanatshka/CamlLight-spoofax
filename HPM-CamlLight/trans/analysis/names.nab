@@ -35,16 +35,20 @@ binding rules //module interface
 	ExcNCConstrDecl(ncc, te): defines NCConstr ncc // of type te // of adttype "exn"
 
 binding rules //module implementation
-	Module(_):              scopes Var, CConstr, NCConstr, Type, Label
-	PatternVar(v):          defines Var v
-	PatternAlias(_, v):     defines Var v
-	CConstr(cc):            refers to CConstr cc
-	NCConstr(ncc):          refers to NCConstr ncc
-	Var(v):                 refers to Var v
-	ExprRecordBind(l,_):    refers to Label l
-	LetRecExpr(_,_):        scopes Var
+	Module(_):           scopes Var, CConstr, NCConstr, Type, Label
+	PatternVar(v):       defines Var v
+	PatternAlias(_, v):  defines Var v
+	CConstr(cc):         refers to CConstr cc
+	NCConstr(ncc):       refers to NCConstr ncc
+	Var(v):              refers to Var v
+	ExprRecordBind(l,_): refers to Label l
+	LetRecExpr(_,_):     scopes Var
 	 LocalRecFunDef(v        ,_,_): defines Var v scopes Var
   GlobalRecFunDef(v        ,_,_): defines Var v scopes Var
    LocalRecFunDef(Prefix(v),_,_): defines Var v scopes Var
   GlobalRecFunDef(Prefix(v),_,_): defines Var v scopes Var
+   LocalRecValDef(v        ,_): defines Var v scopes Var
+  GlobalRecValDef(v        ,_): defines Var v scopes Var
+   LocalRecValDef(Prefix(v),_): defines Var v scopes Var
+  GlobalRecValDef(Prefix(v),_): defines Var v scopes Var
   // {Global,Local}FunDef cannot be defined in the current version of NaBL, see issue #75 (http://yellowgrass.org/issue/NaBL/75)
