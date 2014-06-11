@@ -10,51 +10,45 @@ imports
   lib/runtime/types/-
 
 strategies
-  collect-constraint: GlobalFunDef(name, param*, body) ->
-      ((<try(name-resolve)> name, name-ty), c)
-      where param-tv* := <map(fresh-var)> param*
-          ; result-tv := <fresh-var>
-          ; name-tv   := <fresh-var>
-          ; name-ty   := <foldr(!result-tv, !FuncType(<Fst>, <Snd>))> param-tv*
-          ; name-c    := <cEq> [name-ty, name-tv]
-          ; result-c  := <collect-constraint> (body, result-tv)
-          ; param'*   := <zip> (<map({\PatternVar(gn) -> gn\};try(name-resolve))> param*, param-tv*)
-          ; c-let     := <foldr(!result-c, !(<Fst;Fst>, <Fst;Snd;typescheme>, <Snd>);cLet)> param'*
-          ; c := <cExist> (<conc> (param-tv*, [result-tv]), c-let)
+  collect-constraint: GlobalValDef(name, body) ->
+      [(<try(name-resolve)> name, type, body-e*, body-c*), body-u*]
+      where type := <fresh-var>
+          ; (body-u*, body-e*, body-c*) := <collect-constraint> (body, type)
+  collect-constraint: GlobalRecValDef(name, body) ->
+      [(<try(name-resolve)> name, type, body-e*, body-c*), body-u*]
+      where type := <fresh-var>
+          ; (body-u*, body-e*, body-c*) := <collect-constraint> (body, type)
+            
+  collect-constraint: (FunctionDef([SimpleMatch(PatternVar(name), body)]), ty) ->
+      ([body-u*], [(uri, in-ty) | body-e*], [c | body-c*])
+      where in-ty  := <fresh-var>
+          ; out-ty := <fresh-var>
+          ; type   := FuncType(in-ty, out-ty)
+          ; uri    := <try(name-resolve)> name
+          ; c      := <mkCEq> (ty, type)
+          ; (body-u*, body-e*, body-c*) := <collect-constraint> (body, out-ty)
   
-  collect-constraint: GlobalRecFunDef(name, param*, body) ->
-      ((<try(name-resolve)> name, name-ty), c)
-      where param-tv* := <map(fresh-var)> param*
-          ; result-tv := <fresh-var>
-          ; name-tv   := <fresh-var>
-          ; name-ty   := <foldr(!result-tv, !FuncType(<Fst>, <Snd>))> param-tv*
-          ; name-c    := <cEq> [name-ty, name-tv]
-          ; result-c  := <collect-constraint> (body, result-tv)
-          ; param'*   := <zip> (<map({\PatternVar(gn) -> gn\};try(name-resolve))> param*, param-tv*)
-          ; c-let     := <foldr(!result-c, !(<Fst;Fst>, <Fst;Snd;typescheme>, <Snd>);cLet)> param'*
-          ; c := <cExist> (<conc> (param-tv*, [result-tv]), c-let)
+  collect-constraint: (FuncApp(f, a), ty) -> ([u1*,u2*], [e1*,e2*], [c1*,c2*])
+    where a-ty := <fresh-var>
+        ; f-ty := FuncType(a-ty, ty)
+        ; (u1*, e1*, c1*) := <collect-constraint> (f,f-ty)
+        ; (u2*, e2*, c2*) := <collect-constraint> (a,a-ty)
   
-  collect-constraint: (FuncApp(f, a), ty) -> <cAnd> [c1, c2]
-    where a-tv := <fresh-var>
-        ; f-ty := FuncType(a-tv, ty)
-        ; c1   := <collect-constraint> (f,f-ty)
-        ; c2   := <collect-constraint> (a,a-tv)
-  
-  collect-constraint: (IfElseExpr(c,t,e), ty) -> <cAnd> [c1, c2, c3]
+  collect-constraint: (IfElseExpr(c,t,e), ty) -> ([u1*,u2*,u3*], [e1*,e2*,e3*], [c1*,c2*,c3*])
     where c-ty := ConstrType(None(), "bool")
-        ; c1   := <collect-constraint> (c,c-ty)
-        ; c2   := <collect-constraint> (t,ty)
-        ; c3   := <collect-constraint> (e,ty)
+        ; (u1*, e1*, c1*) := <collect-constraint> (c,c-ty)
+        ; (u2*, e2*, c2*) := <collect-constraint> (t,ty)
+        ; (u3*, e3*, c3*) := <collect-constraint> (e,ty)
   
-  collect-constraint: (p@Prefix(_), ty) -> <cEq>[ty, <get-type> p]
+  collect-constraint: (p@Prefix(_), ty) -> ([], [], [CEq(ty, <get-type> p)])
   
-  collect-constraint: (i@Int(_), ty)    -> <cEq>[ty, <get-type> i]
-  collect-constraint: (f@Float(_), ty)  -> <cEq>[ty, <get-type> f]
-  collect-constraint: (c@Char(_), ty)   -> <cEq>[ty, <get-type> c]
-  collect-constraint: (s@String(_), ty) -> <cEq>[ty, <get-type> s]
-  collect-constraint: (u@Unit(), ty)    -> <cEq>[ty, <get-type> u]
+  collect-constraint: (i@Int(_), ty)    -> ([], [], [CEq(ty, <get-type> i)])
+  collect-constraint: (f@Float(_), ty)  -> ([], [], [CEq(ty, <get-type> f)])
+  collect-constraint: (c@Char(_), ty)   -> ([], [], [CEq(ty, <get-type> c)])
+  collect-constraint: (s@String(_), ty) -> ([], [], [CEq(ty, <get-type> s)])
+  collect-constraint: (u@Unit(), ty)    -> ([], [], [CEq(ty, <get-type> u)])
   
-  collect-constraint: (Var(gn), ty) -> <cInst> (<try(name-resolve)> gn, <typescheme> ty)
+  collect-constraint: (Var(gn), ty) -> ([], [], [<mkCRefEq>(<debug;name-resolve> gn, ty)])
   
   name-resolve: name -> uri
     where <has-annotation(?Use(u))> name
@@ -63,8 +57,8 @@ strategies
     where <has-annotation(?Def(uri))> name
   
   collect-constraints: 
-    Module(mp*) -> <mapconcat(cc-helper);unzip> mp*
+    Module(mp*) -> <mapconcat(cc-helper)> mp*
   cc-helper:
-  	MP(ValDef(list)) -> <map(collect-constraint)> list
+  	MP(ValDef(list)) -> <mapconcat(collect-constraint)> list
   cc-helper:
-    MP(RecValueDef(list)) -> <map(collect-constraint)> list
+    MP(RecValueDef(list)) -> <mapconcat(collect-constraint)> list

@@ -51,17 +51,6 @@ rules
 	//IDENT -> GlobalName
 	desugar: CConstrDecl(cc) -> CConstrDecl(GlobalName(cc))
   desugar: PatternVar(v) -> PatternVar(GlobalName(v))
-  
-  desugar: FunDef(multimatch*) -> FunctionDef(simplematch*)
-    where simplematch* := <map(desugar-helper)> multimatch*
-  desugar-helper: ([a], e)       -> SimpleMatch(a, e)
-  desugar-helper: c#([[h|t], e]) -> SimpleMatch(h, FunctionDef([<desugar-helper> (t, e)]))
-    where <not(?[])> t ; <?"MultiMatch" + ?""> c
-  
-  desugar: GlobalFunDef(name, p*, e)    -> GlobalValDef(name, <desugar> FunDef([MultiMatch(p*, e)]))
-  desugar: GlobalRecFunDef(name, p*, e) -> GlobalRecValDef(name, <desugar> FunDef([MultiMatch(p*, e)]))
-  desugar: LocalFunDef(name, p*, e)     -> LocalValDef(name, <desugar> FunDef([MultiMatch(p*, e)]))
-  desugar: LocalRecFunDef(name, p*, e)  -> LocalRecValDef(name, <desugar> FunDef([MultiMatch(p*, e)]))
 
 strategies
 	desugar-all = bottomup(try(desugar))

@@ -40,10 +40,22 @@ rules
       ; <not(nabl-uri;nabl-uri-namespace)> cn
   
   // remove nested lists that may be left behind after clearing the amb()
-  post-disamb = GlobalFunDef(id,flatten-list,id)
+  post-disamb1 = GlobalFunDef(id,flatten-list,id)
               + LocalFunDef(id,flatten-list,id)
               + GlobalRecFunDef(id,flatten-list,id)
               + LocalRecFunDef(id,flatten-list,id)
+              
+  // functions to simple llambda's
+  post-disamb2: FunDef(multimatch*) -> FunctionDef(simplematch*)
+    where simplematch* := <map(post-disamb2-helper)> multimatch*
+  post-disamb2-helper: ([a], e)       -> SimpleMatch(a, e)
+  post-disamb2-helper: c#([[h|t], e]) -> SimpleMatch(h, FunctionDef([<post-disamb2-helper> (t, e)]))
+    where <not(?[])> t ; <?"MultiMatch" + ?""> c
   
-  disamb-all = bottomup(try(disamb));topdown(try(post-disamb))
+  post-disamb2: GlobalFunDef(name, p*, e)    -> GlobalValDef(name,    <post-disamb2> FunDef([MultiMatch(p*, e)]))
+  post-disamb2: GlobalRecFunDef(name, p*, e) -> GlobalRecValDef(name, <post-disamb2> FunDef([MultiMatch(p*, e)]))
+  post-disamb2: LocalFunDef(name, p*, e)     -> LocalValDef(name,     <post-disamb2> FunDef([MultiMatch(p*, e)]))
+  post-disamb2: LocalRecFunDef(name, p*, e)  -> LocalRecValDef(name,  <post-disamb2> FunDef([MultiMatch(p*, e)]))
+  
+  disamb-all = bottomup(try(disamb));topdown(try(post-disamb1);try(post-disamb2))
              ; not(getfirst(?amb(_))) // safety check that all amb() are removed

@@ -3,46 +3,26 @@ module analysis/constraints
 imports
   include/CamlLight
   extra-constructors
-  runtime/nabl/uri
 
 signature
   constructors
-    TypeScheme : List(TYPEVARIABLE) * Constraint * TypeExpr -> TypeScheme
-    
-    CTrue   : Constraint
-    CFalse  : Constraint
-    CPred   : ConstraintPredicate * List(TypeExpr) -> Constraint
-    CAnd    : List(Constraint) -> Constraint
-    CExist  : List(TYPEVARIABLE) * Constraint -> Constraint
-    CDef    : /* NaBL- */ URI * TypeScheme * Constraint -> Constraint
-    CInst   : /* NaBL- */ URI * TypeScheme -> Constraint
-    
-    CEq  : ConstraintPredicate
-    CSub : ConstraintPredicate
+    CEq     : TypeExpr * TypeExpr -> Constraint
+    CRefEq  : URI * TypeExpr -> Constraint 
 
 strategies
-	fresh-var = !TypeVar(<newname> "TV") // : TYPEVARIABLE
+	fresh-var = !TypeVar(<newname> "TV")
 	
-	typescheme: ""#([tv*, c, te]) -> TypeScheme(tv*, c,       te)
-	typescheme: ""#([tv*,    te]) -> TypeScheme(tv*, <cTrue>, te)
-  typescheme:              te   -> TypeScheme([],  <cTrue>, te)
-	
-	cTrue  = !CTrue()
-	cFalse = !CFalse()
-	cPred:  (pred, te*)  -> CPred(pred, te*)
-	cAnd:    c*          -> CAnd(c*)
-	cExist: (tv*, c)     -> CExist(tv*, c)
-	cDef:   (uri, ts, c) -> CDef(uri, ts, c)
-	cInst:  (uri, ts)    -> CInst(uri, ts)
-	
-  cEq:       te*                           -> <cPred> (CEq(), te*)
-  cInst':   (TypeScheme(tv*, c, te1), te2) -> <cExist> (tv*, <cAnd> [c, <cEq> (te1, te2)])
-  cHasInst:  TypeScheme(tv*, c, te)        -> <cExist> (tv*, c)
-  cLet:     (uri, ts, c)                   -> <cAnd> [<cHasInst> ts, <cDef>]
+	mkCEq = !CEq(<Fst>, <Snd>)
+  mkCRefEq = !CRefEq(<Fst>, <Snd>)
+  
+  unCEq: CEq(a,b) -> (a,b)
+  unCRefEq: CRefEq(a,b) -> (a,b)
+  
+  typevar-first = try(\CEq(a, b@TypeVar(_)) -> CEq(b, a) where <not(?TypeVar(_))> a\)
   
 strategies
-	consecutive-pairs(s) = Dupl;(id,Tl<+![]);zipr(s)
-	
+  consecutive-pairs(s) = Dupl;(id,Tl<+![]);zipr(s)
+  
   multi-lookup(|l): n -> <filter(?(n,_));map(Snd)> l
   keys = map(Fst);make-set
   
@@ -57,21 +37,7 @@ strategies
     where b := <is-effective(s);fixpoint(s) <+ !a> a
     
   scanfix(s): a -> b
-    where b := <is-effective(s);\c -> [c | <fixpoint(s)> c]\ <+ ![a]> a
-  
-  empty-isect = isect;?[]
-  empty-isect(|one*) = ?other*;!(one*,other*);empty-isect
-  
-  ftv = free-vars(?TypeVar(_), {\CExist(xs, _) -> xs\})
-  
-  getfirst-split(s): ([h|t], l*) -> (<s> h, [<reverse> l*, t])
-  getfirst-split(s): ([h|t], l*) -> <getfirst-split(s)> (t, [<not(s)> h | l*])
-
-  extendUp(s) = Dupl;(id,s)
-
-  ndet-list-binop(s): l -> l'
-    where repl* := <join(extendUp(s));not(?[])> l
-        ; l' := <foldl(ndet-list-binop-helper)> (repl*, l)
-  ndet-list-binop-helper: (((a,b),c),l) -> l''
-    where l'  := <split-fetch(?a);conc> l
-        ; l'' := <split-fetch(?b);(id,![c|<id>]);conc> l'
+    where b := <is-effective(s);\c -> [c | <scanfix(s)> c]\ <+ ![a]> a
+    
+  scanfix(s|n): a -> b
+    where b := <is-effective(s);where(<gt>(n,1));\c -> [c | <scanfix(s|<dec>n)> c]\ <+ ![a]> a
