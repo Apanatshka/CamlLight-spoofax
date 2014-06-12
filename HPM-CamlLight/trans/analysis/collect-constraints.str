@@ -48,7 +48,7 @@ strategies
   collect-constraint: (s@String(_), ty) -> ([], [], [CEq(ty, <get-type> s)])
   collect-constraint: (u@Unit(), ty)    -> ([], [], [CEq(ty, <get-type> u)])
   
-  collect-constraint: (Var(gn), ty) -> ([], [], [<mkCRefEq>(<debug;name-resolve> gn, ty)])
+  collect-constraint: (Var(gn), ty) -> ([], [], [<mkCRefEq>(<name-resolve> gn, ty)])
   
   name-resolve: name -> uri
     where <has-annotation(?Use(u))> name

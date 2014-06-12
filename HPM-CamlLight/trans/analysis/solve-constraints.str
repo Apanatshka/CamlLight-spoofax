@@ -9,14 +9,21 @@ imports
   trans/analysis/constraints
 
 strategies
-  solve-constraints = map( insert-existentials
-                         ; fixpoint(remove-aliases;(id,id,fuse-constraints;expand-constraints))
-                         ; try(sc-helper1) <+ print-failure(|"Unable to resolve type constraints further: "))
-  sc-helper1: (n,t,l) -> (n',t',l')
-    where l' := <map(CEq(?TypeVar(_),outermost(sc-helper2(|l))))> l
-        ; n' := <try(nabl-uri-name)> n
-        ; t' := <sc-helper2(|l')> t
-  sc-helper2(|dict): TypeVar(_) -> <lookup>(<id>, <map(unCEq)> dict)
+	solve-constraints = map(insert-existentials;sc-helper)
+	                  ; fixpoint(instantiate-universals;map(sc-helper))
+	                  ; map((try(nabl-uri-name),id,id))
+  sc-helper = fixpoint(remove-aliases;(id,id,fuse-constraints;expand-constraints));try(substitute-typevars)
+  
+  substitute-typevars: (n,t,l) -> (n,t',l')
+    where l' := <map(CEq(?TypeVar(_),outermost(st-helper(|l))))> l
+        ; t' := <st-helper(|l')> t
+  st-helper(|dict): TypeVar(_) -> <lookup>(<id>, <map(unCEq)> dict)
+  
+  instantiate-universals: l -> l'
+    where dict := <filter(iu-helper)> l
+        ; l' := <map(alltd({uri,ty:?CRefEq(uri,ty);<mkCEq>(<lookup>(uri,dict),ty)}))> l
+  
+  iu-helper: (uri,type,c*) -> (uri,type) where [] := <free-vars({?CRefEq(uri,_);![uri]},fail)> c*
   
   insert-existentials: (u-name, u-type, existentials, constraints) -> (u-name, u-type, constraints')
     where constraints' := <alltd(ie-helper(|existentials))> constraints
