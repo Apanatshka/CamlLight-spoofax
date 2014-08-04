@@ -23,10 +23,12 @@ strategies
   
   // substitute-typevars : (name, TypeExpr, [], [Constraint]) -> (name, TypeExpr, [Constraint])
   // Substitute type variables in the constraints for the equivalent type expressions founds,
-  // then substitute the type variables in the type of the name-binding (the second value in the 3-tuple input)
+  // then substitute the type variable in the type of the name-binding (the second value in the 3-tuple input)
+  // But only succeed if the type variable can be replaced with a type expression without variables
   substitute-typevars: (n,t,l) -> (n,t',l')
-    where l' := <map(CEq(?TypeVar(_),outermost(st-helper(|l))))> l
+    where l' := <map(try(CEq(?TypeVar(_),outermost(st-helper(|l)))))> l
         ; t' := <st-helper(|l')> t
+        ; [] := <free-vars(?TypeVar(_), fail)> t'
   st-helper(|dict): TypeVar(_) -> <lookup>(<id>, <filter(typevar-first;unCEq)> dict)
   
   // refresh-vars : TypeExpr -> TypeExpr
@@ -38,12 +40,12 @@ strategies
        ; t' := <alltd({tv:?tv@TypeVar(_);<lookup> (tv, dict)})> t
   
   // instantiate-universals : [(name, TypeExpr, [Constraint])] -> [(name, TypeExpr, [Constraint])]
-  // instantiate universally quantified type variables that no longer have constraints that reference themselves
+  // instantiate universally quantified type variables that have been fully resolved
   // NOTE: I'm not sure this is the right approach! 
   instantiate-universals: l -> l'
     with dict := <filter(iu-helper)> l
        ; l' := <map(alltd({uri,ty:?CRefEq(uri,ty);<mkCEq>(<lookup;refresh-vars>(uri,dict),ty)}))> l
-  iu-helper: (uri,type,c*) -> (uri,type) where [] := <free-vars({?CRefEq(uri,_);![uri]},fail)> c*
+  iu-helper: (uri,type,c*) -> (uri,type) where [] := <free-vars(?TypeVar(_), fail)> type
   
   // insert-existentials : (name, TypeExpr, [(name, TypeExpr)], [Constraint]) -> (name, TypeExpr, [Constraint])
   // Changes CRefEq to CEq is the reference is to an existentially quantified type variable
