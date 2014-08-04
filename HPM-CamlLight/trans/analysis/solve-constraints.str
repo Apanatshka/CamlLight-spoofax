@@ -9,26 +9,50 @@ imports
   trans/analysis/constraints
 
 strategies
+	// solve-constraints : [(name, TypeExpr, [(name, TypeExpr)], [Constraint])] -> [(name, TypeExpr, [Constraint])]
+	// solve the given constraints, where the input is a list with
+	// 1 a name,
+	// 2 its type (variable),
+	// 4(!) the constraints on that type
+	// 3 the existentially quantified names used in those constraints
+	// each of these names is universally quantified and maybe be referenced in a CRefEq in any of the constraints of that or other names. 
 	solve-constraints = map(insert-existentials;sc-helper)
 	                  ; fixpoint(instantiate-universals;map(sc-helper))
-	                  ; map((try(nabl-uri-name),id,id))
+	                  // ; map({\(n,ty,_) -> (<try(nabl-uri-name)> n, ty)\})
   sc-helper = fixpoint(remove-aliases;(id,id,fuse-constraints;expand-constraints));try(substitute-typevars)
   
+  // substitute-typevars : (name, TypeExpr, [], [Constraint]) -> (name, TypeExpr, [Constraint])
+  // Substitute type variables in the constraints for the equivalent type expressions founds,
+  // then substitute the type variables in the type of the name-binding (the second value in the 3-tuple input)
   substitute-typevars: (n,t,l) -> (n,t',l')
     where l' := <map(CEq(?TypeVar(_),outermost(st-helper(|l))))> l
         ; t' := <st-helper(|l')> t
-  st-helper(|dict): TypeVar(_) -> <lookup>(<id>, <map(unCEq)> dict)
+  st-helper(|dict): TypeVar(_) -> <lookup>(<id>, <filter(typevar-first;unCEq)> dict)
   
+  // refresh-vars : TypeExpr -> TypeExpr
+  // alpha-conversion of the typevariables to give each unique one a fresh name
+  // doesn't take any context into account
+  refresh-vars: t -> t'
+    with vars := <free-vars(?TypeVar(v), fail)> t
+       ; dict := <map(!(<id>, <fresh-var>))> vars
+       ; t' := <alltd({tv:?tv@TypeVar(_);<lookup> (tv, dict)})> t
+  
+  // instantiate-universals : [(name, TypeExpr, [Constraint])] -> [(name, TypeExpr, [Constraint])]
+  // instantiate universally quantified type variables that no longer have constraints that reference themselves
+  // NOTE: I'm not sure this is the right approach! 
   instantiate-universals: l -> l'
-    where dict := <filter(iu-helper)> l
-        ; l' := <map(alltd({uri,ty:?CRefEq(uri,ty);<mkCEq>(<lookup>(uri,dict),ty)}))> l
-  
+    with dict := <filter(iu-helper)> l
+       ; l' := <map(alltd({uri,ty:?CRefEq(uri,ty);<mkCEq>(<lookup;refresh-vars>(uri,dict),ty)}))> l
   iu-helper: (uri,type,c*) -> (uri,type) where [] := <free-vars({?CRefEq(uri,_);![uri]},fail)> c*
   
+  // insert-existentials : (name, TypeExpr, [(name, TypeExpr)], [Constraint]) -> (name, TypeExpr, [Constraint])
+  // Changes CRefEq to CEq is the reference is to an existentially quantified type variable
   insert-existentials: (u-name, u-type, existentials, constraints) -> (u-name, u-type, constraints')
-    where constraints' := <alltd(ie-helper(|existentials))> constraints
+    with constraints' := <alltd(ie-helper(|existentials))> constraints
   ie-helper(|existentials): CRefEq(uri, ty) -> <mkCEq> (ty, ty') where ty' := <lookup> (uri, existentials)
   
+  // remove-aliases : (name, TypeExpr, [Constraint]) -> (name, TypeExpr, [Constraint])
+  // finds and removes constraints of the form CEq(TypeVar(a), TypeVar(b)) by replacing all instances of a with b
   remove-aliases: (n, t, l) -> (n, t', l'')
     where (alias,l') := <partition(?CEq(TypeVar(_),TypeVar(_)))> l
         ; alias'     := <fuse-constraints> alias
@@ -36,21 +60,32 @@ strategies
         ; [t'] := <foldl(ra-helper)> (alias',[t])
   ra-helper: ((tv1,tv2),c*) -> <map(alltd(?tv1;!tv2))> c*
 
+  // fuse-constraints : [Constraint] -> [Constraint]
+  // makes sure all equality constraints with top-level type vars have the type var first,
+  // then fuses constraints that start with the same left-hand side typevariable. 
   fuse-constraints: c -> <foldl(fc-helper <+ Snd)> (c',c')
-    where c' := <map(typevar-first)> c
-  
+    with c' := <map(typevar-first)> c
+  // fc-helper : (Constraint, [Constraint]) -> [Constraint]
+  // when two or more equivalence constraints start with the same typevariable,
+  // generate constraints that all right-hand sides are equivalent
   fc-helper: (CEq(tv@TypeVar(_),_),l) -> res
     where (eqs,rest) := <partition(one(?tv))> l
         ; <min-length(|2)> eqs
-        ; res := <conc> ([<Hd> eqs|rest], <mapconcat(get-arguments)
+    with res := <conc> ([<Hd> eqs|rest], <mapconcat(get-arguments)
 							                            ;filter(not(?tv))
 							                            ;nub;try(\[_] -> []\)
 							                            ;consecutive-pairs(mkCEq)
 							                            ;expand-constraints> eqs)
   
+  // expand-constraints : [Constraint] -> [Constraint]
+  // helper for expand-constraint
   expand-constraints = mapconcat(expand-constraint)
-
-  expand-constraint: CEq(t1,t2) -> <unify(?TypeVar(_));map(mkCEq)> [(t1,t2)]
+  // expand-constraint : Constraint -> [Constraint]
+  // Expands equality by unifying inner type variables.
+  // Uses print-failure when it finds two distinct concrete types.
+  expand-constraint: CEq(t1,t2)  -> <unify(?TypeVar(_));map(mkCEq)> [(t1,t2)]
+  expand-constraint: CRefEq(_,_) -> [<id>]
   expand-constraint: CEq(ConstrType(_, n),ConstrType(_, n')) ->
-    <print-failure(|$[Failed to match [n] with [n']: ])> where <not(?n)> n'
+    <print-failure(|$[Failed to match [n] with [n']: ])>
+    where <not(?n)> n'
   

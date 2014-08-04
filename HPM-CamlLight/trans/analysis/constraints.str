@@ -10,34 +10,63 @@ signature
     CRefEq  : URI * TypeExpr -> Constraint 
 
 strategies
+  // fresh-var : TypeExpr
+  // fresh-var generate a new type variable with unique name TV<some_number>
 	fresh-var = !TypeVar(<newname> "TV")
 	
+	// mkCEq : (TypeExpr,TypeExpr) -> Constraint
 	mkCEq = !CEq(<Fst>, <Snd>)
+	// mkCRefEq : (TypeExpr,TypeExpr) -> Constraint
   mkCRefEq = !CRefEq(<Fst>, <Snd>)
   
+  // unCEq : Constraint -> (TypeExpr,TypeExpr)
   unCEq: CEq(a,b) -> (a,b)
+  // unCRefEq : Constraint -> (TypeExpr,TypeExpr)
   unCRefEq: CRefEq(a,b) -> (a,b)
   
+  // typevar-first : Constraint -> Constraint
+  // flips the order of the two equivalent TypeExpr if the first is not a type variable and the second is
   typevar-first = try(\CEq(a, b@TypeVar(_)) -> CEq(b, a) where <not(?TypeVar(_))> a\)
   
 strategies
+  // consecutive-pairs : ((a,a) -> b|) -> [a] -> [b]
+  // consecutive pairs takes a list of items and gives back a list of neighbouring pairs
+  // e.g. <consecutive-pairs(id)> [1,2,3,4] == [(1,2), (2,3), (3,4)] 
   consecutive-pairs(s) = Dupl;(id,Tl<+![]);zipr(s)
   
+  // multi-lookup : (|[(k,v)]) -> k -> [v]
+  // find all values associated to the key, instead of only the first 
   multi-lookup(|l): n -> <filter(?(n,_));map(Snd)> l
+  // keys : [(k,v)] -> [k]
+  // get the list of *unique* keys from an associative list
   keys = map(Fst);make-set
   
+  // min-length : (|int) -> [a] -> [a]
+  // identity function, but fails when the list is not as long as the given param
   min-length(|len): list -> list
     where <length;!(<id>,len);geq> list
   
-  is-effective(s): term -> result
+  // is-effective : (a -> b|) -> a -> Option(b)
+  // is-effective returns the result of applying the param strategy,
+  // if it changes the input term and fails otherwise
+  is-effective(s): term -> res
     where result := <s> term
-        ; <not(eq)>(term,result)
+        ; res := <not(eq);!Some(result) <+ !None()>(term,result)
   
-  fixpoint(s): a -> b
-    where b := <is-effective(s);fixpoint(s) <+ !a> a
+  // fixpoint : (a -> b|) -> a -> b
+  // calculates a fixpoint by taking a strategy param and an input and apply the strategy until nothing changes
+  fixpoint(s): a -> b'
+    where b  := <is-effective(s)> a
+        ; b' := <\Some(c)-> <fixpoint(s)> c\ <+ !a> b
     
-  scanfix(s): a -> b
-    where b := <is-effective(s);\c -> [c | <scanfix(s)> c]\ <+ ![a]> a
+  // scanfix : (a -> b|) -> a -> [b]
+  // debug version of fixpoint that gives back all the intermediate results
+  scanfix(s): a -> b'
+    where b  := <is-effective(s)> a
+        ; b' := <\Some(c) -> [c | <scanfix(s)> c]\ <+ ![a]> b
     
-  scanfix(s|n): a -> b
-    where b := <is-effective(s);where(<gt>(n,1));\c -> [c | <scanfix(s|<dec>n)> c]\ <+ ![a]> a
+  // scanfix : (a -> b | int) -> a -> [b]
+  // debug version of fixpoint that gives back all the intermediate results, but stop recursing after the amount of rounds given in the term param. 
+  scanfix(s|n): a -> b'
+    where b  := <is-effective(s)> a
+        ; b' := <where(<gt>(n,1));\c -> [c | <scanfix(s|<dec>n)> c]\ <+ ![a]> b

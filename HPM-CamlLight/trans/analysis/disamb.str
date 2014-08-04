@@ -45,6 +45,7 @@ rules
               + GlobalRecFunDef(id,flatten-list,id)
               + LocalRecFunDef(id,flatten-list,id)
               
+  // TODO: move post-disamb2 to desugar.str under the name post-disamb-desugar
   // functions to simple llambda's
   post-disamb2: FunDef(multimatch*) -> FunctionDef(simplematch*)
     where simplematch* := <map(post-disamb2-helper)> multimatch*
