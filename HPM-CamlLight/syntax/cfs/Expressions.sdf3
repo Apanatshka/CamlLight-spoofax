@@ -56,16 +56,16 @@ end] {bracket}
 	Expr.ForExpr      = [for [IDENT] = [ForRange] do [Expr] done]
 	Expr.MatchExpr    = [match [Expr] with [SimpleMatch+; separator="\n| "]]
 	Expr.MatchExpr    = [match [Expr] with
-	| [SimpleMatch+; separator="\n| "]] // undocumented form found in example programs
+	| [SimpleMatch+; separator="\n| "]] // alternate syntax (http://caml.inria.fr/pub/docs/manual-caml-light/node4.8.html)
 	Expr.FunDef       = [fun [MultiMatch+; separator="\n| "]]
 	Expr.FunDef       = [fun
-	| [MultiMatch+; separator="\n| "]] // undocumented form found in example programs
+	| [MultiMatch+; separator="\n| "]] // alternate syntax (http://caml.inria.fr/pub/docs/manual-caml-light/node4.8.html)
 	Expr.FunctionDef  = [function [SimpleMatch+; separator="\n| "]]
 	Expr.FunctionDef  = [function
-	| [SimpleMatch+; separator="\n| "]] // undocumented form found in example programs
+	| [SimpleMatch+; separator="\n| "]] // alternate syntax (http://caml.inria.fr/pub/docs/manual-caml-light/node4.8.html)
 	Expr.TryExpr      = [try [Expr] with [SimpleMatch+; separator="\n| "]]
 	Expr.TryExpr      = [try [Expr] with
-	| [SimpleMatch+; separator="\n| "]] // undocumented form found in example programs
+	| [SimpleMatch+; separator="\n| "]] // alternate syntax (http://caml.inria.fr/pub/docs/manual-caml-light/node4.8.html)
 	Expr.LetExpr      = [let [LetBind+; separator="\nand "] in [Expr]]
 	Expr.LetRecExpr   = [let rec [LetRecBind+; separator="\nand "] in [Expr]]
 	
