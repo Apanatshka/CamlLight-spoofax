@@ -18,15 +18,29 @@ strategies
 	// 4(!) the constraints on that type
 	// 3 the existentially quantified names used in those constraints
 	// each of these names is universally quantified and maybe be referenced in a CRefEq in any of the constraints of that or other names. 
-	solve-constraints = sc-done(simple-solve,ref-resolve,sc-fail)
+	solve-constraints = sc-done(simple-solve, ref-resolve, sc-fail)
+	// check if done, then prettify, else continue
   sc-done(cont) = map(binding-solved) < prettify-result + cont
+  // same as sc-done but saves subresults in a list
+  sc-done-list(cont) = map(binding-solved) < \i -> [i , <prettify-result> i]\ + \i -> [i | <cont> i]\
+  // a way to end the type inference with an erro 
+  sc-fail: a -> [a]
+    where <print-failure(|"Type inference failed unexpectedly. ")> ""
+  
+  // higher arity version of sc-done(-list)
   sc-done(c1,c2) = sc-done(c1;sc-done(c2))
   sc-done(c1,c2,c3) = sc-done(c1;sc-done(c2,c3))
   sc-done(c1,c2,c3,c4) = sc-done(c1;sc-done(c2,c3,c4))
   sc-done(c1,c2,c3,c4,c5) = sc-done(c1;sc-done(c2,c3,c4,c5))
   sc-done(c1,c2,c3,c4,c5,c6) = sc-done(c1;sc-done(c2,c3,c4,c6))
   sc-done(c1,c2,c3,c4,c5,c6,c7) = sc-done(c1;sc-done(c2,c3,c4,c6,c7))
-  sc-fail = where(!();print-failure(|"Type inference failed unexpectedly. "))
+  
+  sc-done-list(c1,c2) = sc-done-list(c1;sc-done-list(c2))
+  sc-done-list(c1,c2,c3) = sc-done-list(c1;sc-done-list(c2,c3))
+  sc-done-list(c1,c2,c3,c4) = sc-done-list(c1;sc-done-list(c2,c3,c4))
+  sc-done-list(c1,c2,c3,c4,c5) = sc-done-list(c1;sc-done-list(c2,c3,c4,c5))
+  sc-done-list(c1,c2,c3,c4,c5,c6) = sc-done-list(c1;sc-done-list(c2,c3,c4,c6))
+  sc-done-list(c1,c2,c3,c4,c5,c6,c7) = sc-done-list(c1;sc-done-list(c2,c3,c4,c6,c7))
   
   // solve-constraints' : (name, TypeExpr, [Constraint]) -> (name, TypeExpr, [Constraint])
   // solves constraints by
@@ -56,13 +70,18 @@ strategies
   // cull-type-vars : (name, TypeExpr, [Constraint]) -> (name, TypeExpr, [Constraint])
   // remove constraints that mention unused typevars
   cull-typevars: (n,t,l) -> (n,t,l')
-    with ttvs := <free-typevars> t
-       ; ltvs := <filter(?CRefEq(_,_));free-typevars> l
-       ; tvs  := <conc;make-set> (ttvs, ltvs)
+    with ttvs    := <free-typevars> t
+       ; ltvs    := <filter(?CRefEq(_,_));free-typevars> l
+       ; tvs     := <conc;make-set> (ttvs, ltvs)
        ; closure := <typevars-closure> (tvs, l)
-       ; l'   := <filter(ct-helper(|closure))> l
-  ct-helper(|set) = where(free-typevars; make-set
-                    ; !(<id>,set); isect; not(?[]))
+       ; l'      := <filter(ct-helper(|closure))> l
+  ct-helper(|set): CEq(t@TypeVar(_),_) -> <id>
+    where <elem> (t,set)
+  ct-helper(|set): CEq(_,t@TypeVar(_)) -> <id>
+    where <elem> (t,set)
+  ct-helper(|set): CRefEq(_,texpr) -> <id>
+    where freevars := <free-typevars; make-set> texpr
+        ; [_|_] := <isect> (freevars, set)
   
   // concrete-type : TypeExpr -?> TypeExpr
   // succeeds if the type is concrete and fails otherwise
@@ -90,12 +109,9 @@ strategies
   // substitute-typevars : (name, TypeExpr, [Constraint]) -> (name, TypeExpr, [Constraint])
   // Substitute type variables in the constraints for the equivalent type expressions founds,
   // then substitute the type variable in the type of the name-binding (the second value in the 3-tuple input)
-  // But only succeed if the type variable can be replaced with a type expression without variables
-  // TODO: remove the above constraint
   substitute-typevars: (n,t,l) -> (n,t',l')
     where l' := <map(try(CEq(?TypeVar(_),outermost(st-helper(|l)))))> l
-        ; t' := <st-helper(|l')> t
-        ; [] := <free-typevars> t'
+        ; t' := <alltd(st-helper(|l'))> t
   st-helper(|dict): TypeVar(_) -> <lookup>(<id>, <filter(typevar-first;unCEq)> dict)
   
   // refresh-vars : TypeExpr -> TypeExpr
@@ -112,7 +128,8 @@ strategies
   instantiate-universals: l -> l'
     with dict := <filter(iu-helper1)> l
        ; l' := <map(alltd(iu-helper2(|dict)))> l
-  iu-helper1: (n,t,_) -> (n,t) where <concrete-type> t
+  iu-helper1: (n,t,_)  -> (n,t) where <concrete-type> t
+  iu-helper1: (n,t,[]) -> (n,t)
   iu-helper2(|dict): CRefEq(uri,ty) -> <mkCEq>(<lookup;refresh-vars>(uri,dict),ty)
   
   // insert-existentials : (name, TypeExpr, [(name, TypeExpr)], [Constraint]) -> (name, TypeExpr, [Constraint])
