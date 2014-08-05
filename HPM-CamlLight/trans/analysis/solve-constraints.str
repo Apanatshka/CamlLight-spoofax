@@ -9,33 +9,100 @@ imports
   trans/analysis/constraints
 
 strategies
-	// solve-constraints : [(name, TypeExpr, [(name, TypeExpr)], [Constraint])] -> [(name, TypeExpr, [Constraint])]
+  free-typevars = free-vars(\TypeVar(_) -> [<id>]\, fail)
+  
+	// solve-constraints : [(name, TypeExpr, [(name, TypeExpr)], [Constraint])] -> [(name, TypeExpr)]
 	// solve the given constraints, where the input is a list with
 	// 1 a name,
 	// 2 its type (variable),
 	// 4(!) the constraints on that type
 	// 3 the existentially quantified names used in those constraints
 	// each of these names is universally quantified and maybe be referenced in a CRefEq in any of the constraints of that or other names. 
-	solve-constraints = map(insert-existentials;sc-helper)
-	                  ; fixpoint(instantiate-universals;map(sc-helper))
-	                  // ; map({\(n,ty,_) -> (<try(nabl-uri-name)> n, ty)\})
-  sc-helper = fixpoint(remove-aliases;(id,id,fuse-constraints;expand-constraints));try(substitute-typevars)
+	solve-constraints = sc-done(simple-solve,ref-resolve,sc-fail)
+  sc-done(cont) = map(binding-solved) < prettify-result + cont
+  sc-done(c1,c2) = sc-done(c1;sc-done(c2))
+  sc-done(c1,c2,c3) = sc-done(c1;sc-done(c2,c3))
+  sc-done(c1,c2,c3,c4) = sc-done(c1;sc-done(c2,c3,c4))
+  sc-done(c1,c2,c3,c4,c5) = sc-done(c1;sc-done(c2,c3,c4,c5))
+  sc-done(c1,c2,c3,c4,c5,c6) = sc-done(c1;sc-done(c2,c3,c4,c6))
+  sc-done(c1,c2,c3,c4,c5,c6,c7) = sc-done(c1;sc-done(c2,c3,c4,c6,c7))
+  sc-fail = where(!();print-failure(|"Type inference failed unexpectedly. "))
   
-  // substitute-typevars : (name, TypeExpr, [], [Constraint]) -> (name, TypeExpr, [Constraint])
+  // solve-constraints' : (name, TypeExpr, [Constraint]) -> (name, TypeExpr, [Constraint])
+  // solves constraints by
+  // 1 removing aliases (CEq(TypeVar(alias), TypeVar(var)))
+  // 2 fusing constraints (CEq(TypeVar(a), b) /\ CEq(TypeVar(a), c) --> CEq(b,c))
+  // 3 expanding constraints (by unifying two Equivalent ASTs up to TypeVars)
+  // 4 Doing the above steps in a fixpoint
+  // 5 Trying to fill in the full concrete type of the binding
+  // 6 Removing any surplus constraints after doing the filling in
+  solve-constraints' = fixpoint( remove-aliases
+                               ; (id,id, fuse-constraints
+                                       ; expand-constraints))
+                     ; try(substitute-typevars);cull-typevars
+  
+  // simple-solve : [(name, TypeExpr, [(name, TypeExpr)], [Constraint])] -> [(name, TypeExpr, [Constraint])]
+  // solves constraints when there is no polymorpism and there are no references to other functions
+  simple-solve = map(insert-existentials;solve-constraints')
+  
+  // ref-resolve : [(name, TypeExpr, [Constraint])] -> [(name, TypeExpr, [Constraint])]
+  // resolves names of values that have concrete types and retries solving constraints (in a fixpoint)
+  ref-resolve = fixpoint(instantiate-universals;map(solve-constraints'))
+  
+  // prettify-result : [(name, TypeExpr, [Constraint])] -> [(name, TypeExpr)]
+  // removes empty constraints lists and (nabl-)resolves names if possible 
+  prettify-result = map({\(n,ty,[]) -> (<try(nabl-uri-name)> n, ty)\});try(\[s] -> s\)
+  
+  // cull-type-vars : (name, TypeExpr, [Constraint]) -> (name, TypeExpr, [Constraint])
+  // remove constraints that mention unused typevars
+  cull-typevars: (n,t,l) -> (n,t,l')
+    with ttvs := <free-typevars> t
+       ; ltvs := <filter(?CRefEq(_,_));free-typevars> l
+       ; tvs  := <conc;make-set> (ttvs, ltvs)
+       ; closure := <typevars-closure> (tvs, l)
+       ; l'   := <filter(ct-helper(|closure))> l
+  ct-helper(|set) = where(free-typevars; make-set
+                    ; !(<id>,set); isect; not(?[]))
+  
+  // concrete-type : TypeExpr -?> TypeExpr
+  // succeeds if the type is concrete and fails otherwise
+  concrete-type = where(free-typevars => [])
+  
+  // binding-solved : (name, TypeExpr, [Constraint]) -?> (name, TypeExpr, [Constraint])
+  // succeeds if all Constraints were satified
+  // fails in all other cases
+  binding-solved = ?(_,_,[])
+  
+  // typevars-closure : ([TypeVar], [Constraint]) -> [TypeVar]
+  // Returns a list of (unique) typevars that can be reached (directly or
+  // indirectly) through Constraints from the given TypeVar
+  typevars-closure: (tvs,l) -> <foldl(typevar-closure);Fst> (tvs,(tvs,l))
+  // typevar-closure: (TypeVar, ([TypeVar],[Constraint])) -> ([TypeVar],[Constraint])
+  typevar-closure: (tv,(foundVars,l)) -> (closure,l)
+    with relevantCs  := <filter(tc-helper1(|tv))> l
+       ; freeVars    := <free-vars(tc-helper2(|tv), fail);make-set> relevantCs
+       ; newVars     := <diff> (freeVars, foundVars)
+       ; foundVars'  := <union> (foundVars, freeVars)
+       ; (closure,l) := <foldl(typevar-closure)> (newVars,(foundVars',l))
+  tc-helper1(|tv) = ?CEq(tv,_) + ?CEq(_,tv) + ?CRefEq(_,tv)
+  tc-helper2(|tv): t@TypeVar(_) -> [t] where <not(eq)>(t,tv)
+  
+  // substitute-typevars : (name, TypeExpr, [Constraint]) -> (name, TypeExpr, [Constraint])
   // Substitute type variables in the constraints for the equivalent type expressions founds,
   // then substitute the type variable in the type of the name-binding (the second value in the 3-tuple input)
   // But only succeed if the type variable can be replaced with a type expression without variables
+  // TODO: remove the above constraint
   substitute-typevars: (n,t,l) -> (n,t',l')
     where l' := <map(try(CEq(?TypeVar(_),outermost(st-helper(|l)))))> l
         ; t' := <st-helper(|l')> t
-        ; [] := <free-vars(?TypeVar(_), fail)> t'
+        ; [] := <free-typevars> t'
   st-helper(|dict): TypeVar(_) -> <lookup>(<id>, <filter(typevar-first;unCEq)> dict)
   
   // refresh-vars : TypeExpr -> TypeExpr
   // alpha-conversion of the typevariables to give each unique one a fresh name
   // doesn't take any context into account
   refresh-vars: t -> t'
-    with vars := <free-vars(?TypeVar(v), fail)> t
+    with vars := <free-typevars> t
        ; dict := <map(!(<id>, <fresh-var>))> vars
        ; t' := <alltd({tv:?tv@TypeVar(_);<lookup> (tv, dict)})> t
   
@@ -43,9 +110,10 @@ strategies
   // instantiate universally quantified type variables that have been fully resolved
   // NOTE: I'm not sure this is the right approach! 
   instantiate-universals: l -> l'
-    with dict := <filter(iu-helper)> l
-       ; l' := <map(alltd({uri,ty:?CRefEq(uri,ty);<mkCEq>(<lookup;refresh-vars>(uri,dict),ty)}))> l
-  iu-helper: (uri,type,c*) -> (uri,type) where [] := <free-vars(?TypeVar(_), fail)> type
+    with dict := <filter(iu-helper1)> l
+       ; l' := <map(alltd(iu-helper2(|dict)))> l
+  iu-helper1: (n,t,_) -> (n,t) where <concrete-type> t
+  iu-helper2(|dict): CRefEq(uri,ty) -> <mkCEq>(<lookup;refresh-vars>(uri,dict),ty)
   
   // insert-existentials : (name, TypeExpr, [(name, TypeExpr)], [Constraint]) -> (name, TypeExpr, [Constraint])
   // Changes CRefEq to CEq is the reference is to an existentially quantified type variable
