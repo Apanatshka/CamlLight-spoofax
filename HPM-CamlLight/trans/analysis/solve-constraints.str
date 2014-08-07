@@ -75,6 +75,9 @@ strategies
        ; tvs     := <conc;make-set> (ttvs, ltvs)
        ; closure := <typevars-closure> (tvs, l)
        ; l'      := <filter(ct-helper(|closure))> l
+  // ct-helper : (|[TypeVar]) -> Constraint -?> Constraint
+  // predicate that checks CEq to have a TypeVar lhs or rhs that's in the set
+  // and checks CRefEq to have at least one TypeVar in the TypeExpr that's in the set
   ct-helper(|set): CEq(t@TypeVar(_),_) -> <id>
     where <elem> (t,set)
   ct-helper(|set): CEq(_,t@TypeVar(_)) -> <id>
