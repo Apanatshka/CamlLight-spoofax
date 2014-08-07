@@ -132,7 +132,7 @@ strategies
         ; l' := <map(try(CEq(?TypeVar(_),outermost(st-helper(|dict)))))> l
         ; dict' := <filter(typevar-first;unCEq)> l'
         ; t' := <alltd(st-helper(|dict'))> t
-  st-helper(|dict): tv@TypeVar(_) -> <lookup;not(where(oncetd(?tv)))> (tv, dict)
+  st-helper(|dict): tv@TypeVar(_) -> <lookup;not(oncetd(?tv))> (tv, dict)
   
   // refresh-vars : TypeExpr -> TypeExpr
   // alpha-conversion of the typevariables to give each unique one a fresh name
