@@ -11,21 +11,33 @@ imports
 strategies
   free-typevars = free-vars(\TypeVar(_) -> [<id>]\, fail)
   
-	// solve-constraints : [(name, TypeExpr, [(name, TypeExpr)], [Constraint])] -> [(name, TypeExpr)]
-	// solve the given constraints, where the input is a list with
-	// 1 a name,
-	// 2 its type (variable),
-	// 4(!) the constraints on that type
-	// 3 the existentially quantified names used in those constraints
-	// each of these names is universally quantified and maybe be referenced in a CRefEq in any of the constraints of that or other names. 
-	solve-constraints = sc-done(simple-solve, ref-resolve, sc-fail)
+  d(|str) = where(<debug> str)
+  d'(|str) = where(!(str,<id>);debug)
+  ds(s) = debug;s;debug
+  
+  // solve-constraints : [(name, TypeExpr, [(name, TypeExpr)], [Constraint])] -> [(name, TypeExpr)]
+  // solve the given constraints, where the input is a list with
+  // 1 a name,
+  // 2 its type (variable),
+  // 4(!) the constraints on that type
+  // 3 the existentially quantified names used in those constraints
+  // each of these names is universally quantified and maybe be referenced in a CRefEq in any of the constraints of that or other names. 
+	solve-constraints =
+		insert-existentials
+	; sc-done( solve-constraints'
+	         , ref-resolve(solve-constraints')
+	         , mono-rec(ref-resolve(solve-constraints'))
+           , sc-fail)
 	// check if done, then prettify, else continue
   sc-done(cont) = map(binding-solved) < prettify-result + cont
   // same as sc-done but saves subresults in a list
   sc-done-list(cont) = map(binding-solved) < \i -> [i , <prettify-result> i]\ + \i -> [i | <cont> i]\
-  // a way to end the type inference with an erro 
-  sc-fail: a -> [a]
-    where <print-failure(|"Type inference failed unexpectedly. ")> ""
+  // a way to end the type inference with an error
+  sc-fail: a -> a
+    where <print-failure(|"Type inference failed. ")> ""
+  // same as sc-fail but for sc-done-list
+  sc-fail-list: a -> [a]
+    where <print-failure(|"Type inference failed. ")> ""
   
   // higher arity version of sc-done(-list)
   sc-done(c1,c2) = sc-done(c1;sc-done(c2))
@@ -43,25 +55,26 @@ strategies
   sc-done-list(c1,c2,c3,c4,c5,c6,c7) = sc-done-list(c1;sc-done-list(c2,c3,c4,c6,c7))
   
   // solve-constraints' : (name, TypeExpr, [Constraint]) -> (name, TypeExpr, [Constraint])
-  // solves constraints by
+  // solves constraints by:
   // 1 removing aliases (CEq(TypeVar(alias), TypeVar(var)))
   // 2 fusing constraints (CEq(TypeVar(a), b) /\ CEq(TypeVar(a), c) --> CEq(b,c))
   // 3 expanding constraints (by unifying two Equivalent ASTs up to TypeVars)
   // 4 Doing the above steps in a fixpoint
   // 5 Trying to fill in the full concrete type of the binding
   // 6 Removing any surplus constraints after doing the filling in
-  solve-constraints' = fixpoint( remove-aliases
-                               ; (id,id, fuse-constraints
-                                       ; expand-constraints))
-                     ; try(substitute-typevars);cull-typevars
-  
-  // simple-solve : [(name, TypeExpr, [(name, TypeExpr)], [Constraint])] -> [(name, TypeExpr, [Constraint])]
-  // solves constraints when there is no polymorpism and there are no references to other functions
-  simple-solve = map(insert-existentials;solve-constraints')
+  solve-constraints' = map( fixpoint( remove-aliases
+                                    ; (id,id, fuse-constraints
+                                            ; expand-constraints))
+                          ; try(substitute-typevars);cull-typevars)
   
   // ref-resolve : [(name, TypeExpr, [Constraint])] -> [(name, TypeExpr, [Constraint])]
   // resolves names of values that have concrete types and retries solving constraints (in a fixpoint)
-  ref-resolve = fixpoint(instantiate-universals;map(solve-constraints'))
+  ref-resolve(previous-strategy) = fixpoint(instantiate-universals;previous-strategy)
+  
+  // mono-rec : [(name, TypeExpr, [Constraint])] -> [(name, TypeExpr, [Constraint])]
+  // monomorphic recursion by replacing all CRefEq refering to its own binding
+  // with the type found so far, without alpha-conversion of the variables!
+  mono-rec(previous-strategy) = fixpoint(instantiate-recursion;previous-strategy)
   
   // prettify-result : [(name, TypeExpr, [Constraint])] -> [(name, TypeExpr)]
   // removes empty constraints lists and (nabl-)resolves names if possible 
@@ -112,10 +125,14 @@ strategies
   // substitute-typevars : (name, TypeExpr, [Constraint]) -> (name, TypeExpr, [Constraint])
   // Substitute type variables in the constraints for the equivalent type expressions founds,
   // then substitute the type variable in the type of the name-binding (the second value in the 3-tuple input)
+  // These substitution are only done when the CEq constraint is not recursive,
+  // i.e. only for CEq(tv@TypeVar(_), b) where "tv is not somewhere in b"
   substitute-typevars: (n,t,l) -> (n,t',l')
-    where l' := <map(try(CEq(?TypeVar(_),outermost(st-helper(|l)))))> l
-        ; t' := <alltd(st-helper(|l'))> t
-  st-helper(|dict): TypeVar(_) -> <lookup>(<id>, <filter(typevar-first;unCEq)> dict)
+    where dict := <filter(typevar-first;unCEq)> l
+        ; l' := <map(try(CEq(?TypeVar(_),outermost(st-helper(|dict)))))> l
+        ; dict' := <filter(typevar-first;unCEq)> l'
+        ; t' := <alltd(st-helper(|dict'))> t
+  st-helper(|dict): tv@TypeVar(_) -> <lookup;not(where(oncetd(?tv)))> (tv, dict)
   
   // refresh-vars : TypeExpr -> TypeExpr
   // alpha-conversion of the typevariables to give each unique one a fresh name
@@ -127,7 +144,6 @@ strategies
   
   // instantiate-universals : [(name, TypeExpr, [Constraint])] -> [(name, TypeExpr, [Constraint])]
   // instantiate universally quantified type variables that have been fully resolved
-  // NOTE: I'm not sure this is the right approach! 
   instantiate-universals: l -> l'
     with dict := <filter(iu-helper1)> l
        ; l' := <map(alltd(iu-helper2(|dict)))> l
@@ -135,9 +151,20 @@ strategies
   iu-helper1: (n,t,[]) -> (n,t)
   iu-helper2(|dict): CRefEq(uri,ty) -> <mkCEq>(<lookup;refresh-vars>(uri,dict),ty)
   
-  // insert-existentials : (name, TypeExpr, [(name, TypeExpr)], [Constraint]) -> (name, TypeExpr, [Constraint])
+  instantiate-recursion = map(instantiate-recursion')
+  // instantiate-recursion : (name, TypeExpr, [Constraint]) -> (name, TypeExpr, [Constraint])
+  // takes all references to the binding and replaces them
+  // with the type of the binding as found so far, without alpha-converting the variables in it
+  instantiate-recursion': (n,t,l) -> (n,t,l')
+    where l' := <map(ir-helper(|n,t))> l
+  ir-helper(|n,t): CEq(_,_) -> <id>
+  ir-helper(|n,t): CRefEq(n,te) -> <mkCEq> (t,te)
+  ir-helper(|n,t): CRefEq(n',_) -> <id> where <not(eq)> (n,n')
+  
+  insert-existentials = map(insert-existentials')
+  // insert-existentials' : (name, TypeExpr, [(name, TypeExpr)], [Constraint]) -> (name, TypeExpr, [Constraint])
   // Changes CRefEq to CEq is the reference is to an existentially quantified type variable
-  insert-existentials: (u-name, u-type, existentials, constraints) -> (u-name, u-type, constraints')
+  insert-existentials': (u-name, u-type, existentials, constraints) -> (u-name, u-type, constraints')
     with constraints' := <alltd(ie-helper(|existentials))> constraints
   ie-helper(|existentials): CRefEq(uri, ty) -> <mkCEq> (ty, ty') where ty' := <lookup> (uri, existentials)
   
@@ -162,10 +189,10 @@ strategies
     where (eqs,rest) := <partition(one(?tv))> l
         ; <min-length(|2)> eqs
     with res := <conc> ([<Hd> eqs|rest], <mapconcat(get-arguments)
-							                            ;filter(not(?tv))
-							                            ;nub;try(\[_] -> []\)
-							                            ;consecutive-pairs(mkCEq)
-							                            ;expand-constraints> eqs)
+                                         ;filter(not(?tv))
+                                         ;nub;try(\[_] -> []\)
+                                         ;consecutive-pairs(mkCEq)
+                                         ;expand-constraints> eqs)
   
   // expand-constraints : [Constraint] -> [Constraint]
   // helper for expand-constraint
@@ -173,9 +200,15 @@ strategies
   // expand-constraint : Constraint -> [Constraint]
   // Expands equality by unifying inner type variables.
   // Uses print-failure when it finds two distinct concrete types.
-  expand-constraint: CEq(t1,t2)  -> <unify(?TypeVar(_));map(mkCEq)> [(t1,t2)]
+  expand-constraint: CEq(t1,t2)  -> <unify'(?TypeVar(_));map(mkCEq)> (t1,t2)
   expand-constraint: CRefEq(_,_) -> [<id>]
   expand-constraint: CEq(ConstrType(_, n),ConstrType(_, n')) ->
     <print-failure(|$[Failed to match [n] with [n']: ])>
     where <not(?n)> n'
+  
+  // simple unification 
+  // The builtin unify strategy fails on input like [(TypeVar(a),FuncType(TypeVar(a),TypeVar(b)))]
+  // because tries find the most general unifier
+  unify'(isvar) = \(a@c#(as),b@c#(bs)) -> <zip(unify'(isvar));concat> (as,bs)
+    where <not(isvar)> a; <not(isvar)> b\ <+ \(a,b) -> [<id>]\
   
