@@ -32,6 +32,21 @@ rules
          else res := fa
        end
   
+  // These rule are the same as the above, but for the case where the FuncApp vs. ConstrApp is deeply nested 
+  disamb: amb([f1@FuncApp(_,_), f2@FuncApp(_,_)]) -> f2
+  where cn := <collect(?ConstrApp(_,_));getfirst(?ConstrApp(NCConstr(<id>),_))> f1
+      ; <not(nabl-uri;nabl-uri-namespace)> cn
+  disamb: amb([f1@FuncApp(_,_), f2@FuncApp(_,_)]) -> f1
+  where cn := <collect(?ConstrApp(_,_));getfirst(?ConstrApp(NCConstr(<id>),_))> f2
+      ; <not(nabl-uri;nabl-uri-namespace)> cn
+        
+  disamb: amb([f1@ConstrApp(_,_), f2@ConstrApp(_,_)]) -> f2
+  where cn := <collect(?ConstrApp(_,_));getfirst(?ConstrApp(NCConstr(<id>),_))> f1
+      ; <not(nabl-uri;nabl-uri-namespace)> cn
+  disamb: amb([f1@ConstrApp(_,_), f2@ConstrApp(_,_)]) -> f1
+  where cn := <collect(?ConstrApp(_,_));getfirst(?ConstrApp(NCConstr(<id>),_))> f2
+      ; <not(nabl-uri;nabl-uri-namespace)> cn
+  
   disamb: amb([cl, l]) -> l
   where cn := <getfirst(?ConstrPattern(NCConstr(<id>),_))> cl
       ; <not(nabl-uri;nabl-uri-namespace)> cn
