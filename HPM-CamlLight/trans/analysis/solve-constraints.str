@@ -27,6 +27,7 @@ strategies
 	; sc-done( solve-constraints'
 	         , ref-resolve(solve-constraints')
 	         , mono-rec(ref-resolve(solve-constraints'))
+	         , ref-resolve2(mono-rec(ref-resolve(solve-constraints')))
            , sc-fail)
 	// check if done, then prettify, else continue
   sc-done(cont) = map(binding-solved) < prettify-result + cont
@@ -70,6 +71,12 @@ strategies
   // ref-resolve : [(name, TypeExpr, [Constraint])] -> [(name, TypeExpr, [Constraint])]
   // resolves names of values that have concrete types and retries solving constraints (in a fixpoint)
   ref-resolve(previous-strategy) = fixpoint(instantiate-universals;previous-strategy)
+  
+  // ref-resolve : [(name, TypeExpr, [Constraint])] -> [(name, TypeExpr, [Constraint])]
+  // resolves names of values even if their types are incomplete
+  // (by copying the remaining constraints on it too)
+  // and retries solving constraints (in a fixpoint)
+  ref-resolve2(previous-strategy) = fixpoint(instantiate-incomplete;previous-strategy)
   
   // mono-rec : [(name, TypeExpr, [Constraint])] -> [(name, TypeExpr, [Constraint])]
   // monomorphic recursion by replacing all CRefEq refering to its own binding
@@ -134,7 +141,7 @@ strategies
         ; t' := <alltd(st-helper(|dict'))> t
   st-helper(|dict): tv@TypeVar(_) -> <lookup;not(oncetd(?tv))> (tv, dict)
   
-  // refresh-vars : TypeExpr -> TypeExpr
+  // refresh-vars : a -> a
   // alpha-conversion of the typevariables to give each unique one a fresh name
   // doesn't take any context into account
   refresh-vars: t -> t'
@@ -146,10 +153,21 @@ strategies
   // instantiate universally quantified type variables that have been fully resolved
   instantiate-universals: l -> l'
     with dict := <filter(iu-helper1)> l
-       ; l' := <map(alltd(iu-helper2(|dict)))> l
+       ; l' := <map((id,id,map(try(iu-helper2(|dict)))))> l
   iu-helper1: (n,t,_)  -> (n,t) where <concrete-type> t
   iu-helper1: (n,t,[]) -> (n,t)
   iu-helper2(|dict): CRefEq(uri,ty) -> <mkCEq>(<lookup;refresh-vars>(uri,dict),ty)
+  
+  // instantiate-incomplete : [(name, TypeExpr, [Constraint])] -> [(name, TypeExpr, [Constraint])]
+  // instantiate universally quantified type variables even if their types are incomplete
+  // (by copying the remaining constraints on it too)
+  instantiate-incomplete: l -> l'
+    with dict := <map(ii-helper1)> l
+       ; l' := <map((id,id,mapconcat(ii-helper2(|dict))))> l
+  ii-helper1: (n,t,c)  -> (n,(t,c))
+  ii-helper2(|dict) = \CRefEq(uri,ty) -> [<mkCEq>(t,ty) | c]
+      where (t,c) := <lookup;refresh-vars> (uri,dict)\
+    <+ ![<id>]
   
   instantiate-recursion = map(instantiate-recursion')
   // instantiate-recursion : (name, TypeExpr, [Constraint]) -> (name, TypeExpr, [Constraint])
