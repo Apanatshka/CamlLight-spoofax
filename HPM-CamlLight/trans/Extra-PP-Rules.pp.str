@@ -1,0 +1,52 @@
+module Extra-PP-Rules.pp
+
+imports
+  include/CamlLight    // jasmin AST nodes
+  lib/runtime/tmpl/pp // pp-* strategies
+  libstratego-gpp     // box language AST nodes
+  Identifier.pp.generated
+  Types.pp.generated
+
+rules
+// <IDENT-LEX> "__" <IDENT-LEX> -> <GlobalName-CF> {cons("GlobalName")}
+  prettyprint-GlobalName:
+    GlobalName(i1,i2) -> [ H(
+                             [SOpt(HS(), "0")]
+                           , [ i1'
+                             , S("__")
+                             , i2'
+                             ]
+                           )
+                         ]
+    where i1' := <pp-one-Z(prettyprint-IDENT)> i1
+        ; i2' := <pp-one-Z(prettyprint-IDENT)> i2
+  
+// <IDENT-LEX> -> <GlobalName-CF> {cons("GlobalName")}
+  prettyprint-GlobalName:
+    GlobalName(i) -> [ H(
+                         [SOpt(HS(), "0")]
+                       , [ i' ]
+                       )
+                     ]
+    where i' := <pp-one-Z(prettyprint-IDENT)> i
+  
+// TypeExpr "*" TypeExpr      -> TupleTypeExpr {ast("[<1>,<2>]")}
+// TypeExpr "*" TupleTypeExpr -> TupleTypeExpr {ast("<conc([<1>],<2>)>")}
+  prettyprint-TupleTypeExpr:
+    te* -> [ H(
+               [SOpt(HS(), "0")]
+             , [ te' ]
+             )
+           ]
+    where te' := <pp-H-list(prettyprint-TypeExpr|" * ")> te*
+    
+// "'" <IDENT-CF> -> <TYPEVARIABLE-CF> {cons("TypeVar")} 
+  prettyprint-TYPEVARIABLE:
+    TypeVar(i) -> [ H(
+                      [SOpt(HS(), "0")]
+                    , [ S("'")
+                      , i'
+                      ]
+                    )
+                  ]
+    where i' := <pp-one-Z(prettyprint-IDENT)> i

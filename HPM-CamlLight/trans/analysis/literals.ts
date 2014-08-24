@@ -4,8 +4,8 @@ imports
   include/CamlLight
 
 type rules
-  Int(_)    : ConstrType(None(), "int")
-  Float(_)  : ConstrType(None(), "float")
-  Char(_)   : ConstrType(None(), "char")
-  String(_) : ConstrType(None(), "string")
-  Unit()    : ConstrType(None(), "unit")
+  Int(_)    : ConstrType(None(), GlobalName("int"))
+  Float(_)  : ConstrType(None(), GlobalName("float"))
+  Char(_)   : ConstrType(None(), GlobalName("char"))
+  String(_) : ConstrType(None(), GlobalName("string"))
+  Unit()    : ConstrType(None(), GlobalName("unit"))

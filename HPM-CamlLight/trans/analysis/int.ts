@@ -5,5 +5,5 @@ imports
   extra-constructors
 
 type rules
-  Prefix("+") : FuncType(ConstrType(None(), "int"), FuncType(ConstrType(None(), "int"), ConstrType(None(), "int")))
-  Prefix("-") : FuncType(ConstrType(None(), "int"), FuncType(ConstrType(None(), "int"), ConstrType(None(), "int")))
+  Prefix("+") : FuncType(ConstrType(None(), GlobalName("int")), FuncType(ConstrType(None(), GlobalName("int")), ConstrType(None(), GlobalName("int"))))
+  Prefix("-") : FuncType(ConstrType(None(), GlobalName("int")), FuncType(ConstrType(None(), GlobalName("int")), ConstrType(None(), GlobalName("int"))))
