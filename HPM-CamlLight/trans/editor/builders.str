@@ -21,4 +21,15 @@ rules
       -> (file, result)
     where task-setup(|project-path); index-setup(|<language>, project-path)
         ; file   := <guarantee-extension(|"generated.ty")> path
-        ; result := <collect-constraints;solve-constraints> ast
+        ; result := <collect-constraints;solve-constraints;Fst> ast
+
+  debug-generate-constraint-graph: (selected, position, ast, path, project-path)
+      -> None()
+    where task-setup(|project-path); index-setup(|<language>, project-path)
+        ; outputformat := "png"
+        ; file   := <concat-strings> [project-path, "/", <guarantee-extension(|"generated.dot")> path]
+        ; file'  := <concat-strings> [project-path, "/", <guarantee-extension(|$[generated.dot.[outputformat]])> path]
+        ; result := <collect-constraints;solve-constraints;Snd> ast
+        ; <WriteToFile(fprintnl)> (file,[result])
+        ; <call> ("dot", [$[-T[outputformat]], $[-o[file']], file])
+        ; <call> ("xdg-open", [file'])

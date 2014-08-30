@@ -8,6 +8,7 @@ imports
   Extra-PP-Rules.pp
   Identifier.pp.generated
   Types.pp.generated
+  lib/runtime/nabl/-
   
 strategies
   abox2text = box2text-string(|10000)
@@ -22,7 +23,7 @@ signature
 strategies
   // fresh-var : TypeExpr
   // fresh-var generate a new type variable with unique name TV<some_number>
-	fresh-var = !TypeVar(<newname> "TV")
+	fresh-var = !TypeVar(<newname> "tv#")
 	
 	// mkCEq : (TypeExpr,TypeExpr) -> Constraint
 	mkCEq = !CEq(<Fst>, <Snd>)
@@ -38,8 +39,9 @@ strategies
   // flips the order of the two equivalent TypeExpr if the first is not a type variable and the second is
   typevar-first = try(\CEq(a, b@TypeVar(_)) -> CEq(b, a) where <not(?TypeVar(_))> a\)
   
-  constraint-to-string: CEq(a,b) -> $[[<pp-TypeExpr>a] = [<pp-TypeExpr>b]]
-  constraint-to-string: CRefEq(a,b) -> $[[<pp-GlobalName>a] = [<pp-TypeExpr>b]]
+  constraint-to-string: CEq(a,b) -> $[label="[<pp-TypeExpr>a] = [<pp-TypeExpr>b]"]
+  constraint-to-string: CRefEq(a,b) -> $[label="[<pp-TypeExpr>b] &#10927; [<nabl-uri-name <+ pp-GlobalName>a]", shape="box"]
+  // Unicode number 10927 is the \preceq symbol (preceding or equal)
   
 strategies
   // consecutive-pairs : ((a,a) -> b|) -> [a] -> [b]
