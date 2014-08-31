@@ -35,7 +35,7 @@ strategies
         ; (u2*, e2*, c2*) := <collect-constraint> (a,a-ty)
   
   collect-constraint: (IfElseExpr(c,t,e), ty) -> ([u1*,u2*,u3*], [e1*,e2*,e3*], [c1*,c2*,c3*])
-    where c-ty := ConstrType(None(), "bool")
+    where c-ty := ConstrType(None(), GlobalName("bool"))
         ; (u1*, e1*, c1*) := <collect-constraint> (c,c-ty)
         ; (u2*, e2*, c2*) := <collect-constraint> (t,ty)
         ; (u3*, e3*, c3*) := <collect-constraint> (e,ty)

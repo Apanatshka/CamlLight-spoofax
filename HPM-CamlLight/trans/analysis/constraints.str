@@ -40,8 +40,8 @@ strategies
   typevar-first = try(\CEq(a, b@TypeVar(_)) -> CEq(b, a) where <not(?TypeVar(_))> a\)
   
   constraint-to-string: CEq(a,b) -> $[label="[<pp-TypeExpr>a] = [<pp-TypeExpr>b]"]
-  constraint-to-string: CRefEq(a,b) -> $[label="[<pp-TypeExpr>b] &#10927; [<nabl-uri-name <+ pp-GlobalName>a]", shape="box"]
   // Unicode number 10927 is the \preceq symbol (preceding or equal)
+  constraint-to-string: CRefEq(a,b) -> $[label="[<pp-TypeExpr>b] &#10927; [<nabl-uri-name <+ pp-GlobalName>a]", shape="box"]
   
 strategies
   // consecutive-pairs : ((a,a) -> b|) -> [a] -> [b]
@@ -55,6 +55,12 @@ strategies
   // keys : [(k,v)] -> [k]
   // get the list of *unique* keys from an associative list
   keys = map(Fst);make-set
+  
+  get-index(s) = ?(v,<id>);get-index0(!(v,<id>);s);inc
+  
+  get-node = get-index(c-eq)
+  
+  c-eq = (rm-annotations,rm-annotations);eq <+ {a,b:?(CEq(a,b),CEq(b,a))}
   
   // min-length : (|int) -> [a] -> [a]
   // identity function, but fails when the list is not as long as the given param

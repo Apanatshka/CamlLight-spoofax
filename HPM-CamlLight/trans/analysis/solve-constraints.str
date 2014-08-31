@@ -155,31 +155,32 @@ $[digraph g {
   // Substitute type variables in the constraints for the equivalent type expressions founds,
   // then substitute the type variable in the type of the name-binding (the second value in the 3-tuple input)
   // These substitution are only done when the CEq constraint is not recursive,
-  // i.e. only for CEq(tv@TypeVar(_), b) where "tv is not somewhere in b"
+  // i.e. only for CEq(tv@TypeVar(_), b) where "tv not in vars(b)"
   substitute-typevars: ((nm,t,l),gr) -> ((nm,t',l'),gr'')
     with dict      := <filter(st-helper2(|gr))> l
        ; (l',gr')  := <thread-map(try(st-helper1(|dict)))> (l,gr)
        ; dict'     := <filter(st-helper2(|gr'))> l'
        ; (CRefEq(nm,t'),gr'') := <st-helper1(|dict')> (<mkCRefEq>(nm,t),gr')
-  st-helper2(|gr): c -> (a,(b,<get-index>(c,n)))
-    with (n,e) := gr
+  st-helper2(|gr): c -> (a,(b,i))
     where (a@TypeVar(_),b) := <typevar-first;unCEq> c
-  st-helper1(|dict): (CEq(_,_),   (_,_)) -> <sth2(thread-outermost|dict)>
-  st-helper1(|dict): (CRefEq(_,_),(_,_)) -> <sth2(thread-alltd|dict)>
-  sth2(s|dict): (c@cc#([l,r]),(n,e)) -> res
-    with (r',i*) := <s(sth1(|dict))> (r,[])
+    with (n,e) := gr
+       ; i := <get-node>(c,n)
+  st-helper1(|dict): (CEq(_,_),   (_,_)) -> <sth-2(thread-outermost|dict)>
+  st-helper1(|dict): (CRefEq(_,_),(_,_)) -> <sth-2(thread-alltd|dict)>
+  sth-2(s|dict): (c@cc#([l,r]),(n,e)) -> res
+    with (r',i*) := <s(sth-1(|dict))> (r,[])
        ; if <eq> (r,r')
            then res := (c,(n,e))
-           else i   := <get-index> (c,<map(rm-annotations)>n)
+           else i   := <get-node> (c,n)
               ; c'  := cc#([l,r'])
-              ; n'  := <conc> (n,<diff>([c'],n))
-              ; o   := <get-index> (c',n')
+              ; n'  := <conc> (n,<diff(c-eq)>([c'],n))
+              ; o   := <get-node> (c',n')
               ; e'  := <conc> (e,<map(\i -> (i,o,"subst-vars")\)>[i|i*])
               ; res := (c',(n',e'))
          end
-  sth1(|dict): (tv@TypeVar(_),i*) -> (tv',[i|i*])
-    with (tv',i) := <lookup> (tv,dict)
-    where <not(oncetd(?tv))> tv'
+  sth-1(|dict): (tv@TypeVar(_),i*) -> (tv',[i|i*])
+    where (tv',i) := <lookup> (tv,dict)
+        ; <not(oncetd(?tv))> tv'
   
   thread-fetch(s): ([x|xs],t) -> ([y|ys],t')
     where <s> (x,t) => (y,t')
@@ -247,19 +248,19 @@ $[digraph g {
        ; (t',n''',e''')  := <foldl(ra-helper)> (alias',(t,n'',e''))
   ra-helper: (a@CEq(tv1,tv2),(c,n,e)) -> (c', n', e')
     with c' := <alltd(?tv1;!tv2)> c
-       ; if <eq> (c,c')
+       ; if <c-eq> (c,c')
            then (n',e') := (n,e)
-           else ai := <get-index>(a,n)
+           else ai := <get-node>(a,n)
               ; if <is-list> c'
                   then (n',e') := <foldl(rah(|ai))> (<zip> (c,c'), (n,e))
                   else (n',e') := <rah(|ai)> ((c,c'), (n,e))
                 end
          end
   rah(|ai): ((c,c'),(n,e)) -> (n', e')
-    with if <not(get-index)> (c', n)
+    with if <not(get-node)> (c', n)
            then n' := <conc> (n,[c'])
-              ; ci := <get-index>(c,n)
-              ; i  := <get-index> (c',n')
+              ; ci := <get-node>(c,n)
+              ; i  := <get-node> (c',n')
               ; e' := <conc> (e,[(ai,i,"remove-alias"), (ci,i,"remove-alias")])
            else n' := n
               ; e' := e
@@ -281,23 +282,24 @@ $[digraph g {
        ; uniqueNew := <fch-2
                       ;try(\[_] -> []\)
                       ;consecutive-pairs(fch-4)
-                      ;filter(where(?(a,_);!n;not(fetch(?a))))> new
+                      ;filter(where(\(a,_) -> <not(fetch(?a))> n\))> new
        ; new' := <unzip;Fst> uniqueNew
        ; n' := <conc> (n,new')
        ; e' := <conc> (e, <mapconcat(fch-3(|n'))> uniqueNew)
        ; (((),(),new''),(n'',e'')) := <!(((),(),<id>), (n',e'));expand-constraints> new'
        ; l' := <union> ([<Hd> eqs|rest], new'')
   
-  fch-1(|n): c -> <map(!(<id>,i))> a
-    with i  := <get-index> (c,n)
-       ; a := <get-arguments> c
+  fch-1(|n): c@cc#(a) -> <map(!(<id>,i))> a
+    with i := <get-node> (c,n)
+    where <?"CEq" + ?"CRefEq"> cc
 
+  fch-2: [] -> []
   fch-2: [(a,b)|t] -> [(a, b') | t']
-    with b' := <uniq> [b | <filter(?(a,_);?(_,<id>))> t]
-       ; t' := <filter(not(?(a,_)))> t
+    with b' := <uniq> [b | <filter(?(a,_);Snd)> t]
+       ; t'  := <filter(not(?(a,_)));fch-2> t
 
   fch-3(|n'): (c,p*) -> <map(\p -> (p,i,"fuse")\)> p*
-    with i := <get-index> (c,n')
+    with i := <get-node> (c,n')
   
   fch-4: ((a,b*),(c,d*)) -> (<mkCEq>(a,c),[b*,d*])
   
@@ -311,12 +313,12 @@ $[digraph g {
   // Uses print-failure when it finds two distinct concrete types.
   expand-constraint: (c@CEq(t1,t2), (n,e)) -> (c',(n',e'))
     with c' := <unify'(?TypeVar(_));map(mkCEq)> (t1,t2)
-       ; newc := <diff> (c', n)
-       ; if <?[]> newc
+       ; if <fetch(c-eq)> (c,c')
            then (n',e') := (n,e)
-           else n' := <conc> (n,newc)
-              ; i  := <get-index> (c,n)
-              ; e' := <conc> (e,<map(\c -> (i, <get-index> (c,n'), "expand")\)> newc)
+           else newc := <diff(c-eq)> (c', n)
+              ; n' := <conc> (n,newc)
+              ; i  := <get-node> (c,n)
+              ; e' := <conc> (e,<map(\c -> (i, <get-node> (c,n'), "expand")\)> newc)
          end
   expand-constraint: (c@CRefEq(_,_),gr) -> ([c],gr)
   expand-constraint: CEq(ConstrType(_, n),ConstrType(_, n')) ->
