@@ -41,7 +41,7 @@ strategies
   
   constraint-to-string: CEq(a,b) -> $[label="[<pp-TypeExpr>a] = [<pp-TypeExpr>b]"]
   // Unicode number 10927 is the \preceq symbol (preceding or equal)
-  constraint-to-string: CRefEq(a,b) -> $[label="[<pp-TypeExpr>b] &#10927; [<nabl-uri-name <+ pp-GlobalName>a]", shape="box"]
+  constraint-to-string: CRefEq(a,b) -> $[label="[<pp-TypeExpr>b] &#10927; [<try(nabl-uri-name);pp-GlobalName>a]", shape="box"]
   
 strategies
   // consecutive-pairs : ((a,a) -> b|) -> [a] -> [b]

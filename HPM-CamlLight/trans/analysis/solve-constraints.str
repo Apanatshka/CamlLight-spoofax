@@ -56,9 +56,9 @@ strategies
   sc-done-list(c1,c2,c3,c4,c5,c6,c7) = sc-done-list(c1;sc-done-list(c2,c3,c4,c6,c7))
   
   // start-name-logging : [(name, TypeExpr, [Constraint])] -> ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)]))
-  start-name-logging = !(<id>, (<mapconcat(snl-helper)>, []))
-  snl-helper : (name, te, c) -> [CRefEq(name, te){c*} | c]
-    where let s(|i) = !i in c* := [Anno("constraints",<nmap(s|2)> c)] end
+  start-name-logging = !(<id>, (<foldl(snl-helper)> (<id>, []), []))
+  snl-helper : ((name, te, c),l) -> <conc> (l,[CRefEq(name, te){c*} | c])
+    where let s(|i) = !i in c* := [Anno("constraints",<nmap(s|<length;inc;inc>l)> c)] end
   
   // solve-constraints' : ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)])) -> ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)]))
   // solves constraints by:
