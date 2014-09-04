@@ -62,10 +62,10 @@ strategies
   // 4 Doing the above steps in a fixpoint
   // 5 Fill in the fully concrete types of bindings (replace CRefEq(id,te) for each (id, concrete-type-here, _) in the list)
   // 6 Removing any surplus constraints after doing the filling in
-  solve-constraints' = thread-map( fixpoint( where(?((_,<debug(|"solve-constraints'.start: ")>,_),_));remove-aliases
-                                           ; where(?((_,<debug(|"solve-constraints'.ra: ")>,_),_));fuse-constraints
+  solve-constraints' = thread-map( fixpoint( remove-aliases
+                                           ; fuse-constraints
                                            ; expand-constraints )
-                                 ; substitute-typevars; where(?((_,<debug(|"solve-constraints'.st: ")>,_),_)); cull-typevars )
+                                 ; substitute-typevars; cull-typevars )
   
   // ref-resolve : ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)])) -> ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)]))
   // resolves names of values that have concrete types and retries solving constraints (in a fixpoint)
