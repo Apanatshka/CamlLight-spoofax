@@ -25,6 +25,16 @@ strategies
   // fresh-var generate a new type variable with unique name TV<some_number>
 	fresh-var = !TypeVar(<newname> "tv#")
 	
+  free-typevars = free-vars(\TypeVar(_) -> [<id>]\, fail)
+	
+  // refresh-vars : a -> a
+  // alpha-conversion of the typevariables to give each unique one a fresh name
+  // doesn't take any context into account
+  refresh-vars: t -> t'
+    with vars := <free-typevars> t
+       ; dict := <map(!(<id>, <fresh-var>))> vars
+       ; t' := <alltd({tv:?tv@TypeVar(_);<lookup> (tv, dict)})> t
+	
 	// mkCEq : (TypeExpr,TypeExpr) -> Constraint
 	mkCEq = !CEq(<Fst>, <Snd>)
 	// mkCRefEq : (TypeExpr,TypeExpr) -> Constraint

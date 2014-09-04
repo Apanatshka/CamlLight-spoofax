@@ -9,12 +9,6 @@ imports
   trans/analysis/constraints
 
 strategies
-  free-typevars = free-vars(\TypeVar(_) -> [<id>]\, fail)
-  
-  d(|str) = where(<debug> str)
-  d'(|str) = where(!(str,<id>);debug)
-  ds(s) = debug;s;debug
-  
   // solve-constraints : [(name, TypeExpr, [(name, TypeExpr)], [Constraint])] -> [(name, TypeExpr)]
   // solve the given constraints, where the input is a list with
   // 1 a name,
@@ -62,31 +56,31 @@ strategies
   
   // solve-constraints' : ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)])) -> ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)]))
   // solves constraints by:
-  // 1 removing aliases (CEq(TypeVar(alias), TypeVar(var)))
+  // 1 removing aliases (CEq(TypeVar(alias), TypeVar(replacement)))
   // 2 fusing constraints (CEq(TypeVar(a), b) /\ CEq(TypeVar(a), c) --> CEq(b,c))
   // 3 expanding constraints (by unifying two Equivalent ASTs up to TypeVars)
   // 4 Doing the above steps in a fixpoint
-  // 5 Trying to fill in the full concrete type of the binding
+  // 5 Fill in the fully concrete types of bindings (replace CRefEq(id,te) for each (id, concrete-type-here, _) in the list)
   // 6 Removing any surplus constraints after doing the filling in
-  solve-constraints' = thread-map( fixpoint( remove-aliases
-                                           ; fuse-constraints
+  solve-constraints' = thread-map( fixpoint( where(?((_,<debug(|"solve-constraints'.start: ")>,_),_));remove-aliases
+                                           ; where(?((_,<debug(|"solve-constraints'.ra: ")>,_),_));fuse-constraints
                                            ; expand-constraints )
-                                 ; substitute-typevars; cull-typevars )
+                                 ; substitute-typevars; where(?((_,<debug(|"solve-constraints'.st: ")>,_),_)); cull-typevars )
   
   // ref-resolve : ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)])) -> ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)]))
   // resolves names of values that have concrete types and retries solving constraints (in a fixpoint)
-  ref-resolve(previous-strategy) = (fixpoint(instantiate-universals;previous-strategy), id)
+  ref-resolve(previous-strategy) = fixpoint(instantiate-universals;previous-strategy)
   
   // ref-resolve : ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)])) -> ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)]))
   // resolves names of values even if their types are incomplete
   // (by copying the remaining constraints on it too)
   // and retries solving constraints (in a fixpoint)
-  ref-resolve2(previous-strategy) = (fixpoint(instantiate-incomplete;previous-strategy), id)
+  ref-resolve2(previous-strategy) = fixpoint(instantiate-incomplete;previous-strategy)
   
   // mono-rec : ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)])) -> ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)]))
   // monomorphic recursion by replacing all CRefEq refering to its own binding
   // with the type found so far, without alpha-conversion of the variables!
-  mono-rec(previous-strategy) = (fixpoint(instantiate-recursion;previous-strategy), id)
+  mono-rec(previous-strategy) = fixpoint(instantiate-recursion;previous-strategy)
   
   // prettify-result : ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)])) -> ([(name, TypeExpr)], [(TypeExpr, Int)], [(Int,Int)])
   // removes empty constraints lists and (nabl-)resolves names if possible 
@@ -157,10 +151,10 @@ $[digraph g {
   // These substitution are only done when the CEq constraint is not recursive,
   // i.e. only for CEq(tv@TypeVar(_), b) where "tv not in vars(b)"
   substitute-typevars: ((nm,t,l),gr) -> ((nm,t',l'),gr'')
-    with debug(|"substitute-typevars");(concrete*,todo*,gr') := <fixpoint(st-helper1)> ([],<map(typevar-first)> l,gr)
+    with (concrete*,todo*,gr') := <fixpoint(st-helper1)> ([],<map(typevar-first)> l,gr)
        ; l' := [concrete*,todo*]
        ; (l1*,l2*,gr'') := <fixpoint(st-helper1)> (l',[<mkCRefEq>(nm,t)],gr')
-       ; t' := <last> [l1*,l2*]
+       ; CRefEq(nm,t') := <last> [l1*,l2*]
     
   st-helper1: (concrete*,todo,gr) -> (concrete',todo'',gr')
     with d := <filter(st-helper2(|gr))> concrete*
@@ -187,29 +181,32 @@ $[digraph g {
   st-helper4(|dict): (tv@TypeVar(_),i*) -> (te,[i|i*])
     where (te,i) := <lookup> (tv,dict)
   
-  st-helper5 = CEq(?TypeVar(_),concrete-type) + CRefEq(id,concrete-type)
+  st-helper5 = where(CEq(?TypeVar(_),concrete-type) + CRefEq(id,concrete-type))
   
-  // refresh-vars : a -> a
-  // alpha-conversion of the typevariables to give each unique one a fresh name
-  // doesn't take any context into account
-  refresh-vars: t -> t'
-    with vars := <free-typevars> t
-       ; dict := <map(!(<id>, <fresh-var>))> vars
-       ; t' := <alltd({tv:?tv@TypeVar(_);<lookup> (tv, dict)})> t
-  
-  // instantiate-universals : [(name, TypeExpr, [Constraint])] -> [(name, TypeExpr, [Constraint])]
+  // instantiate-universals : ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)])) -> ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)]))
   // instantiate universally quantified type variables that have been fully resolved
-  instantiate-universals: l -> l'
-    with dict := <filter(iu-helper1)> l
-       ; l' := <map((id,id,map(try(iu-helper2(|dict)))))> l
-  iu-helper1: (n,t,_)  -> (n,t) where <concrete-type> t
-  iu-helper1: (n,t,[]) -> (n,t)
-  iu-helper2(|dict): CRefEq(uri,ty) -> <mkCEq>(<lookup;refresh-vars>(uri,dict),ty)
+  instantiate-universals: (l,gr) -> (l',gr')
+    with dict := <filter(iu-helper1(|<Fst>gr))> l
+       ; (l',gr') := <thread-map(iu-helper2(|dict))> (l,gr)
+  iu-helper1(|n): (nm,t,l) -> (nm,(t,<get-node>(<mkCRefEq>(nm,t),n)))
+    where (<concrete-type> t) + (![] => l)
+  iu-helper2(|dict): ((nm,ty,l),gr) -> ((nm,ty,l'),gr')
+    with (l',gr') := <thread-map(try(iuh(|dict)))> (l,gr)
+  iuh(|dict): (c@CRefEq(uri,te),(n,e)) -> (c',(n',e'))
+    where (newlhs,i) := <lookup;refresh-vars>(uri,dict)
+    with c' := <mkCEq>(newlhs,te) 
+       ; if <get-node> (c',n)
+           then (n',e') := (n,e)
+           else ci  := <get-node> (c,n)
+              ; n'  := <conc> (n,[c'])
+              ; ci' := <get-node> (c',n')
+              ; e'  := <conc> (e,<map(\i -> (i,ci',"inst-univ")\)> [ci,i])
+         end
   
-  // instantiate-incomplete : [(name, TypeExpr, [Constraint])] -> [(name, TypeExpr, [Constraint])]
+  // instantiate-incomplete : ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)])) -> ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)]))
   // instantiate universally quantified type variables even if their types are incomplete
   // (by copying the remaining constraints on it too)
-  instantiate-incomplete: l -> l'
+  instantiate-incomplete: (l,gr) -> (l',gr)
     with dict := <map(ii-helper1)> l
        ; l' := <map((id,id,mapconcat(ii-helper2(|dict))))> l
   ii-helper1: (n,t,c)  -> (n,(t,c))
@@ -217,11 +214,11 @@ $[digraph g {
       where (t,c) := <lookup;refresh-vars> (uri,dict)\
     <+ ![<id>]
   
-  instantiate-recursion = map(instantiate-recursion')
-  // instantiate-recursion : (name, TypeExpr, [Constraint]) -> (name, TypeExpr, [Constraint])
+  instantiate-recursion = thread-map(instantiate-recursion')
+  // instantiate-recursion' : ((name, TypeExpr, [Constraint]), ([(TypeExpr, Int)], [(Int,Int)])) -> ((name, TypeExpr, [Constraint]), ([(TypeExpr, Int)], [(Int,Int)]))
   // takes all references to the binding and replaces them
   // with the type of the binding as found so far, without alpha-converting the variables in it
-  instantiate-recursion': (n,t,l) -> (n,t,l')
+  instantiate-recursion': ((n,t,l),gr) -> ((n,t,l'),gr)
     with l' := <map(ir-helper(|n,t))> l
   ir-helper(|n,t): CEq(_,_) -> <id>
   ir-helper(|n,t): CRefEq(n,te) -> <mkCEq> (t,te)

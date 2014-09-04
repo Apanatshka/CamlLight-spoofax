@@ -40,13 +40,13 @@ strategies
         ; (u2*, e2*, c2*) := <collect-constraint> (t,ty)
         ; (u3*, e3*, c3*) := <collect-constraint> (e,ty)
   
-  collect-constraint: (p@Prefix(_), ty) -> ([], [], [CEq(ty, <get-type> p)])
+  collect-constraint: (p@Prefix(_), ty) -> ([], [], [CEq(ty, <get-type;refresh-vars> p)])
   
-  collect-constraint: (i@Int(_), ty)    -> ([], [], [CEq(ty, <get-type> i)])
-  collect-constraint: (f@Float(_), ty)  -> ([], [], [CEq(ty, <get-type> f)])
-  collect-constraint: (c@Char(_), ty)   -> ([], [], [CEq(ty, <get-type> c)])
-  collect-constraint: (s@String(_), ty) -> ([], [], [CEq(ty, <get-type> s)])
-  collect-constraint: (u@Unit(), ty)    -> ([], [], [CEq(ty, <get-type> u)])
+  collect-constraint: (i@Int(_), ty)    -> ([], [], [CEq(ty, <get-type;refresh-vars> i)])
+  collect-constraint: (f@Float(_), ty)  -> ([], [], [CEq(ty, <get-type;refresh-vars> f)])
+  collect-constraint: (c@Char(_), ty)   -> ([], [], [CEq(ty, <get-type;refresh-vars> c)])
+  collect-constraint: (s@String(_), ty) -> ([], [], [CEq(ty, <get-type;refresh-vars> s)])
+  collect-constraint: (u@Unit(), ty)    -> ([], [], [CEq(ty, <get-type;refresh-vars> u)])
   
   collect-constraint: (Var(gn), ty) -> ([], [], [<mkCRefEq>(<name-resolve> gn, ty)])
   
