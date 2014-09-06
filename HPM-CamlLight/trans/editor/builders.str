@@ -35,4 +35,4 @@ rules
           // change "xdg-open" to "open" when you're on Mac OS (or install xdg-open :) )
           // change "xdg-open" to "start" when you're on Windows
           // If these options don't work, sorry I haven't tested this advice. I found it on StackOverflow: http://stackoverflow.com/a/1481890/859279
-        ; _ := <fork(<call> ("xdg-open", [file']))>
+        ; _ := <call> ("xdg-open", [file'])
