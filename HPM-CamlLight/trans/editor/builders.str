@@ -21,7 +21,7 @@ rules
       -> (file, result)
     where task-setup(|project-path); index-setup(|<language>, project-path)
         ; file   := <guarantee-extension(|"generated.ty")> path
-        ; result := <collect-constraints;solve-constraints;Fst> ast
+        ; result := <collect-constraints;solve-constraints;(Fst<+map(Fst))> ast
 
   debug-generate-constraint-graph: (selected, position, ast, path, project-path)
       -> None()
@@ -29,7 +29,7 @@ rules
         ; outputformat := "png"
         ; file   := <concat-strings> [project-path, "/", <guarantee-extension(|"generated.dot")> path]
         ; file'  := <concat-strings> [project-path, "/", <guarantee-extension(|$[generated.dot.[outputformat]])> path]
-        ; result := <collect-constraints;solve-constraints;Snd> ast
+        ; result := <collect-constraints;solve-constraints;(Snd<+map(Snd))> ast
         ; _ := <WriteToFile(fprintnl)> (file,[result])
         ; _ := <call> ("dot", [$[-T[outputformat]], $[-o[file']], file])
           // change "xdg-open" to "open" when you're on Mac OS (or install xdg-open :) )

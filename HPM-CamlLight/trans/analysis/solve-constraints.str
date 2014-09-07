@@ -29,7 +29,7 @@ strategies
   // same as sc-done but saves subresults in a list
   sc-done-list(cont) = (map(binding-solved), id) < \i -> [i , <prettify-result> i]\ + \i -> [i | <cont> i]\
   // a way to end the type inference with an error
-  sc-fail = where(<print-failure(|"Type inference failed. ")> "")
+  sc-fail = where(<print-failure(|"Type inference failed. ")> "");(id,ne-to-dot)
   // same as sc-fail but for sc-done-list
   sc-fail-list: a -> [a]
     where <print-failure(|"Type inference failed. ")> ""
@@ -57,7 +57,7 @@ strategies
   // solve-constraints' : ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)])) -> ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)]))
   // solves constraints by:
   // 1 removing aliases (CEq(TypeVar(alias), TypeVar(replacement)))
-  // 2 fusing constraints (CEq(TypeVar(a), b) /\ CEq(TypeVar(a), c) --> CEq(b,c))
+  // 2 fusing constraints (CEq(TypeVar(a), b) AND CEq(TypeVar(a), c) TO CEq(b,c))
   // 3 expanding constraints (by unifying two Equivalent ASTs up to TypeVars)
   // 4 Doing the above steps in a fixpoint
   // 5 Fill in the fully concrete types of bindings (replace CRefEq(id,te) for each (id, concrete-type-here, _) in the list)
@@ -71,7 +71,7 @@ strategies
   // resolves names of values that have concrete types and retries solving constraints (in a fixpoint)
   ref-resolve(previous-strategy) = fixpoint(instantiate-universals;previous-strategy)
   
-  // ref-resolve : ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)])) -> ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)]))
+  // ref-resolve2 : ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)])) -> ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)]))
   // resolves names of values even if their types are incomplete
   // (by copying the remaining constraints on it too)
   // and retries solving constraints (in a fixpoint)
@@ -84,7 +84,7 @@ strategies
   
   // prettify-result : ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)])) -> ([(name, TypeExpr)], [(TypeExpr, Int)], [(Int,Int)])
   // removes empty constraints lists and (nabl-)resolves names if possible 
-  prettify-result = (map({\(n,ty,[]) -> (<try(nabl-uri-name)> n, ty)\});try(\[s] -> s\),ne-to-dot)
+  prettify-result = (map(\(n,ty,[]) -> (<try(nabl-uri-name)> n, ty)\);try(\[s] -> s\),ne-to-dot)
   
   ne-to-dot: (n,e) ->
 $[digraph g {
@@ -163,6 +163,8 @@ $[digraph g {
          
   st-helper2(|gr): c -> (a,(b,i))
     where (a@TypeVar(_),b) := <unCEq> c
+        // don't replace recursive types
+        ; <not(oncetd(?a))> b
     with (n,e) := gr
        ; i := <get-node>(c,n)
   
@@ -206,22 +208,22 @@ $[digraph g {
   // instantiate universally quantified type variables even if their types are incomplete
   // (by copying the remaining constraints on it too)
   instantiate-incomplete: (l,gr) -> (l',gr')
-    with dict := <map(ii-helper1(|gr))> l
+    with dict := <map(ii-helper1(|<Fst> gr))> l
        ; (l',gr') := <thread-map(ii-helper2(|dict))> (l,gr)
-  ii-helper1(|gr): (n,t,c)  -> (n,(t,c, <get-node> (<mkCRefEq>(n,t), <Fst> gr)))
+  ii-helper1(|n): (nm,t,c)  -> (nm,(t,c, <get-node> (<mkCRefEq>(nm,t), n)))
   ii-helper2(|dict): ((nm,t,c),gr) -> ((nm,t,c''),gr')
-    where (c',gr') := <thread-map(try(ii-helper3(|dict)))> (c,gr)
-        ; c'' := <concat> c'
+    with (c',gr') := <thread-map(ii-helper3(|dict) <+ (![<id>],id))> (c,gr)
+       ; c'' := <concat> c'
   ii-helper3(|dict): (c@CRefEq(uri,ty),(n,e)) -> (c',(n',e'))
     where (t,c*,i) := <lookup;refresh-vars> (uri,dict)
-        ; c' := [<mkCEq>(t,ty) | c*]
-        ; newc := <diff(c-eq)> (c', n)
-        ; if <?[]> newc
-            then (n',e') := (n,e)
-            else n' := <conc> (n,newc)
-               ; i2 := <get-node> (c,n)
-               ; e' := <conc> (e,<mapconcat(iih(|i,i2,n'))> newc)
-          end
+    with c'   := [<mkCEq>(t,ty) | c*]
+       ; newc := <diff(c-eq)> (c', n)
+       ; if <?[]> newc
+           then (n',e') := (n,e)
+           else n' := <conc> (n,newc)
+              ; i2 := <get-node> (c,n)
+              ; e' := <conc> (e,<mapconcat(iih(|i,i2,n'))> newc)
+         end
   iih(|i,i2,n'): c -> [(i,o,s),(i2,o,s)]
     where o := <get-node> (c,n'); s := "inst-univ-incomplete"
   
@@ -342,8 +344,7 @@ $[digraph g {
   // simple unification 
   // The builtin unify strategy fails on input like [(TypeVar(a),FuncType(TypeVar(a),TypeVar(b)))]
   // because tries find the most general unifier
-  unify'(isvar) = (eq;![])
-               <+ \(a@c#(as),b@c#(bs)) -> <zip(unify'(isvar));concat> (as,bs)
+  unify'(isvar) = \(a@c#(as),b@c#(bs)) -> <zip(unify'(isvar));concat> (as,bs)
                      where <not(isvar)> a; <not(isvar)> b\
                <+ (?p@(_,_);![p])
   
