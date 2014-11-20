@@ -10,6 +10,13 @@ imports
   lib/runtime/types/-
 
 strategies
+  // (global) Let definitions become special tuples that can be refered to with CRefEq constraints
+  // They are basically: name : forall type.[exists body-e*. body-c*]type
+  
+  // collect-constraint is a top-down traversal, handing down the type variable for every expression
+  // but you could also have each expression return a freshly generated type variable for itself and add an extra constraint
+  // (this might actually make more sense for human readability)
+  
   collect-constraint: GlobalValDef(name, body) ->
       [(<try(name-resolve)> name, type, body-e*, body-c*), body-u*]
       where type := <fresh-var>
@@ -19,6 +26,9 @@ strategies
       where type := <fresh-var>
           ; (body-u*, body-e*, body-c*) := <collect-constraint> (body, type)
             
+  // each of the following collects universally and existentially quantified variables and their typevariables, and constriants
+  // Note that the universally quantified variables list isn't actually used because local let bindings aren't supported yet
+  
   collect-constraint: (FunctionDef([SimpleMatch(PatternVar(name), body)]), ty) ->
       ([body-u*], [(uri, in-ty) | body-e*], [c | body-c*])
       where in-ty  := <fresh-var>
@@ -48,16 +58,19 @@ strategies
   collect-constraint: (s@String(_), ty) -> ([], [], [CEq(ty, <get-type;refresh-vars> s)])
   collect-constraint: (u@Unit(), ty)    -> ([], [], [CEq(ty, <get-type;refresh-vars> u)])
   
-  collect-constraint: (Var(gn), ty) -> ([], [], [<mkCRefEq>(<name-resolve> gn, ty)])
+  collect-constraint: (Var(gn), ty)     -> ([], [], [<mkCRefEq>(<name-resolve> gn, ty)])
   
+  // Get the unique URI NaBL uses
   name-resolve: name -> uri
     where <has-annotation(?Use(u))> name
         ; Def(uri) := <task-get-results; Hd> u
   name-resolve: name -> uri
     where <has-annotation(?Def(uri))> name
   
+  // Going over the root of the tree:
   collect-constraints: 
     Module(mp*) -> <mapconcat(cc-helper)> mp*
+  // special cases for the supported subset:
   cc-helper:
   	MP(ValDef(list)) -> <mapconcat(collect-constraint)> list
   cc-helper:

@@ -10,11 +10,15 @@ imports
   Types.pp.generated
   lib/runtime/nabl/-
   
+// setting up pretty printing
 strategies
   abox2text = box2text-string(|10000)
   pp-TypeExpr  = strip-annos ; prettyprint-TypeExpr ; abox2text
   pp-GlobalName  = strip-annos ; prettyprint-GlobalName ; abox2text
 
+// Two constraints:
+// equality 
+// refering to a (unique) name (that probably has a polymorphic type), and the type expression should be an alpha-conversion away from equivalent
 signature
   constructors
     CEq     : TypeExpr * TypeExpr -> Constraint
