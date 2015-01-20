@@ -126,69 +126,28 @@ end] {bracket}
 	Expr.GeqF      = [[Expr] >=. [Expr]] {left}
 
 context-free priorities
-	Expr.Deref > {
-		Expr.RecordAccess
-		Expr.ArrayAccess
-	} >
-	{
-		Expr.FuncApp
-		Expr.ConstrApp
-	} >
-	{
-		Expr.Negate
-		Expr.NegateF
-	} >
-	Expr.PowF >
-	Expr.Mod > {
-		Expr.Mul
-		Expr.MulF
-		Expr.Div
-		Expr.DivF
-	} > {
-		Expr.Add
-		Expr.AddF
-		Expr.Sub
-		Expr.SubF
-	} >
-	Expr.ConsExpr > {
-		Expr.ListConc
-		Expr.StringConc
-	} > {
-		Expr.StructEq   
-		Expr.StructNeq 
-		Expr.PhyEq     
-		Expr.PhyNeq   
-		Expr.Lt           
-		Expr.Leq   
-		Expr.Gt        
-		Expr.Geq
-		Expr.LtF      
-		Expr.LeqF   
-		Expr.GtF        
-		Expr.GeqF
-	} >
-	Expr.Not >
-	Expr.And >
-	Expr.Or >
-	Expr.TupleExpr > {
-		Expr.RecordAssign
-		Expr.ArrayAssign
-		Expr.RefAssign
-	} > {
-		Expr.IfExpr
-		Expr.IfElseExpr
-	} >
-	Expr.ExprSeq > { // when looking at examples, this seems to be in the wrong order somehow
-		Expr.LetExpr     
-		Expr.LetRecExpr  
-		Expr.MatchExpr   
-		Expr.FunDef    
-		Expr.FunctionDef 
-		Expr.TryExpr     
-	}
-
-// disambiguation: Keep expression sequence from being considered inside list/array/record literals
-context-free priorities
+  Expr.Deref > 
+  { Expr.RecordAccess  Expr.ArrayAccess } >
+  { Expr.FuncApp  Expr.ConstrApp } >
+  { Expr.Negate  Expr.NegateF } >
+  Expr.PowF >
+  Expr.Mod >
+  { Expr.Mul  Expr.MulF  Expr.Div  Expr.DivF } >
+  { Expr.Add  Expr.AddF  Expr.Sub  Expr.SubF } >
+  Expr.ConsExpr >
+  { Expr.ListConc  Expr.StringConc } >
+  { Expr.StructEq  Expr.StructNeq  Expr.PhyEq  Expr.PhyNeq  Expr.Lt  Expr.Leq
+    Expr.Gt  Expr.Geq  Expr.LtF  Expr.LeqF  Expr.GtF  Expr.GeqF } >
+  Expr.Not >
+  Expr.And >
+  Expr.Or >
+  Expr.TupleExpr >
+  { Expr.RecordAssign  Expr.ArrayAssign  Expr.RefAssign } >
+  { Expr.IfExpr  Expr.IfElseExpr } >
+  Expr.ExprSeq > // when looking at examples, this seems to be in the wrong order somehow
+  { Expr.LetExpr  Expr.LetRecExpr  Expr.MatchExpr  Expr.FunDef  Expr.FunctionDef
+    Expr.TryExpr }
+  ,
     { Expr -> {Expr ";"}+
       GlobalName "=" Expr -> ExprRecordBinding } >
     Expr ";" Expr -> Expr

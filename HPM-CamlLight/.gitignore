@@ -29,3 +29,4 @@ trans/*.generated.*
 trans/analysis/*.generated.*
 syntax/*.pp
 trans/analysis/names.str
+/include

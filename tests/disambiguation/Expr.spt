@@ -30,19 +30,19 @@ test expressions sequence in literal array with parentheses [[
 ]] parse to ArrayLit([ExprSeq(_,_)])
 
 test if-then-else and plus [[
-	if x then 2 else 3 + 1
+	if 0 then 2 else 3 + 1
 ]] parse to [[
-	if x then 2 else (3 + 1)
+	if 0 then 2 else (3 + 1)
 ]]
 
 test if-then-else and plus [[
-	1 + if x then 2 else 3
+	1 + if 0 then 2 else 3
 ]] parse to [[
-	1 + (if x then 2 else 3)
+	1 + (if 0 then 2 else 3)
 ]]
 
 test if-then-else and expression sequence [[
-	1 ; if x then 2 else 3 ; 2
+	1 ; if 0 then 2 else 3 ; 2
 ]] parse to [[
-	1 ; (if x then 2 else 3) ; 2
+	1 ; (if 0 then 2 else 3) ; 2
 ]]

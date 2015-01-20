@@ -47,8 +47,8 @@ binding rules //module implementation
   GlobalRecFunDef(v        ,_,_): defines Var v scopes Var
    LocalRecFunDef(Prefix(v),_,_): defines Var v scopes Var
   GlobalRecFunDef(Prefix(v),_,_): defines Var v scopes Var
-   LocalRecValDef(v        ,_): defines Var v scopes Var
-  GlobalRecValDef(v        ,_): defines Var v scopes Var
-   LocalRecValDef(Prefix(v),_): defines Var v scopes Var
-  GlobalRecValDef(Prefix(v),_): defines Var v scopes Var
+   LocalRecValDef(v        ,_): defines Var v
+  GlobalRecValDef(v        ,_): defines Var v
+   LocalRecValDef(Prefix(v),_): defines Var v
+  GlobalRecValDef(Prefix(v),_): defines Var v
   // {Global,Local}FunDef cannot be defined in the current version of NaBL, see issue #75 (http://yellowgrass.org/issue/NaBL/75)
