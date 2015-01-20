@@ -1,60 +1,54 @@
 module cfs/Definitions
 
-imports
-	lex/Identifier
-	cfs/Types
-	cfs/Expressions
-	cfs/Patterns
-	cfs/Names
+imports lex/Identifier
+        cfs/Types
+        cfs/Expressions
+        cfs/Patterns
+        cfs/Names
+
 
 context-free start-symbols
-	TypeDef
-	TypeDefPart
-	TypeParams
-	ConstrDecl
-	LabelDecl
-	ExcDef
-	ValDef
-	ValDecl
+
+  TypeDef TypeDefPart TypeParams ConstrDecl LabelDecl ExcDef ValDef ValDecl
 
 template options
-	keyword -/- [A-Za-z0-9]
 
-templates
-	TypeDef.TypeDef          = [type [TypeDefPart+; separator="and"]]
-	
-	TypeDefPart.ADTDef       = [[TypeParams] [IDENT] = [ConstrDecl+; separator="|"]]
-	TypeDefPart.RecordDef    = [[TypeParams] [IDENT] = {[LabelDecl+; separator=";"]}]
-	TypeDefPart.TypeAlias    = [[TypeParams] [IDENT] == [TypeExpr]]
-	TypeDefPart.AbstrType    = [[TypeParams] [IDENT]]
-	TypeDefPart.MutAbstrType = [[TypeParams] [IDENT] mutable]
-	
-	TypeParams.None          = []
-  TypeParams               = [[TYPEVARIABLE]]
-	TypeParams.TypeParams    = [([TYPEVARIABLE+; separator=","])]
-	
-	ConstrDecl.CConstrDecl   = [[IDENT]]
-	ConstrDecl.NCConstrDecl  = [[IDENT] of [TypeExpr]]
-	
-	LabelDecl.LabelDecl      = [[IDENT] : [TypeExpr]]
-	LabelDecl.MutLabelDecl   = [mutable [IDENT] : [TypeExpr]]
-	
-	ExcDef.ExcDef            = [exception [ExcDecl+; separator="and"]]
-	
-	// ExcDecl.Exc*             = [[ConstrDecl]]
-	ExcDecl.ExcCConstrDecl   = [[IDENT]]
-	ExcDecl.ExcNCConstrDecl  = [[IDENT] of [TypeExpr]]
-	
-	ValDef.ValDef            = [let [GlobalLetBind+; separator="and"]]
-	ValDef.RecValueDef       = [let rec [GlobalLetRecBind+; separator="and"]]
-	
-  GlobalLetBind.GlobalValDef        = [[Name] = [Expr]]
-	GlobalLetBind.GlobalValDef        = [[Pattern] = [Expr]] {avoid} // prefer the rule below over a ConstrPattern
-	GlobalLetBind.GlobalFunDef        = [[Name] [Pattern+; separator=" "] = [Expr]]
-  GlobalLetRecBind.GlobalRecValDef  = [[Name] = [Expr]]
-	GlobalLetRecBind.GlobalRecValDef  = [[Pattern] = [Expr]] {avoid} // prefer the rule below over a ConstrPattern
-	GlobalLetRecBind.GlobalRecFunDef  = [[Name] [Pattern+; separator=" "] = [Expr]]
-	
-	ValDecl.ValDecl          = [value [ValDeclPart+; separator="and"]]
-	
-	ValDeclPart.ValDeclBind  = [[IDENT] : [TypeExpr]]
+  keyword -/- [A-Za-z0-9]
+
+context-free syntax
+
+  TypeDef.TypeDef = [type [{TypeDefPart "and"}+]]
+  
+  TypeDefPart.ADTDef = [[TypeParams] [IDENT] = [{ConstrDecl "|"}+]]
+  TypeDefPart.RecordDef = [[TypeParams] [IDENT] = {[{LabelDecl ";"}+]}]
+  TypeDefPart.TypeAlias = [[TypeParams] [IDENT] == [TypeExpr]]
+  TypeDefPart.AbstrType = [[TypeParams] [IDENT]]
+  TypeDefPart.MutAbstrType = [[TypeParams] [IDENT] mutable]
+  
+  TypeParams.None = []
+  TypeParams = [[TYPEVARIABLE]]
+  TypeParams.TypeParams = [([{TYPEVARIABLE ","}+])]
+  
+  ConstrDecl.CConstrDecl = IDENT
+  ConstrDecl.NCConstrDecl = [[IDENT] of [TypeExpr]]
+  
+  LabelDecl.LabelDecl = [[IDENT] : [TypeExpr]]
+  LabelDecl.MutLabelDecl = [mutable [IDENT] : [TypeExpr]]
+  
+  ExcDef.ExcDef = [exception [{ExcDecl "and"}+]]
+// ExcDecl.Exc*             = ConstrDecl
+  ExcDecl.ExcCConstrDecl = IDENT
+  ExcDecl.ExcNCConstrDecl = [[IDENT] of [TypeExpr]]
+  
+  ValDef.ValDef = [let [{GlobalLetBind "and"}+]]
+  ValDef.RecValueDef = [let rec [{GlobalLetRecBind "and"}+]]
+  
+  GlobalLetBind.GlobalValDef = [[Name] = [Expr]]
+  GlobalLetBind.GlobalValDef = [[Pattern] = [Expr]] {avoid}
+  GlobalLetBind.GlobalFunDef = [[Name] [{Pattern " "}+] = [Expr]]
+  GlobalLetRecBind.GlobalRecValDef = [[Name] = [Expr]]
+  GlobalLetRecBind.GlobalRecValDef = [[Pattern] = [Expr]] {avoid}
+  GlobalLetRecBind.GlobalRecFunDef = [[Name] [{Pattern " "}+] = [Expr]]
+  
+  ValDecl.ValDecl = [value [{ValDeclPart "and"}+]]
+  ValDeclPart.ValDeclBind = [[IDENT] : [TypeExpr]]

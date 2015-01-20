@@ -1,37 +1,39 @@
 module cfs/Modules
 
 imports
-	lex/Identifier
-	lex/Text
-	cfs/Expressions
-	cfs/Definitions
+  lex/Identifier
+  lex/Text
+  cfs/Expressions
+  cfs/Definitions
 
 context-free start-symbols
-	Module
-	ModuleI
-	Dir
+  Module
+  ModuleI
+  Dir
 
 template options
-	tokenize: "#"
-	keyword -/- [A-Za-z0-9]
+  tokenize: "#"
+  keyword -/- [A-Za-z0-9]
 
-templates
-	Module.Module = [[ModulePhrase+]]
-	
-	ModulePhrase.MP = [[Expr];;]
-	ModulePhrase.MP = [[ValDef];;]
-	ModulePhrase.MP = [[TypeDef];;]
-	ModulePhrase.MP = [[ExcDef];;]
-	ModulePhrase.MP = [[Dir];;]
+context-free syntax
+  Module.Module = ModulePhrase+
+  
+  ModulePhrase.MP = [[ModulePhraseContent];;]
+  ModulePhraseContent = ValDef
+  ModulePhraseContent = TypeDef
+  ModulePhraseContent = ExcDef
+  ModulePhraseContent = Dir
+  ModulePhraseContent = Expr
 
-	ModuleI.Interface = [[IntfPhrase+]]
-	
-	IntfPhrase.IP = [[ValDecl];;]
-	IntfPhrase.IP = [[TypeDef];;]
-	IntfPhrase.IP = [[ExcDef];;]
-	IntfPhrase.IP = [[Dir];;]
+  ModuleI.Interface = IntfPhrase+
+  
+  IntfPhrase.IP = [[IntfPhraseContent];;]
+  IntfPhraseContent = ValDecl
+  IntfPhraseContent = TypeDef
+  IntfPhraseContent = ExcDef
+  IntfPhraseContent = Dir
 
-	Dir.OpenDir   = [#open [STRING]]
-	Dir.CloseDir  = [#close [STRING]]
-	//avoid when open or close can be chosen
-	Dir.CustomDir = [#[IDENT] [STRING]] {avoid}
+  Dir.OpenDir   = [#open [STRING]]
+  Dir.CloseDir  = [#close [STRING]]
+  //avoid when open or close can be chosen
+  Dir.CustomDir = [#[IDENT] [STRING]] {avoid}

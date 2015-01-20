@@ -16,7 +16,6 @@ strategies
   // collect-constraint is a top-down traversal, handing down the type variable for every expression
   // but you could also have each expression return a freshly generated type variable for itself and add an extra constraint
   // (this might actually make more sense for human readability)
-  
   collect-constraint: GlobalValDef(name, body) ->
       [(<try(name-resolve)> name, type, body-e*, body-c*), body-u*]
       where type := <fresh-var>
@@ -28,7 +27,6 @@ strategies
             
   // each of the following collects universally and existentially quantified variables and their typevariables, and constriants
   // Note that the universally quantified variables list isn't actually used because local let bindings aren't supported yet
-  
   collect-constraint: (FunctionDef([SimpleMatch(PatternVar(name), body)]), ty) ->
       ([body-u*], [(uri, in-ty) | body-e*], [c | body-c*])
       where in-ty  := <fresh-var>
@@ -50,9 +48,9 @@ strategies
         ; (u2*, e2*, c2*) := <collect-constraint> (t,ty)
         ; (u3*, e3*, c3*) := <collect-constraint> (e,ty)
   
-  collect-constraint: (p@Prefix(_), ty) -> ([], [], [CEq(ty, <get-type;refresh-vars> p)])
+  collect-constraint: (p@Prefix(_), ty) -> ([], [], [CEq(ty, <debug;get-type;refresh-vars> p)])
   
-  collect-constraint: (i@Int(_), ty)    -> ([], [], [CEq(ty, <get-type;refresh-vars> i)])
+  collect-constraint: (i@Int(_), ty)    -> ([], [], [CEq(ty, <debug;get-type;refresh-vars> i)])
   collect-constraint: (f@Float(_), ty)  -> ([], [], [CEq(ty, <get-type;refresh-vars> f)])
   collect-constraint: (c@Char(_), ty)   -> ([], [], [CEq(ty, <get-type;refresh-vars> c)])
   collect-constraint: (s@String(_), ty) -> ([], [], [CEq(ty, <get-type;refresh-vars> s)])

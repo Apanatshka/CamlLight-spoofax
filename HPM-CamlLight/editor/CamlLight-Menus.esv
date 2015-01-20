@@ -1,38 +1,42 @@
 module CamlLight-Menus
 
-imports CamlLight-Menus.generated
-
-  // This file can be used to specify toolbar menus.
-  // See the imported file for a brief introduction and examples.
-
 menus
   
-  menu: "Actions"
+  menu: "Syntax"                               (openeditor)
     
-    // action: "Generate Java"         = generate-java (openeditor) (realtime)
-    action: "Show Abstract Syntax"  = debug-show-aterm (openeditor) (realtime) (meta) (source)
-    action: "Show Desugared Syntax" = debug-show-desugared (openeditor) (realtime) (meta) (source)
-    action: "Show Analyzed Syntax"  = debug-show-analyzed (openeditor) (meta)
-    action: "Show Type Constraints" = debug-show-type-constraints (openeditor) (meta)
-    action: "Show Solved Type Constraints" = debug-show-resolved-constraints (openeditor) (meta)
-    action: "Show Constraint Graph (DOT)"  = debug-generate-constraint-graph (meta)
+    action: "Format"                         = editor-format (realtime) (source)
+    action: "Show abstract syntax"           = debug-show-aterm (realtime) (meta) (source)
+    action: "Show desugared syntax"          = debug-show-desugared (realtime) (meta) (source)
+    action: "Show analyzed syntax"           = debug-show-analyzed (meta)
     
-    separator
+  menu: "Analysis"                             (meta)
     
-    submenu: "Show Index"
-      action: "Project"            = debug-index-project (openeditor) (meta)
-      action: "Partition"          = debug-index-partition (openeditor) (meta)
+    action: "Reset and reanalyze"            = debug-reanalyze
+
+    submenu: "Show analysis"                   (openeditor)
+      action: "Project"                      = debug-project
+      action: "Partition"                    = debug-partition
     end
     
-    submenu: "Show Tasks"
-      action: "Project"            = debug-task-project (openeditor) (meta)
-      action: "Partition"          = debug-task-partition (openeditor) (meta)
-      action: "Selection"          = debug-task-selection (openeditor) (meta)
+    submenu: "Show index"                      (openeditor)
+      action: "Project"                      = debug-index-project
+      action: "Project (resolved)"           = debug-index-project-resolve
+      action: "Partition"                    = debug-index-partition
+      action: "Partition (resolved)"         = debug-index-partition-resolve
     end
     
-    submenu: "Show Analysis"
-      action: "Project"            = debug-project (openeditor) (meta)
-      action: "Partition"          = debug-partition (openeditor) (meta)
+    submenu: "Show tasks"                      (openeditor)
+      action: "Project"                      = debug-task-project
+      action: "Partition"                    = debug-task-partition
+      action: "Selection"                    = debug-task-selection
     end
     
-    action: "Reset and reanalyze"  = debug-reanalyze (meta)   
+    submenu: "Show type inference"             (meta)
+      action: "Show type constraints"        = debug-show-type-constraints (openeditor) (meta)
+      action: "Show solved type constraints" = debug-show-resolved-constraints (openeditor) (meta)
+      action: "Show constraint graph"        = debug-generate-constraint-graph (meta)
+    end
+  
+  menu: "Generation"                           (openeditor) (realtime)
+    
+    action: "Generate Java"                  = generate-java

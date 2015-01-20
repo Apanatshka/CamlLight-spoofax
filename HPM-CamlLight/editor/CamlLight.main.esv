@@ -1,6 +1,14 @@
 module CamlLight.main
 
-imports CamlLight-Refactorings CamlLight-Colorer CamlLight-Completions CamlLight-Folding CamlLight-Menus CamlLight-Outliner CamlLight-Refactorings CamlLight-References CamlLight-Syntax
+imports
+  CamlLight-Colorer
+  CamlLight-Completions
+  CamlLight-Folding
+  CamlLight-Menus
+  CamlLight-Refactorings
+  CamlLight-References
+  CamlLight-Syntax
+  CamlLight-Views
 
 language General properties
                   

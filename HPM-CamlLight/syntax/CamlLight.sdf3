@@ -1,21 +1,21 @@
 module CamlLight
 
 imports
-	lex/Identifier
-	lex/LayoutRules
-	lex/Number
-	lex/Text
-	cfs/Names
-	cfs/Values
-	cfs/Types
-	cfs/Patterns
-	cfs/Expressions
-	cfs/Definitions
-	cfs/Modules
+  lex/Identifier
+  lex/LayoutRules
+  lex/Number
+  lex/Text
+  cfs/Names
+  cfs/Values
+  cfs/Types
+  cfs/Patterns
+  cfs/Expressions
+  cfs/Definitions
+  cfs/Modules
 
 context-free start-symbols
-	Start
+  Start
 
 context-free syntax
-	Start = Module
-	Start = ModuleI
+  Start = Module
+  Start = ModuleI

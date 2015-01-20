@@ -8,4 +8,4 @@ imports
 
 rules
   
-  outline-expand-to-level = !3
+  to-outline-label = fail

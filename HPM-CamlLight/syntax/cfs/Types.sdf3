@@ -1,37 +1,37 @@
 module cfs/Types
 
 imports
-	lex/Identifier
+  lex/Identifier
 
 context-free start-symbols
-	TypeExpr
+  TypeExpr
 
 syntax
-	"'" <IDENT-CF> -> <TYPEVARIABLE-CF> {cons("TypeVar")} 
-
-templates
-	TypeExpr                = [[TYPEVARIABLE]]
-	TypeExpr                = [([TypeExpr])] {bracket}
-	TypeExpr.FuncType       = [[TypeExpr] -> [TypeExpr]] {right}
-	TypeExpr.TupleType      = [[TupleTypeExpr]]
-	TypeExpr.ConstrType     = [[TypeExprParams] [GlobalName]]
-	
-  TypeExprParams.None           = []
-	TypeExprParams                = [[TypeExpr]] {prefer} // over TypeExprParams.TypeExprParams (handy for tests)
-	TypeExprParams.TypeExprParams = [([TypeExpr+; separator=", "])]
-
-context-free priorities
-  TypeExpr -> TypeExprParams > // i.e. TypeExpr.ConstrType
-  TupleTypeExpr -> TypeExpr  >
-  TypeExpr "->" TypeExpr -> TypeExpr
+  TYPEVARIABLE-CF.TypeVar = "'" IDENT-CF 
 
 context-free syntax
-  TypeExpr "*" TypeExpr      -> TupleTypeExpr {ast("[<1>,<2>]")}
-  TypeExpr "*" TupleTypeExpr -> TupleTypeExpr {ast("<conc([<1>],<2>)>")}
+  TypeExpr                = [[TYPEVARIABLE]]
+  TypeExpr                = [([TypeExpr])] {bracket}
+  TypeExpr.FuncType       = [[TypeExpr] -> [TypeExpr]] {right}
+  TypeExpr.TupleType      = [[TupleTypeExpr]]
+  TypeExpr.ConstrType     = [[TypeExprParams] [GlobalName]]
+  
+  TypeExprParams.None           = []
+  TypeExprParams                = [[TypeExpr]] {prefer} // over TypeExprParams.TypeExprParams (handy for tests)
+  TypeExprParams.TypeExprParams = [([{TypeExpr ", "}+])]
 
 context-free priorities
-	TypeExpr "*" TypeExpr -> TupleTypeExpr >
-  TupleTypeExpr -> TypeExpr
+  TypeExprParams = TypeExpr > // i.e. TypeExpr.ConstrType
+  TypeExpr = TupleTypeExpr  >
+  TypeExpr = TypeExpr "->" TypeExpr
+
+context-free syntax
+  TupleTypeExpr = TypeExpr "*" TypeExpr      {ast("[<1>,<2>]")}
+  TupleTypeExpr = TypeExpr "*" TupleTypeExpr {ast("<conc([<1>],<2>)>")}
+
 context-free priorities
-	TypeExpr "*" TupleTypeExpr -> TupleTypeExpr >
-  TupleTypeExpr -> TypeExpr
+  TupleTypeExpr = TypeExpr "*" TypeExpr >
+  TypeExpr = TupleTypeExpr
+context-free priorities
+  TupleTypeExpr = TypeExpr "*" TupleTypeExpr >
+  TypeExpr = TupleTypeExpr

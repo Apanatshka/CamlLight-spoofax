@@ -1,29 +1,29 @@
 module cfs/Values
 
 imports
-	lex/Identifier
-	lex/Number
-	lex/Text
+  lex/Identifier
+  lex/Number
+  lex/Text
 
 context-free start-symbols
-	Constant
-	CConstr
-	NCConstr
+  Constant
+  CConstr
+  NCConstr
 
 template options
-	tokenize: "[("
-	keyword -/- [A-Za-z]
+  tokenize: "[("
+  keyword -/- [A-Za-z]
 
-templates
-	Constant.Int    = [[INTEGER]]
-	Constant.Float  = [[FLOAT]]
-	Constant.Char   = [[CHAR]]
-	Constant.String = [[STRING]]
-	Constant        = [[CConstr]]
-	
-	CConstr.CConstr   = [[GlobalName]]
-	CConstr.EmptyList = <[]>
-	CConstr.Unit      = [()]
+context-free syntax
+  Constant.Int    = [[INTEGER]]
+  Constant.Float  = [[FLOAT]]
+  Constant.Char   = [[CHAR]]
+  Constant.String = [[STRING]]
+  Constant        = [[CConstr]]
+  
+  CConstr.CConstr   = [[GlobalName]]
+  CConstr.EmptyList = <[]>
+  CConstr.Unit      = [()]
 
-	NCConstr.NCConstr   = [[GlobalName]]
-	NCConstr.PrefixCons = [prefix ::]
+  NCConstr.NCConstr   = [[GlobalName]]
+  NCConstr.PrefixCons = [prefix ::]

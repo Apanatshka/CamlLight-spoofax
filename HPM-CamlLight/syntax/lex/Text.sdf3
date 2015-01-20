@@ -1,15 +1,15 @@
 module lex/Text
 
 context-free start-symbols
-	CHAR
-	STRING
+  CHAR
+  STRING
 
 lexical syntax
-	CHAR            = [\`] (CharRegularChar | CharEscape | AsciiEscape) [\`]
-	CharRegularChar = [\32-\91\93-\95\97-\126] // everything from space (32) up to tilde (126), without backslash (92) and backtick (96)
-	CharEscape      = [\\] [\\\`ntbr]
-	AsciiEscape     = [\\] [0-9][0-9][0-9]
-	
-	STRING            = [\"] (StringRegularChar | StringEscape | AsciiEscape)* [\"]
-	StringRegularChar = [\32\33\35-\91\93-\126] // everything from space (32) up to tilde (126), without double quote (34) and backslash (92)
-	StringEscape      = [\\] [\\\"ntbr]
+  CHAR            = [\`] (CharRegularChar | CharEscape | AsciiEscape) [\`]
+  CharRegularChar = [\32-\91\93-\95\97-\126] // everything from space (32) up to tilde (126), without backslash (92) and backtick (96)
+  CharEscape      = [\\] [\\\`ntbr]
+  AsciiEscape     = [\\] [0-9][0-9][0-9]
+  
+  STRING            = [\"] (StringRegularChar | StringEscape | AsciiEscape)* [\"]
+  StringRegularChar = [\32\33\35-\91\93-\126] // everything from space (32) up to tilde (126), without double quote (34) and backslash (92)
+  StringEscape      = [\\] [\\\"ntbr]

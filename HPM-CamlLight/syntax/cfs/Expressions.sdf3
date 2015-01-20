@@ -1,153 +1,194 @@
 module cfs/Expressions
 
 imports
-	lex/Identifier
-	lex/Number
-	lex/Text
-	cfs/Names
-	cfs/Values
-	cfs/Types
-	cfs/Patterns
+  lex/Identifier
+  lex/Number
+  lex/Text
+  cfs/Names
+  cfs/Values
+  cfs/Types
+  cfs/Patterns
 
 context-free start-symbols
-	Expr
+  Expr
 
 context-free syntax
-	Expr "," Expr      -> TupleExpr {ast("[<1>,<2>]")}
-	Expr "," TupleExpr -> TupleExpr {ast("<conc([<1>],<2>)>")}
+  TupleExpr = Expr "," Expr {ast("[<1>,<2>]")}
+  TupleExpr = Expr "," TupleExpr {ast("<conc([<1>],<2>)>")}
 
 context-free priorities
-  Expr "," Expr -> TupleExpr >
-  TupleExpr -> Expr
+  TupleExpr = Expr "," Expr >
+  Expr = TupleExpr
 context-free priorities
-  Expr "," TupleExpr -> TupleExpr >
-  TupleExpr -> Expr
+  TupleExpr = Expr "," TupleExpr >
+  Expr = TupleExpr
 
 template options
-	keyword -/- [A-Za-z0-9]
+  keyword -/- [A-Za-z0-9]
 
-templates
-	ExprRecordBind.ExprRecordBind = [[GlobalName] = [Expr]]
-	
-	// ambiguity with Constant is actually *wanted*
-	Expr.Var = [[Name]]
-	Expr = [[Constant]]
-	Expr = [([Expr])] {bracket}
-	Expr = [begin
-	[Expr]
+context-free syntax
+  ExprRecordBind.ExprRecordBind = [[GlobalName] = [Expr]]
+  
+  // ambiguity with Constant is actually *wanted*
+  Expr.Var = [[Name]]
+  Expr = [[Constant]]
+  Expr = [([Expr])] {bracket}
+  Expr = [begin
+  [Expr]
 end] {bracket}
-	Expr.HasType      = [([Expr]: [TypeExpr])]
-	Expr.TupleExpr    = [[TupleExpr]]
-	Expr.ListLit      = <[<Expr+; separator="; ">]>
-	Expr.ArrayLit     = <[|<Expr+; separator="; ">|]>
-	Expr.RecordExpr   = [{[ExprRecordBind+; separator="; "]}]
-	Expr.FuncApp      = [[Expr] [Expr]] {left}
-	Expr.ConstrApp    = [[NCConstr] [Expr]]
-	Expr.RecordAccess = [[Expr].[GlobalName]]
-	// <- may be read as Lt(Negate(...)), hence the prefer
-	Expr.RecordAssign = [[Expr].[GlobalName] <- [Expr]] {right, prefer}
-	Expr.ArrayAccess  = [[Expr].([Expr])]
-	// <- may be read as Lt(Negate(...)), hence the prefer
-	Expr.ArrayAssign  = [[Expr].([Expr]) <- [Expr]] {right, prefer}
-	// prefer so the dangling else is associated with the last if
-	Expr.IfExpr       = [if [Expr] then [Expr]] {prefer}
-	Expr.IfElseExpr   = [if [Expr] then [Expr] else [Expr]]
-	Expr.WhileExpr    = [while [Expr] do [Expr] done]
-	Expr.ForExpr      = [for [IDENT] = [ForRange] do [Expr] done]
-	Expr.MatchExpr    = [match [Expr] with [SimpleMatch+; separator="\n| "]]
-	Expr.MatchExpr    = [match [Expr] with
-	| [SimpleMatch+; separator="\n| "]] // alternate syntax (http://caml.inria.fr/pub/docs/manual-caml-light/node4.8.html)
-	Expr.FunDef       = [fun [MultiMatch+; separator="\n| "]]
-	Expr.FunDef       = [fun
-	| [MultiMatch+; separator="\n| "]] // alternate syntax (http://caml.inria.fr/pub/docs/manual-caml-light/node4.8.html)
-	Expr.FunctionDef  = [function [SimpleMatch+; separator="\n| "]]
-	Expr.FunctionDef  = [function
-	| [SimpleMatch+; separator="\n| "]] // alternate syntax (http://caml.inria.fr/pub/docs/manual-caml-light/node4.8.html)
-	Expr.TryExpr      = [try [Expr] with [SimpleMatch+; separator="\n| "]]
-	Expr.TryExpr      = [try [Expr] with
-	| [SimpleMatch+; separator="\n| "]] // alternate syntax (http://caml.inria.fr/pub/docs/manual-caml-light/node4.8.html)
-	Expr.LetExpr      = [let [LetBind+; separator="\nand "] in [Expr]]
-	Expr.LetRecExpr   = [let rec [LetRecBind+; separator="\nand "] in [Expr]]
-	
-	SimpleMatch.SimpleMatch = [[Pattern] -> [Expr]]
-	MultiMatch.MultiMatch   = [[Pattern+; separator=" "] -> [Expr]]
-	
-  LetBind.LocalValDef       = [[Name] = [Expr]] 
-	LetBind.LocalValDef       = [[Pattern] = [Expr]] {avoid} // prefer the rule below over a ConstrPattern
-	LetBind.LocalFunDef       = [[Name] [Pattern+; separator=" "] = [Expr]]
+  Expr.HasType      = [([Expr]: [TypeExpr])]
+  Expr.TupleExpr    = [[TupleExpr]]
+  Expr.ListLit      = <[<{Expr "; "}+>]>
+  Expr.ArrayLit     = <[|<{Expr "; "}+>|]>
+  Expr.RecordExpr   = [{[{ExprRecordBind "; "}+]}]
+  Expr.FuncApp      = [[Expr] [Expr]] {left}
+  Expr.ConstrApp    = [[NCConstr] [Expr]]
+  Expr.RecordAccess = [[Expr].[GlobalName]]
+  // <- may be read as Lt(Negate(...)), hence the prefer
+  Expr.RecordAssign = [[Expr].[GlobalName] <- [Expr]] {right, prefer}
+  Expr.ArrayAccess  = [[Expr].([Expr])]
+  // <- may be read as Lt(Negate(...)), hence the prefer
+  Expr.ArrayAssign  = [[Expr].([Expr]) <- [Expr]] {right, prefer}
+  // prefer so the dangling else is associated with the last if
+  Expr.IfExpr       = [if [Expr] then [Expr]] {prefer}
+  Expr.IfElseExpr   = [if [Expr] then [Expr] else [Expr]]
+  Expr.WhileExpr    = [while [Expr] do [Expr] done]
+  Expr.ForExpr      = [for [IDENT] = [ForRange] do [Expr] done]
+  Expr.MatchExpr    = [match [Expr] with [{SimpleMatch "\n| "}+]]
+  Expr.MatchExpr    = [match [Expr] with
+  | [{SimpleMatch "\n| "}+]] // alternate syntax (http://caml.inria.fr/pub/docs/manual-caml-light/node4.8.html)
+  Expr.FunDef       = [fun [{MultiMatch "\n| "}+]]
+  Expr.FunDef       = [fun
+  | [{MultiMatch "\n| "}+]] // alternate syntax (http://caml.inria.fr/pub/docs/manual-caml-light/node4.8.html)
+  Expr.FunctionDef  = [function [{SimpleMatch "\n| "}+]]
+  Expr.FunctionDef  = [function
+  | [{SimpleMatch "\n| "}+]] // alternate syntax (http://caml.inria.fr/pub/docs/manual-caml-light/node4.8.html)
+  Expr.TryExpr      = [try [Expr] with [{SimpleMatch "\n| "}+]]
+  Expr.TryExpr      = [try [Expr] with
+  | [{SimpleMatch "\n| "}+]] // alternate syntax (http://caml.inria.fr/pub/docs/manual-caml-light/node4.8.html)
+  Expr.LetExpr      = [let [{LetBind "\nand "}+] in [Expr]]
+  Expr.LetRecExpr   = [let rec [{LetRecBind "\nand "}+] in [Expr]]
+  
+  SimpleMatch.SimpleMatch = [[Pattern] -> [Expr]]
+  MultiMatch.MultiMatch   = [[{Pattern " "}+] -> [Expr]]
+  
+  LetBind.LocalValDef       = [[Name] = [Expr]]
+  LetBind.LocalValDef       = [[Pattern] = [Expr]] {avoid} // prefer the rule below over a ConstrPattern
+  LetBind.LocalFunDef       = [[Name] [{Pattern " "}+] = [Expr]]
   LetRecBind.LocalRecValDef = [[Name] = [Expr]]
-	LetRecBind.LocalRecValDef = [[Pattern] = [Expr]] {avoid} // prefer the rule below over a ConstrPattern
-	LetRecBind.LocalRecFunDef = [[Name] [Pattern+; separator=" "] = [Expr]]
-	
-	ForRange.RangeTo     = [[Expr] to [Expr]]
-	ForRange.RangeDownTo = [[Expr] downto [Expr]]
-	
-	// avoid in favour of negative integer literals
-	Expr.Negate  = [-[Expr]]  {avoid}
-	Expr.NegateF = [-.[Expr]]
-	Expr.Deref   = [![Expr]]
-	Expr.Not     = [not [Expr]]
-	
-	Expr.ConsExpr = [[Expr] :: [Expr]] {right}
-	Expr.And      = [[Expr] & [Expr]]  {left}
-	Expr.Or       = [[Expr] or [Expr]] {left}
-	Expr.ExprSeq  = [[Expr];
+  LetRecBind.LocalRecValDef = [[Pattern] = [Expr]] {avoid} // prefer the rule below over a ConstrPattern
+  LetRecBind.LocalRecFunDef = [[Name] [{Pattern " "}+] = [Expr]]
+  
+  ForRange.RangeTo     = [[Expr] to [Expr]]
+  ForRange.RangeDownTo = [[Expr] downto [Expr]]
+  
+  // avoid in favour of negative integer literals
+  Expr.Negate  = [-[Expr]]  {avoid}
+  Expr.NegateF = [-.[Expr]]
+  Expr.Deref   = [![Expr]]
+  Expr.Not     = [not [Expr]]
+  
+  Expr.ConsExpr = [[Expr] :: [Expr]] {right}
+  Expr.And      = [[Expr] & [Expr]]  {left}
+  Expr.Or       = [[Expr] or [Expr]] {left}
+  Expr.ExprSeq  = [[Expr];
   [Expr]]   {right}
 
-	Expr.Add        = [[Expr] + [Expr]]   {left}
-	// prefer over function application of negative number
-	Expr.Sub        = [[Expr] - [Expr]]   {left, prefer}
-	Expr.Mul        = [[Expr] * [Expr]]   {left}
-	Expr.Div        = [[Expr] / [Expr]]   {left}
-	Expr.Mod        = [[Expr] mod [Expr]] {left}
-	Expr.AddF       = [[Expr] +. [Expr]]  {left}
-	// prefer over function application of float negative number
-	Expr.SubF       = [[Expr] -. [Expr]]  {left, prefer}
-	Expr.MulF       = [[Expr] *. [Expr]]  {left}
-	Expr.DivF       = [[Expr] /. [Expr]]  {left}
-	Expr.PowF       = [[Expr] ** [Expr]]  {right}
-	Expr.ListConc   = [[Expr] @ [Expr]]   {right}
-	Expr.StringConc = [[Expr] ^ [Expr]]   {right}
-	//[[Expr] ! [Expr]] isn't explained in the manual!
-	Expr.RefAssign  = [[Expr] := [Expr]]  {right}
-	
-	//avoid because = is also used in let and record bindings
-	Expr.StructEq  = [[Expr] = [Expr]]   {left, avoid}
-	Expr.StructNeq = [[Expr] <> [Expr]]  {left}
-	Expr.PhyEq     = [[Expr] == [Expr]]  {left}  
-	Expr.PhyNeq    = [[Expr] != [Expr]]  {left}  
-	Expr.Lt        = [[Expr] < [Expr]]   {left}
-	Expr.Leq       = [[Expr] <= [Expr]]  {left}
-	Expr.Gt        = [[Expr] > [Expr]]   {left}
-	Expr.Geq       = [[Expr] >= [Expr]]  {left}
-	Expr.LtF       = [[Expr] <. [Expr]]  {left} 
-	Expr.LeqF      = [[Expr] <=. [Expr]] {left}
-	Expr.GtF       = [[Expr] >. [Expr]]  {left} 
-	Expr.GeqF      = [[Expr] >=. [Expr]] {left}
+  Expr.Add        = [[Expr] + [Expr]]   {left}
+  // prefer over function application of negative number
+  Expr.Sub        = [[Expr] - [Expr]]   {left, prefer}
+  Expr.Mul        = [[Expr] * [Expr]]   {left}
+  Expr.Div        = [[Expr] / [Expr]]   {left}
+  Expr.Mod        = [[Expr] mod [Expr]] {left}
+  Expr.AddF       = [[Expr] +. [Expr]]  {left}
+  // prefer over function application of float negative number
+  Expr.SubF       = [[Expr] -. [Expr]]  {left, prefer}
+  Expr.MulF       = [[Expr] *. [Expr]]  {left}
+  Expr.DivF       = [[Expr] /. [Expr]]  {left}
+  Expr.PowF       = [[Expr] ** [Expr]]  {right}
+  Expr.ListConc   = [[Expr] @ [Expr]]   {right}
+  Expr.StringConc = [[Expr] ^ [Expr]]   {right}
+  //[[Expr] ! [Expr]] isn't explained in the manual!
+  Expr.RefAssign  = [[Expr] := [Expr]]  {right}
+  
+  //avoid because = is also used in let and record bindings
+  Expr.StructEq  = [[Expr] = [Expr]]   {left, avoid}
+  Expr.StructNeq = [[Expr] <> [Expr]]  {left}
+  Expr.PhyEq     = [[Expr] == [Expr]]  {left}
+  Expr.PhyNeq    = [[Expr] != [Expr]]  {left}
+  Expr.Lt        = [[Expr] < [Expr]]   {left}
+  Expr.Leq       = [[Expr] <= [Expr]]  {left}
+  Expr.Gt        = [[Expr] > [Expr]]   {left}
+  Expr.Geq       = [[Expr] >= [Expr]]  {left}
+  Expr.LtF       = [[Expr] <. [Expr]]  {left}
+  Expr.LeqF      = [[Expr] <=. [Expr]] {left}
+  Expr.GtF       = [[Expr] >. [Expr]]  {left}
+  Expr.GeqF      = [[Expr] >=. [Expr]] {left}
 
 context-free priorities
-  Expr.Deref > 
-  { Expr.RecordAccess  Expr.ArrayAccess } >
-  { Expr.FuncApp  Expr.ConstrApp } >
-  { Expr.Negate  Expr.NegateF } >
+  Expr.Deref > {
+    Expr.RecordAccess
+    Expr.ArrayAccess
+  } >
+  {
+    Expr.FuncApp
+    Expr.ConstrApp
+  } >
+  {
+    Expr.Negate
+    Expr.NegateF
+  } >
   Expr.PowF >
-  Expr.Mod >
-  { Expr.Mul  Expr.MulF  Expr.Div  Expr.DivF } >
-  { Expr.Add  Expr.AddF  Expr.Sub  Expr.SubF } >
-  Expr.ConsExpr >
-  { Expr.ListConc  Expr.StringConc } >
-  { Expr.StructEq  Expr.StructNeq  Expr.PhyEq  Expr.PhyNeq  Expr.Lt  Expr.Leq
-    Expr.Gt  Expr.Geq  Expr.LtF  Expr.LeqF  Expr.GtF  Expr.GeqF } >
+  Expr.Mod > {
+    Expr.Mul
+    Expr.MulF
+    Expr.Div
+    Expr.DivF
+  } > {
+    Expr.Add
+    Expr.AddF
+    Expr.Sub
+    Expr.SubF
+  } >
+  Expr.ConsExpr > {
+    Expr.ListConc
+    Expr.StringConc
+  } > {
+    Expr.StructEq
+    Expr.StructNeq
+    Expr.PhyEq
+    Expr.PhyNeq
+    Expr.Lt
+    Expr.Leq
+    Expr.Gt
+    Expr.Geq
+    Expr.LtF
+    Expr.LeqF
+    Expr.GtF
+    Expr.GeqF
+  } >
   Expr.Not >
   Expr.And >
   Expr.Or >
-  Expr.TupleExpr >
-  { Expr.RecordAssign  Expr.ArrayAssign  Expr.RefAssign } >
-  { Expr.IfExpr  Expr.IfElseExpr } >
-  Expr.ExprSeq > // when looking at examples, this seems to be in the wrong order somehow
-  { Expr.LetExpr  Expr.LetRecExpr  Expr.MatchExpr  Expr.FunDef  Expr.FunctionDef
-    Expr.TryExpr }
-  ,
-    { Expr -> {Expr ";"}+
-      GlobalName "=" Expr -> ExprRecordBinding } >
-    Expr ";" Expr -> Expr
+  Expr.TupleExpr > {
+    Expr.RecordAssign
+    Expr.ArrayAssign
+    Expr.RefAssign
+  } > {
+    Expr.IfExpr
+    Expr.IfElseExpr
+  } >
+  Expr.ExprSeq > { // when looking at examples, this seems to be in the wrong order somehow
+    Expr.LetExpr
+    Expr.LetRecExpr
+    Expr.MatchExpr
+    Expr.FunDef
+    Expr.FunctionDef
+    Expr.TryExpr
+  }
+
+// disambiguation: Keep expression sequence from being considered inside list/array/record literals
+context-free priorities
+    { {Expr ";"}+ = Expr
+       ExprRecordBinding = GlobalName "=" Expr } >
+    Expr = Expr ";" Expr

@@ -1,33 +1,33 @@
 module lex/Number
 
 context-free start-symbols
-	INTEGER
-	FLOAT
+  INTEGER
+  FLOAT
 
 //Integers
 lexical syntax
-	INTEGER = [\-]? (Decimal | Hexadec | Octal | Binary)
-	Decimal = [0-9]+
-	Hexadec = [0][Xx] [0-9A-Fa-f]+
-	Octal   = [0][Oo] [0-7]+
-	Binary  = [0][Bb] [01]+
+  INTEGER = [\-]? (Decimal | Hexadec | Octal | Binary)
+  Decimal = [0-9]+
+  Hexadec = [0][Xx] [0-9A-Fa-f]+
+  Octal   = [0][Oo] [0-7]+
+  Binary  = [0][Bb] [01]+
 
 lexical restrictions
-	Decimal -/- [0-9]
-	Hexadec -/- [0-9A-Fa-f]
-	Octal   -/- [0-7]
-	Binary  -/- [01]
-	INTEGER -/- [A-Za-z0-9]
+  Decimal -/- [0-9]
+  Hexadec -/- [0-9A-Fa-f]
+  Octal   -/- [0-7]
+  Binary  -/- [01]
+  INTEGER -/- [A-Za-z0-9]
 
 //Floating-point
 lexical syntax
-	FLOAT = [\-]? [0-9]+ (DecimalPart | ExponentPart | (DecimalPart ExponentPart))
-	DecimalPart  = Dot [0-9]*
-	ExponentPart = [Ee] [\+\-]? [0-9]+
-	Dot = [\.]
+  FLOAT = [\-]? [0-9]+ (DecimalPart | ExponentPart | (DecimalPart ExponentPart))
+  DecimalPart  = Dot [0-9]*
+  ExponentPart = [Ee] [\+\-]? [0-9]+
+  Dot = [\.]
 
 lexical restrictions
-	DecimalPart  -/- [0-9]
-	ExponentPart -/- [0-9]
-	Dot   -/- [\(] . ~[\*]
-	FLOAT -/- [A-Za-z0-9]
+  DecimalPart  -/- [0-9]
+  ExponentPart -/- [0-9]
+  Dot   -/- [\(] . ~[\*]
+  FLOAT -/- [A-Za-z0-9]

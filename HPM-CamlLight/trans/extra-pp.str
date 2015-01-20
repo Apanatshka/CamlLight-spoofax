@@ -1,11 +1,11 @@
-module Extra-PP-Rules.pp
+module extra-pp
 
 imports
   include/CamlLight    // jasmin AST nodes
   lib/runtime/tmpl/pp // pp-* strategies
   libstratego-gpp     // box language AST nodes
-  Identifier.pp.generated
-  Types.pp.generated
+  src-gen/pp/lex/Identifier-pp
+  src-gen/pp/cfs/Types-pp
 
 rules
 // <IDENT-LEX> "__" <IDENT-LEX> -> <GlobalName-CF> {cons("GlobalName")}

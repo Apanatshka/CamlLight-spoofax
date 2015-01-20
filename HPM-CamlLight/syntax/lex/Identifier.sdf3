@@ -1,50 +1,50 @@
 module lex/Identifier
 
 context-free start-symbols
-	IDENT
-	GlobalName
+  IDENT
+  GlobalName
 
 lexical syntax
-	IDENT = [A-Za-z]([\_]? [A-Za-z0-9])* [\_]?
-	
+  IDENT = [A-Za-z]([\_]? [A-Za-z0-9])* [\_]?
+  
 syntax
-	<IDENT-LEX> "__" <IDENT-LEX> -> <GlobalName-CF> {cons("GlobalName")}
-  <IDENT-LEX> -> <GlobalName-CF> {cons("GlobalName")}
+  GlobalName-CF.GlobalName = IDENT-LEX "__" IDENT-LEX
+  GlobalName-CF.GlobalName = IDENT-LEX
 
 lexical restrictions
-	IDENT -/- [A-Za-z0-9]
-	// Can't do: IDENT -/- [\_] . [A-Za-z0-9], because it matches the first two characters in GlobalName a__b, then it'll fail to match the first IDENT in GlobalName 
+  IDENT -/- [A-Za-z0-9]
+  // Can't do: IDENT -/- [\_] . [A-Za-z0-9], because it matches the first two characters in GlobalName a__b, then it'll fail to match the first IDENT in GlobalName 
 
 //keywords
 lexical syntax
-	IDENT = "and"       {reject}
-	IDENT = "as"        {reject}
-	IDENT = "begin"     {reject}
-	IDENT = "do"        {reject}
-	IDENT = "done"      {reject}
-	IDENT = "downto"    {reject}
-	IDENT = "else"      {reject}
-	IDENT = "end"       {reject}
-	IDENT = "exception" {reject}
-	IDENT = "for"       {reject}
-	IDENT = "fun"       {reject}
-	IDENT = "function"  {reject}
-	IDENT = "if"        {reject}
-	IDENT = "in"        {reject}
-	IDENT = "let"       {reject}
-	IDENT = "mod"       {reject} // binary operator
-	IDENT = "match"     {reject}
-	IDENT = "mutable"   {reject}
-	IDENT = "not"       {reject} // unary (prefix) operator
-	IDENT = "of"        {reject}
-	IDENT = "or"        {reject}
-	IDENT = "prefix"    {reject}
-	IDENT = "rec"       {reject}
-	IDENT = "then"      {reject}
-	IDENT = "to"        {reject}
-	IDENT = "try"       {reject}
-	IDENT = "type"      {reject}
-	IDENT = "value"     {reject}
-	IDENT = "where"     {reject}
-	IDENT = "while"     {reject}
-	IDENT = "with"      {reject}
+  IDENT = "and"       {reject}
+  IDENT = "as"        {reject}
+  IDENT = "begin"     {reject}
+  IDENT = "do"        {reject}
+  IDENT = "done"      {reject}
+  IDENT = "downto"    {reject}
+  IDENT = "else"      {reject}
+  IDENT = "end"       {reject}
+  IDENT = "exception" {reject}
+  IDENT = "for"       {reject}
+  IDENT = "fun"       {reject}
+  IDENT = "function"  {reject}
+  IDENT = "if"        {reject}
+  IDENT = "in"        {reject}
+  IDENT = "let"       {reject}
+  IDENT = "mod"       {reject} // binary operator
+  IDENT = "match"     {reject}
+  IDENT = "mutable"   {reject}
+  IDENT = "not"       {reject} // unary (prefix) operator
+  IDENT = "of"        {reject}
+  IDENT = "or"        {reject}
+  IDENT = "prefix"    {reject}
+  IDENT = "rec"       {reject}
+  IDENT = "then"      {reject}
+  IDENT = "to"        {reject}
+  IDENT = "try"       {reject}
+  IDENT = "type"      {reject}
+  IDENT = "value"     {reject}
+  IDENT = "where"     {reject}
+  IDENT = "while"     {reject}
+  IDENT = "with"      {reject}

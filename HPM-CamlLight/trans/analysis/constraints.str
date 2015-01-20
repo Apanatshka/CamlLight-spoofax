@@ -5,16 +5,16 @@ imports
   extra-constructors
   libstratego-gpp
   lib/runtime/tmpl/pp
-  Extra-PP-Rules.pp
-  Identifier.pp.generated
-  Types.pp.generated
+  extra-pp
+  src-gen/pp/lex/Identifier-pp
+  src-gen/pp/cfs/Types-pp
   lib/runtime/nabl/-
   
 // setting up pretty printing
 strategies
-  abox2text = box2text-string(|10000)
-  pp-TypeExpr  = strip-annos ; prettyprint-TypeExpr ; abox2text
-  pp-GlobalName  = strip-annos ; prettyprint-GlobalName ; abox2text
+  abox2text     = box2text-string(|10000)
+  pp-TypeExpr   = strip-annos ; prettyprint-TypeExpr ; abox2text
+  pp-GlobalName = strip-annos ; prettyprint-GlobalName ; abox2text
 
 // Two constraints:
 // equality 

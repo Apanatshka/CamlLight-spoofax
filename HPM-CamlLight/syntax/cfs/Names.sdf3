@@ -1,17 +1,16 @@
 module cfs/Names
 
 imports
-	lex/Identifier
-	lex/Operator
+  lex/Identifier
+  lex/Operator
 
 context-free start-symbols
-	Name
+  Name
 
 template options
-	tokenize: "[("
-	keyword -/- [A-Za-z]
+  tokenize: "[("
+  keyword -/- [A-Za-z]
 
-templates
-	Name        = [[GlobalName]]
-	Name.Prefix = [prefix [OPERATOR]]
-	
+context-free syntax
+  Name        = [[GlobalName]]
+  Name.Prefix = [prefix [OPERATOR]]

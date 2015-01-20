@@ -201,49 +201,29 @@ $[digraph g {
            else ci  := <get-node> (c,n)
               ; n'  := <conc> (n,[c'])
               ; ci' := <get-node> (c',n')
-              ; e'  := <conc> (e,<map(\i -> (i,ci',"inst-univ-simple")\)> [ci,i])
+              ; e'  := <conc> (e,<map(\i -> (i,ci',"inst-univ")\)> [ci,i])
          end
   
   // instantiate-incomplete : ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)])) -> ([(name, TypeExpr, [Constraint])], ([(TypeExpr, Int)], [(Int,Int)]))
   // instantiate universally quantified type variables even if their types are incomplete
   // (by copying the remaining constraints on it too)
-  instantiate-incomplete: (l,gr) -> (l',gr')
-    with dict := <map(ii-helper1(|<Fst> gr))> l
-       ; (l',gr') := <thread-map(ii-helper2(|dict))> (l,gr)
-  ii-helper1(|n): (nm,t,c)  -> (nm,(t,c, <get-node> (<mkCRefEq>(nm,t), n)))
-  ii-helper2(|dict): ((nm,t,c),gr) -> ((nm,t,c''),gr')
-    with (c',gr') := <thread-map(ii-helper3(|dict) <+ (![<id>],id))> (c,gr)
-       ; c'' := <concat> c'
-  ii-helper3(|dict): (c@CRefEq(uri,ty),(n,e)) -> (c',(n',e'))
-    where (t,c*,i) := <lookup;refresh-vars> (uri,dict)
-    with c'   := [<mkCEq>(t,ty) | c*]
-       ; newc := <diff(c-eq)> (c', n)
-       ; if <?[]> newc
-           then (n',e') := (n,e)
-           else n' := <conc> (n,newc)
-              ; i2 := <get-node> (c,n)
-              ; e' := <conc> (e,<mapconcat(iih(|i,i2,n'))> newc)
-         end
-  iih(|i,i2,n'): c -> [(i,o,s),(i2,o,s)]
-    where o := <get-node> (c,n'); s := "inst-univ-incomplete"
+  instantiate-incomplete: (l,gr) -> (l',gr)
+    with dict := <map(ii-helper1)> l
+       ; l' := <map((id,id,mapconcat(ii-helper2(|dict))))> l
+  ii-helper1: (n,t,c)  -> (n,(t,c))
+  ii-helper2(|dict) = \CRefEq(uri,ty) -> [<mkCEq>(t,ty) | c]
+      where (t,c) := <lookup;refresh-vars> (uri,dict)\
+    <+ ![<id>]
   
   instantiate-recursion = thread-map(instantiate-recursion')
   // instantiate-recursion' : ((name, TypeExpr, [Constraint]), ([(TypeExpr, Int)], [(Int,Int)])) -> ((name, TypeExpr, [Constraint]), ([(TypeExpr, Int)], [(Int,Int)]))
   // takes all references to the binding and replaces them
   // with the type of the binding as found so far, without alpha-converting the variables in it
-  instantiate-recursion': ((nm,t,l),gr) -> ((nm,t,l'),gr')
-    with (l',gr') := <thread-map(ir-helper(|nm,t,<get-node>(<mkCRefEq>(nm,t), <Fst> gr)))> (l,gr)
-  ir-helper(|nm,t,i): (CEq(_,_),_) -> <id>
-  ir-helper(|nm,t,i): (CRefEq(nm',_),_) -> <id> where <not(eq)> (nm,nm')
-  ir-helper(|nm,t,i): (c@CRefEq(nm,te),(n,e)) -> (c', (n',e'))
-    with c' := <mkCEq> (t,te)
-       ; if <get-node> (c',n)
-          then (n',e') := (n,e)
-          else ci  := <get-node> (c,n)
-             ; n'  := <conc> (n,[c'])
-             ; ci' := <get-node> (c',n')
-             ; e'  := <conc> (e,<map(\i -> (i,ci',"inst-univ-recursion")\)> [ci,i])
-        end
+  instantiate-recursion': ((n,t,l),gr) -> ((n,t,l'),gr)
+    with l' := <map(ir-helper(|n,t))> l
+  ir-helper(|n,t): CEq(_,_) -> <id>
+  ir-helper(|n,t): CRefEq(n,te) -> <mkCEq> (t,te)
+  ir-helper(|n,t): CRefEq(n',_) -> <id> where <not(eq)> (n,n')
   
   insert-existentials = map(insert-existentials')
   // insert-existentials' : (name, TypeExpr, [(name, TypeExpr)], [Constraint]) -> (name, TypeExpr, [Constraint])
@@ -345,6 +325,5 @@ $[digraph g {
   // The builtin unify strategy fails on input like [(TypeVar(a),FuncType(TypeVar(a),TypeVar(b)))]
   // because tries find the most general unifier
   unify'(isvar) = \(a@c#(as),b@c#(bs)) -> <zip(unify'(isvar));concat> (as,bs)
-                     where <not(isvar)> a; <not(isvar)> b\
-               <+ (?p@(_,_);![p])
+    where <not(isvar)> a; <not(isvar)> b\ <+ \(a,b) -> [<id>]\
   

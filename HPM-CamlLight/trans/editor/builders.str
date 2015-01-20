@@ -13,22 +13,22 @@ imports
 rules
   debug-show-type-constraints: (selected, position, ast, path, project-path)
       -> (file, result)
-    where task-setup(|project-path); index-setup(|<language>, project-path)
-        ; file   := <guarantee-extension(|"generated.tc")> path
+    where task-setup(|project-path); index-setup(|<language>, project-path);
+          file   := <guarantee-extension(|"generated.tc")> path
         ; result := <collect-constraints> ast
 
   debug-show-resolved-constraints: (selected, position, ast, path, project-path)
       -> (file, result)
-    where task-setup(|project-path); index-setup(|<language>, project-path)
-        ; file   := <guarantee-extension(|"generated.ty")> path
+    where task-setup(|project-path); index-setup(|<language>, project-path);
+          file   := <guarantee-extension(|"generated.ty")> path
         ; result := <collect-constraints;solve-constraints;(Fst<+map(Fst))> ast
 
   debug-generate-constraint-graph: (selected, position, ast, path, project-path)
       -> None()
-    where task-setup(|project-path); index-setup(|<language>, project-path)
-        ; outputformat := "png"
-        ; file   := <concat-strings> [project-path, "/", <guarantee-extension(|"generated.dot")> path]
-        ; file'  := <concat-strings> [project-path, "/", <guarantee-extension(|$[generated.dot.[outputformat]])> path]
+    where task-setup(|project-path); index-setup(|<language>, project-path);
+          outputformat := "png"
+        ; file   := <concat-strings> [project-path, "/", <guarantee-extension(|"generated.gv")> path]
+        ; file'  := <concat-strings> [project-path, "/", <guarantee-extension(|$[generated.gv.[outputformat]])> path]
         ; result := <collect-constraints;solve-constraints;(Snd<+map(Snd))> ast
         ; _ := <WriteToFile(fprintnl)> (file,[result])
         ; _ := <call> ("dot", [$[-T[outputformat]], $[-o[file']], file])
